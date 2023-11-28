@@ -107,7 +107,8 @@ static std::string computeDataLayout(const Triple &TT, StringRef FS,
 
   StringRef CapTypes = "";
   StringRef PurecapOptions = "";
-  if (llvm::is_contained(llvm::split(FS, ','), "+xcheri")) {
+  if (llvm::is_contained(llvm::split(FS, ','), "+xcheri") ||
+      llvm::is_contained(llvm::split(FS, ','), "+zcheripurecap")) {
     if (TT.isArch64Bit())
       CapTypes = "-pf200:128:128:128:64";
     else

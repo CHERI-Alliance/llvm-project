@@ -182,9 +182,11 @@ void riscv::getRISCVTargetFeatures(const Driver &D, const llvm::Triple &Triple,
   if (Arg *A = Args.getLastArg(options::OPT_mabi_EQ)) {
     bool IsPureCapability = isCheriPurecapABIName(A->getValue());
     if (IsPureCapability) {
-      if (llvm::find(Features, "+xcheri") == Features.end()) {
-        D.Diag(diag::err_riscv_invalid_abi) << A->getValue()
-          << "pure capability ABI requires xcheri extension to be specified";
+      if (llvm::find(Features, "+xcheri") == Features.end() &&
+          llvm::find(Features, "+zcheripurecap") == Features.end()) {
+        D.Diag(diag::err_riscv_invalid_abi)
+            << A->getValue()
+            << "pure capability ABI requires xcheri extension to be specified";
         return;
       }
       Features.push_back("+cap-mode");

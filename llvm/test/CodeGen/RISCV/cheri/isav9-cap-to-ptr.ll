@@ -9,18 +9,18 @@ define dso_local i64 @cap_to_ptr(i64 addrspace(200)* %dst, i8 addrspace(200)* %a
 ; ISAV8-LABEL: cap_to_ptr:
 ; ISAV8:       # %bb.0: # %entry
 ; ISAV8-NEXT:    ctoptr a1, ca1, ca2
-; ISAV8-NEXT:    csd a1, 0(ca0)
+; ISAV8-NEXT:    sd a1, 0(ca0)
 ; ISAV8-NEXT:    mv a0, a1
-; ISAV8-NEXT:    cret
+; ISAV8-NEXT:    ret
 ;
 ; ISAV9-LABEL: cap_to_ptr:
 ; ISAV9:       # %bb.0: # %entry
 ; ISAV9-NEXT:    cgettag a1, ca2
 ; ISAV9-NEXT:    neg a1, a1
 ; ISAV9-NEXT:    and a1, a2, a1
-; ISAV9-NEXT:    csd a1, 0(ca0)
+; ISAV9-NEXT:    sd a1, 0(ca0)
 ; ISAV9-NEXT:    mv a0, a1
-; ISAV9-NEXT:    cret
+; ISAV9-NEXT:    ret
 entry:
   %new = call i64 @llvm.cheri.cap.to.pointer.i64(i8 addrspace(200)* %auth, i8 addrspace(200)* %cap)
   store i64 %new, i64 addrspace(200)* %dst, align 16
@@ -31,18 +31,18 @@ define dso_local i64 @cap_from_ptr_ddc(i64 addrspace(200)* %dst, i8 addrspace(20
 ; ISAV8-LABEL: cap_from_ptr_ddc:
 ; ISAV8:       # %bb.0: # %entry
 ; ISAV8-NEXT:    ctoptr a1, ca1, ddc
-; ISAV8-NEXT:    csd a1, 0(ca0)
+; ISAV8-NEXT:    sd a1, 0(ca0)
 ; ISAV8-NEXT:    mv a0, a1
-; ISAV8-NEXT:    cret
+; ISAV8-NEXT:    ret
 ;
 ; ISAV9-LABEL: cap_from_ptr_ddc:
 ; ISAV9:       # %bb.0: # %entry
 ; ISAV9-NEXT:    cgettag a2, ca1
 ; ISAV9-NEXT:    neg a2, a2
 ; ISAV9-NEXT:    and a1, a1, a2
-; ISAV9-NEXT:    csd a1, 0(ca0)
+; ISAV9-NEXT:    sd a1, 0(ca0)
 ; ISAV9-NEXT:    mv a0, a1
-; ISAV9-NEXT:    cret
+; ISAV9-NEXT:    ret
 entry:
   %ddc = call i8 addrspace(200)* @llvm.cheri.ddc.get()
   %new = call i64 @llvm.cheri.cap.to.pointer.i64(i8 addrspace(200)* %ddc, i8 addrspace(200)* %cap)
