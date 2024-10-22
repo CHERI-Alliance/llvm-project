@@ -1,4 +1,5 @@
 # llvm-project
 LLVM compiler with CHERI support
 
-Check back later this week!
+Codasip LLVM compiler can be checked out from the `codasip-cheri-riscv` branch.
+
