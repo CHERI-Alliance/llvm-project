@@ -1486,6 +1486,23 @@ private:
   SmallVector<const Symbol *, 0> symbols;
 };
 
+class CheriPccPaddingSection final : public SyntheticSection {
+public:
+  CheriPccPaddingSection(Ctx &ctx)
+      : SyntheticSection(ctx, ".pad.cheri.pcc", llvm::ELF::SHT_PROGBITS,
+                         llvm::ELF::SHF_ALLOC, /*addralign=*/1) {}
+
+  void writeTo(uint8_t *buf) override {}
+  void markNeeded() { needed = true; }
+  bool isNeeded() const override { return needed; }
+  size_t getSize() const override { return size; }
+  void setSize(uint64_t len) { size = len; }
+
+private:
+  uint64_t size = 0;
+  bool needed = false;
+};
+
 template <class ELFT> void createSyntheticSections(Ctx &);
 InputSection *createInterpSection(Ctx &);
 MergeInputSection *createCommentSection(Ctx &);

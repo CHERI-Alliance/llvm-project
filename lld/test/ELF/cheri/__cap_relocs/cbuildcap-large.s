@@ -9,22 +9,22 @@
 
 # RELOCS:      Relocations [
 # RELOCS-NEXT:   Section ({{[0-9]+}}) .rela.dyn {
-# RELOCS-NEXT:     0x12200 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS-NEXT:     0x12230 R_RISCV_CHERI_RELATIVE - 0x0
 # RELOCS-NEXT:   }
 
 #RELADYN: Contents of section .rela.dyn:
-#RELADYN-NEXT: 101c8
-#RELADYN-NEXT: 101d8 00000000 00000000
+#RELADYN-NEXT: 10200
+#RELADYN-NEXT: 10210 00000000 00000000
 
 # GOT: Contents of section .got:
-# GOT-NEXT: 121f0
-# GOT-NEXT: 12200 10320100 00000000 0b994502 0078ee01
+# GOT-NEXT: 12220
+# GOT-NEXT: 12230 40320100 00000000 23994b02 0078ee01
 #                 [    address    ] [      meta     ]
-#                 address = 0x13250 -> matches symbol VA
+#                 address = 0x13240 -> matches symbol VA
 
-# SYM:      00000000000101c8    24 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
-# SYM-NEXT: 00000000000101e0     0 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
-# SYM:      0000000000013210  8193 OBJECT  GLOBAL DEFAULT     5 x
+# SYM:      0000000000010200    24 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
+# SYM-NEXT: 0000000000010218     0 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
+# SYM:      0000000000013240  8193 OBJECT  GLOBAL DEFAULT     6 x
 .text
 .globl  x, _start
 _start:

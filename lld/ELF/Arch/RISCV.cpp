@@ -174,14 +174,14 @@ int RISCV::getCapabilitySize() const {
 uint64_t RISCV::getCheriRequiredAlignment(uint64_t len) const {
   if (ctx.arg.zCheriRiscvV9) {
     if (ctx.arg.is64)
-      return cc128r_get_required_alignment(len);
-    else
-      return cc64r_get_required_alignment(len);
-  } else {
-    if (ctx.arg.is64)
       return cc128_get_required_alignment(len);
     else
       return cc64_get_required_alignment(len);
+  } else {
+    if (ctx.arg.is64)
+      return cc128r_get_required_alignment(len);
+    else
+      return cc64r_get_required_alignment(len);
   }
 }
 

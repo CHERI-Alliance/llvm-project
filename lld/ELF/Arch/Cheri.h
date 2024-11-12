@@ -318,6 +318,14 @@ void addRelativeCapabilityRelocation(
 
 uint64_t getCapMetaBits(Ctx &ctx, int64_t a, const Symbol &sym,
                         const InputSectionBase *isec, uint64_t offset);
+
+bool needsCheriPccSegment(Ctx &ctx);
+
+// Align OutputSections as needed to ensure the bounds of capabilities
+// such as PCC do not permit undesired access to portions of other
+// OutputSections.  Return true if the alignment of any OutputSection
+// was modified.
+bool cheriCapabilityBoundsAlign(Ctx &ctx);
 } // namespace elf
 } // namespace lld
 

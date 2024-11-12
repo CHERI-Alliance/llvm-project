@@ -11,42 +11,42 @@
 
 # RELOCS:      Relocations [
 # RELOCS-NEXT:   Section ({{[0-9]+}}) .rela.dyn {
-# RELOCS-NEXT:     0x121C0 R_RISCV_CHERI_RELATIVE - 0x0
-# RELOCS-NEXT:     0x121D0 R_RISCV_CHERI_RELATIVE - 0x0
-# RELOCS-NEXT:     0x121E0 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS-NEXT:     0x121F0 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS-NEXT:     0x12200 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS-NEXT:     0x12210 R_RISCV_CHERI_RELATIVE - 0x0
 # RELOCS-NEXT:   }
 
 # RELADYN: Contents of section .rela.dyn:
-# RELADYN-NEXT: 10158
-# RELADYN-NEXT: 10168
-# RELADYN-NEXT: 10178
-# RELADYN-NEXT: 10188
-# RELADYN-NEXT: 10198
+# RELADYN-NEXT: 10190
+# RELADYN-NEXT: 101a0
+# RELADYN-NEXT: 101b0
+# RELADYN-NEXT: 101c0
+# RELADYN-NEXT: 101d0
 
 # DATA: Contents of section .data:
-# DATA-NEXT: 121c0   ac110100 00000000 ac116e0c 00d8ef01
-#                    address = 0x111ac -> matches symbol VA (_start)
-# DATA-NEXT: 121d0   f0210100 00000000 f0217d04 0078ee01
-#                    address = 0x121f0 -> matches symbol VA (x)
-# DATA-NEXT: 121e0   a4010100 00000000 a4016a04 0058ee01
-#                    address = 0x101a4 -> matches symbol VA (y)
+# DATA-NEXT: 121f0   e4110100 00000000 dc817d08 00d8ef01
+#                    address = 0x111e4 -> matches symbol VA (_start)
+# DATA-NEXT: 12200   20220100 00000000 20228904 0078ee01
+#                    address = 0x12220 -> matches symbol VA (x)
+# DATA-NEXT: 12210   dc010100 00000000 dc017804 0058ee01
+#                    address = 0x101dc -> matches symbol VA (y)
 #                    [    address    ] [      meta     ]
 
 # RODATA: Contents of section .rodata:
 
 # CAPRELOCS-LABEL: CHERI CBuildCap Capability Relocations [
 # CAPRELOCS-NEXT:    Section ({{.+}}) .rela.dyn {
-# CAPRELOCS-NEXT:      0x121C0 FUNC - 0x111AC [0x111AC-0x111B8]
-# CAPRELOCS-NEXT:      0x121D0 DATA - 0x121F0 [0x121F0-0x121F4]
-# CAPRELOCS-NEXT:      0x121E0 RODATA - 0x101A4 [0x101A4-0x101A8]
+# CAPRELOCS-NEXT:      0x121F0 FUNC - 0x111E4 [0x101D8-0x111F0]
+# CAPRELOCS-NEXT:      0x12200 DATA - 0x12220 [0x12220-0x12224]
+# CAPRELOCS-NEXT:      0x12210 RODATA - 0x101DC [0x101DC-0x101E0]
 # CAPRELOCS-NEXT:    }
 # CAPRELOCS-NEXT:  ]
 
-# SYM:      0000000000010158    72 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
-# SYM-NEXT: 00000000000101a0    0  NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
-# SYM:      00000000000111ac    12 FUNC    GLOBAL DEFAULT     3 _start
-# SYM:      00000000000121f0    4  OBJECT  GLOBAL DEFAULT     4 x
-# SYM:      00000000000101a4    4  OBJECT  GLOBAL DEFAULT     2 y
+# SYM:      0000000000010190    72 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
+# SYM-NEXT: 00000000000101d8    0  NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
+# SYM:      00000000000111e4    12 FUNC    GLOBAL DEFAULT     3 _start
+# SYM:      0000000000012220    4  OBJECT  GLOBAL DEFAULT     5 x
+# SYM:      00000000000101dc    4  OBJECT  GLOBAL DEFAULT     2 y
 
 
 # RUN: llvm-mc -filetype=obj -triple=riscv32-unknown-elf --mattr=+zcheripurecap,+cap-mode --target-abi=il32pc64 %s -o %t.rv32.o
@@ -60,40 +60,39 @@
 
 # RELOCS32:      Relocations [
 # RELOCS32-NEXT:   Section ({{[0-9]+}}) .rela.dyn {
-# RELOCS32-NEXT:     0x12110 R_RISCV_CHERI_RELATIVE - 0x0
-# RELOCS32-NEXT:     0x12118 R_RISCV_CHERI_RELATIVE - 0x0
-# RELOCS32-NEXT:     0x12120 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS32-NEXT:     0x12180 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS32-NEXT:     0x12188 R_RISCV_CHERI_RELATIVE - 0x0
+# RELOCS32-NEXT:     0x12190 R_RISCV_CHERI_RELATIVE - 0x0
 # RELOCS32-NEXT:   }
 
 #RELADYN32: Contents of section .rela.dyn:
-#RELADYN32-NEXT: 100d4
-#RELADYN32-NEXT: 100e4
 #RELADYN32-NEXT: 100f4
+#RELADYN32-NEXT: 10104
+#RELADYN32-NEXT: 10114
 
 # DATA32: Contents of section .data:
-# DATA32-NEXT: 12110  04110100 044118d1 28210100 28b108fd
+# DATA32-NEXT: 12180  4c110100 146414d1 98210100 98710afd
 #                     [ addr ] [ meta ] [ addr ] [ meta ]
-#                     address = 0x11104 -> matches symbol VA (_start)
-#                     address = 0x12128 -> matches symbol VA (x)
+#                     address = 0x1114c -> matches symbol VA (_start)
+#                     address = 0x12198 -> matches symbol VA (x)
 #
-# DATA32-NEXT: 12120  fc000100 fc0008f7
+# DATA32-NEXT: 12190  44010100 442109f7
 #                     [ addr ] [ meta ]
-#                     meta = 0xf60800fc
-#                     address = 0x100fc -> matches symbol VA (y)
+#                     address = 0x10144 -> matches symbol VA (y)
 
 # CAPRELOCS32-LABEL: CHERI CBuildCap Capability Relocations [
 # CAPRELOCS32-NEXT:    Section ({{.+}}) .rela.dyn {
-# CAPRELOCS32-NEXT:      0x12110 FUNC - 0x11104 [0x11104-0x11110]
-# CAPRELOCS32-NEXT:      0x12118 DATA - 0x12128 [0x12128-0x1212C]
-# CAPRELOCS32-NEXT:      0x12120 RODATA - 0x100FC [0x100FC-0x10100]
+# CAPRELOCS32-NEXT:      0x12180 FUNC - 0x1114C [0x10140-0x11180]
+# CAPRELOCS32-NEXT:      0x12188 DATA - 0x12198 [0x12198-0x1219C]
+# CAPRELOCS32-NEXT:      0x12190 RODATA - 0x10144 [0x10144-0x10148]
 # CAPRELOCS32-NEXT:    }
 # CAPRELOCS32-NEXT:  ]
 
-# SYM32:      000100d4    36 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
-# SYM32-NEXT: 000100f8    0  NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
-# SYM32:      00011104    12 FUNC    GLOBAL DEFAULT     3 _start
-# SYM32:      00012128    4  OBJECT  GLOBAL DEFAULT     4 x
-# SYM32:      000100fc    4  OBJECT  GLOBAL DEFAULT     2 y
+# SYM32:      000100f4    36 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
+# SYM32-NEXT: 00010118    0  NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
+# SYM32:      0001114c    12 FUNC    GLOBAL DEFAULT     3 _start
+# SYM32:      00012198    4  OBJECT  GLOBAL DEFAULT     5 x
+# SYM32:      00010144    4  OBJECT  GLOBAL DEFAULT     2 y
 
 .global _start, x, y, foo, bar
 .data

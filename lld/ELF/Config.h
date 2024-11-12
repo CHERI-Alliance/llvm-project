@@ -56,6 +56,7 @@ struct Partition;
 struct PhdrEntry;
 
 class BssSection;
+class CheriPccPaddingSection;
 class GdbIndexSection;
 class GotPltSection;
 class GotSection;
@@ -561,6 +562,7 @@ struct InStruct {
   std::unique_ptr<IgotPltSection> igotPlt;
   std::unique_ptr<TgotSection> tgot;
   std::unique_ptr<MipsCheriCapTableSection> mipsCheriCapTable;
+  std::unique_ptr<CheriPccPaddingSection> pccPadding;
   std::unique_ptr<CheriCapRelocsSection> capRelocs;
   std::unique_ptr<CheriCapRelocsSection> tgotCapRelocs;
   // For per-file/per-function tables:
@@ -601,6 +603,7 @@ struct Ctx : CommonLinkerContext {
   uint8_t *bufferStart = nullptr;
   Partition *mainPart = nullptr;
   PhdrEntry *tlsPhdr = nullptr;
+  PhdrEntry *cheriBounds = nullptr;
   struct OutSections {
     std::unique_ptr<OutputSection> elfHeader;
     std::unique_ptr<OutputSection> programHeaders;

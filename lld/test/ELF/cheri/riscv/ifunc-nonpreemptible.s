@@ -1,17 +1,17 @@
 # REQUIRES: riscv
 # RUN: %riscv32_cheri_purecap_llvm-mc -filetype=obj %s -o %t.32.o
-# RUN: ld.lld %t.32.o -z separate-code -o %t.32
+# RUN: ld.lld %t.32.o -z separate-code -z cheri-riscv-v9 -o %t.32
 # RUN: llvm-readobj -r --cap-relocs -x .got.plt %t.32 | FileCheck --check-prefix=RELOC32 %s
 # RUN: llvm-readelf -x .got.plt %t.32 | FileCheck --check-prefix=GOTPLT32 %s
 # RUN: llvm-readelf -S -s %t.32 | FileCheck --check-prefixes=SEC,NM %s
-# RUN: llvm-objdump --no-print-imm-hex -d --no-show-raw-insn --mattr=+zcheripurecap %t.32 | FileCheck --check-prefixes=DIS,DIS32 %s
+# RUN: llvm-objdump --no-print-imm-hex -d --no-show-raw-insn %t.32 | FileCheck --check-prefixes=DIS,DIS32 %s
 
 # RUN: %riscv64_cheri_purecap_llvm-mc -filetype=obj %s -o %t.64.o
-# RUN: ld.lld %t.64.o -z separate-code -o %t.64
+# RUN: ld.lld %t.64.o -z separate-code -z cheri-riscv-v9 -o %t.64
 # RUN: llvm-readelf -S -s %t.64 | FileCheck --check-prefixes=SEC,NM %s
 # RUN: llvm-readobj -r --cap-relocs -x .got.plt %t.64 | FileCheck --check-prefix=RELOC64 %s
 # RUN: llvm-readelf -x .got.plt %t.64 | FileCheck --check-prefix=GOTPLT64 %s
-# RUN: llvm-objdump --no-print-imm-hex -d --no-show-raw-insn --mattr=+zcheripurecap %t.64 | FileCheck --check-prefixes=DIS,DIS64 %s
+# RUN: llvm-objdump --no-print-imm-hex -d --no-show-raw-insn %t.64 | FileCheck --check-prefixes=DIS,DIS64 %s
 
 # SEC: .iplt PROGBITS {{0*}}00011010
 
@@ -21,8 +21,8 @@
 # RELOC32:      Relocations [
 # RELOC32-NEXT: ]
 # RELOC32:      __cap_relocs {
-# RELOC32-NEXT:   0x12000 FUNC - 0x11010 [0x11010-0x11020]
-# RELOC32-NEXT:   0x12008 IFUNC - 0x11000 [0x11000-0x11004]
+# RELOC32-NEXT:   0x12000 FUNC - 0x11010 [0x10400-0x12200]
+# RELOC32-NEXT:   0x12008 IFUNC - 0x11000 [0x10400-0x12200]
 # RELOC32-NEXT: }
 # GOTPLT32:      section '.got.plt':
 # GOTPLT32-NEXT: 0x00012008 00000000 00000000
@@ -30,8 +30,8 @@
 # RELOC64:      Relocations [
 # RELOC64-NEXT: ]
 # RELOC64:      __cap_relocs {
-# RELOC64-NEXT:   0x12000 FUNC - 0x11010 [0x11010-0x11020]
-# RELOC64-NEXT:   0x12010 IFUNC - 0x11000 [0x11000-0x11004]
+# RELOC64-NEXT:   0x12000 FUNC - 0x11010 [0x10190-0x12020]
+# RELOC64-NEXT:   0x12010 IFUNC - 0x11000 [0x10190-0x12020]
 # RELOC64-NEXT: }
 # GOTPLT64:      section '.got.plt':
 # GOTPLT64-NEXT: 0x00012010 00000000 00000000 00000000 00000000
