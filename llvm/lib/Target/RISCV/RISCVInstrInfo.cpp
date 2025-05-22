@@ -3174,7 +3174,12 @@ RISCVInstrInfo::getSerializableDirectMachineOperandTargetFlags() const {
       {MO_TLSDESC_HI, "riscv-tlsdesc-hi"},
       {MO_TLSDESC_LOAD_LO, "riscv-tlsdesc-load-lo"},
       {MO_TLSDESC_ADD_LO, "riscv-tlsdesc-add-lo"},
-      {MO_TLSDESC_CALL, "riscv-tlsdesc-call"}};
+      {MO_TLSDESC_CALL, "riscv-tlsdesc-call"},
+      {MO_TGOT_TPREL_LO, "riscv-tgot-tprel-lo"},
+      {MO_TGOT_TPREL_HI, "riscv-tgot-tprel-hi"},
+      {MO_TGOT_TPREL_ADD, "riscv-tgot-tprel-add"},
+      {MO_TLS_TGOT_GOT_HI, "riscv-tgot-tls-got-hi"},
+      {MO_TLS_TGOT_GD_HI, "riscv-tgot-tls-gd-hi"}};
   return ArrayRef(TargetFlags);
 }
 

@@ -382,6 +382,14 @@ defm : AtomicInstAliases<"amoswap.y", " $rd, $rs2, $rs1", "CAMOSWAP_C", "",
 //===----------------------------------------------------------------------===//
 // Pseudo-instructions and codegen patterns
 //===----------------------------------------------------------------------===//
+
+let Predicates = [HasZCheriPurecap, IsCapMode] in {
+def : Pat<(riscv_load_tgot GPCR:$base, (XLenVT 0)),
+          (CLC GPCR:$base, 0)>;
+def : Pat<(riscv_load_tgot GPCR:$base, tglobaltlsaddr:$lo),
+          (CLC GPCR:$base, tglobaltlsaddr:$lo)>;
+}
+
 class PatCapInspect<SDPatternOperator OpNode, RVInstZCheriSrcDst Inst>
     : Pat<(XLenVT (OpNode GPCR:$rs1)), (Inst GPCR:$rs1)>;
 class PatZpGpcr<SDPatternOperator OpNode, RVInstZCheriSrcDst Inst>
