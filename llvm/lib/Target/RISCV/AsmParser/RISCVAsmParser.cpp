@@ -33,6 +33,7 @@
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCSubtargetInfo.h"
+#include "llvm/MC/MCTargetOptions.h"
 #include "llvm/MC/MCValue.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/Casting.h"
@@ -82,6 +83,8 @@ class RISCVAsmParser : public MCTargetAsmParser {
 
   SmallVector<ParserOptionsSet, 4> ParserOptionsStack;
   ParserOptionsSet ParserOptions;
+
+  RISCVABI::ABI ABI;
 
   SMLoc getLoc() const { return getParser().getTok().getLoc(); }
   bool isRV64() const { return getSTI().hasFeature(RISCV::Feature64Bit); }
@@ -358,8 +361,8 @@ public:
 
     // Use computeTargetABI to check if ABIName is valid. If invalid, output
     // error message.
-    RISCVABI::computeTargetABI(STI.getTargetTriple(), STI.getFeatureBits(),
-                               ABIName);
+    ABI = RISCVABI::computeTargetABI(STI.getTargetTriple(),
+                                     STI.getFeatureBits(), ABIName);
 
     const MCObjectFileInfo *MOFI = Parser.getContext().getObjectFileInfo();
     ParserOptions.IsPicEnabled = MOFI->isPositionIndependent();
@@ -681,7 +684,8 @@ public:
     if (!isImm() || evaluateConstantImm(getImm(), Imm, VK))
       return false;
     return RISCVAsmParser::classifySymbolRef(getImm(), VK) &&
-           VK == RISCVMCExpr::VK_RISCV_TPREL_ADD;
+           (VK == RISCVMCExpr::VK_RISCV_TPREL_ADD ||
+            VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_ADD);
   }
 
   bool isTLSDESCCallSymbol() const {
@@ -1110,7 +1114,8 @@ public:
                        VK == RISCVMCExpr::VK_RISCV_PCREL_LO ||
                        VK == RISCVMCExpr::VK_RISCV_TPREL_LO ||
                        VK == RISCVMCExpr::VK_RISCV_TLSDESC_LOAD_LO ||
-                       VK == RISCVMCExpr::VK_RISCV_TLSDESC_ADD_LO);
+                       VK == RISCVMCExpr::VK_RISCV_TLSDESC_ADD_LO ||
+                       VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_LO);
   }
 
   bool isSImm12Lsb0() const { return isBareSimmNLsb0<12>(); }
@@ -1149,11 +1154,13 @@ public:
     if (!IsConstantImm) {
       IsValid = RISCVAsmParser::classifySymbolRef(getImm(), VK);
       return IsValid && (VK == RISCVMCExpr::VK_RISCV_HI ||
-                         VK == RISCVMCExpr::VK_RISCV_TPREL_HI);
+                         VK == RISCVMCExpr::VK_RISCV_TPREL_HI ||
+                         VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_HI);
     } else {
       return isUInt<20>(Imm) && (VK == RISCVMCExpr::VK_RISCV_None ||
                                  VK == RISCVMCExpr::VK_RISCV_HI ||
-                                 VK == RISCVMCExpr::VK_RISCV_TPREL_HI);
+                                 VK == RISCVMCExpr::VK_RISCV_TPREL_HI ||
+                                 VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_HI);
     }
   }
 
@@ -1170,7 +1177,9 @@ public:
                          VK == RISCVMCExpr::VK_RISCV_GOT_HI ||
                          VK == RISCVMCExpr::VK_RISCV_TLS_GOT_HI ||
                          VK == RISCVMCExpr::VK_RISCV_TLS_GD_HI ||
-                         VK == RISCVMCExpr::VK_RISCV_TLSDESC_HI);
+                         VK == RISCVMCExpr::VK_RISCV_TLSDESC_HI ||
+                         VK == RISCVMCExpr::VK_RISCV_TLS_TGOT_GOT_HI ||
+                         VK == RISCVMCExpr::VK_RISCV_TLS_TGOT_GD_HI);
     }
 
     return isUInt<20>(Imm) && (VK == RISCVMCExpr::VK_RISCV_None ||
@@ -1178,7 +1187,9 @@ public:
                                VK == RISCVMCExpr::VK_RISCV_GOT_HI ||
                                VK == RISCVMCExpr::VK_RISCV_TLS_GOT_HI ||
                                VK == RISCVMCExpr::VK_RISCV_TLS_GD_HI ||
-                               VK == RISCVMCExpr::VK_RISCV_TLSDESC_HI);
+                               VK == RISCVMCExpr::VK_RISCV_TLSDESC_HI ||
+                               VK == RISCVMCExpr::VK_RISCV_TLS_TGOT_GOT_HI ||
+                               VK == RISCVMCExpr::VK_RISCV_TLS_TGOT_GD_HI);
   }
 
   bool isSImm21Lsb0JAL() const { return isBareSimmNLsb0<21>(); }
@@ -2529,9 +2540,31 @@ bool RISCVAsmParser::parseExprWithModifier(const MCExpr *&Res, SMLoc &E) {
   if (getLexer().getKind() != AsmToken::Identifier)
     return Error(getLoc(), "expected valid identifier for operand modifier");
   StringRef Identifier = getParser().getTok().getIdentifier();
-  RISCVMCExpr::VariantKind VK = RISCVMCExpr::getVariantKindForName(Identifier);
+  RISCVMCExpr::VariantKind VK = RISCVMCExpr::getVariantKindForName(
+      Identifier, RISCVABI::isCheriPureCapABI(ABI));
   if (VK == RISCVMCExpr::VK_RISCV_Invalid)
     return Error(getLoc(), "unrecognized operand modifier");
+  if (RISCVABI::isCheriPureCapABI(ABI) && MCTargetOptions::cheriTLSUseTGOT()) {
+    if (VK == RISCVMCExpr::VK_RISCV_TPREL_LO ||
+        VK == RISCVMCExpr::VK_RISCV_TPREL_HI ||
+        VK == RISCVMCExpr::VK_RISCV_TPREL_ADD)
+      return Error(getLoc(),
+                   "%tprel_lo/%tprel_hi/%tprel_add requires traditional TLS");
+    if (VK == RISCVMCExpr::VK_RISCV_TLSDESC_HI ||
+        VK == RISCVMCExpr::VK_RISCV_TLSDESC_LOAD_LO ||
+        VK == RISCVMCExpr::VK_RISCV_TLSDESC_ADD_LO ||
+        VK == RISCVMCExpr::VK_RISCV_TLSDESC_CALL)
+      return Error(getLoc(),
+                   "%tlsdesc_hi/%tlsdesc_load_lo/%tlsdesc_add_lo/%tlsdesc_call "
+                   "requires traditional TLS");
+  } else {
+    if (VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_LO ||
+        VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_HI ||
+        VK == RISCVMCExpr::VK_RISCV_TGOT_TPREL_ADD)
+      return Error(
+          getLoc(),
+          "%tgot_tprel_lo/%tgot_tprel_hi/%tgot_tprel_add requires TGOT TLS");
+  }
 
   getParser().Lex(); // Eat the identifier
   if (parseToken(AsmToken::LParen, "expected '('"))
@@ -4292,8 +4325,12 @@ void RISCVAsmParser::emitCapLoadTLSIEAddress(MCInst &Inst, SMLoc IDLoc,
   MCOperand TmpReg = MCOperand::createReg(convertGPRToGPCR(DestReg.getReg()));
   const MCExpr *Symbol = Inst.getOperand(1).getExpr();
   unsigned SecondOpcode = isRV64() ? RISCV::CLD : RISCV::CLW;
-  emitAuipccInstPair(DestReg, TmpReg, Symbol, RISCVMCExpr::VK_RISCV_TLS_GOT_HI,
-                     SecondOpcode, IDLoc, Out);
+  RISCVMCExpr::VariantKind VKHi;
+  if (RISCVABI::isCheriPureCapABI(ABI) && MCTargetOptions::cheriTLSUseTGOT())
+    VKHi = RISCVMCExpr::VK_RISCV_TLS_TGOT_GOT_HI;
+  else
+    VKHi = RISCVMCExpr::VK_RISCV_TLS_GOT_HI;
+  emitAuipccInstPair(DestReg, TmpReg, Symbol, VKHi, SecondOpcode, IDLoc, Out);
 }
 
 void RISCVAsmParser::emitCapLoadTLSGDCap(MCInst &Inst, SMLoc IDLoc,
@@ -4306,11 +4343,15 @@ void RISCVAsmParser::emitCapLoadTLSGDCap(MCInst &Inst, SMLoc IDLoc,
   //             CINCOFFSET cdest, cdest, %pcrel_lo(TmpLabel)
   MCOperand DestReg = Inst.getOperand(0);
   const MCExpr *Symbol = Inst.getOperand(1).getExpr();
+  RISCVMCExpr::VariantKind VKHi;
+  if (RISCVABI::isCheriPureCapABI(ABI) && MCTargetOptions::cheriTLSUseTGOT())
+    VKHi = RISCVMCExpr::VK_RISCV_TLS_TGOT_GD_HI;
+  else
+    VKHi = RISCVMCExpr::VK_RISCV_TLS_GD_HI;
   const bool HasZCheriPurecap =
       STI->hasFeature(RISCV::FeatureStdExtZCheriPureCap);
   const unsigned IncOpc = HasZCheriPurecap ? RISCV::CADDI : RISCV::CIncOffsetImm;
-  emitAuipccInstPair(DestReg, DestReg, Symbol, RISCVMCExpr::VK_RISCV_TLS_GD_HI,
-                     IncOpc, IDLoc, Out);
+  emitAuipccInstPair(DestReg, DestReg, Symbol, VKHi, IncOpc, IDLoc, Out);
 }
 
 bool RISCVAsmParser::checkPseudoCIncOffsetTPRel(MCInst &Inst,

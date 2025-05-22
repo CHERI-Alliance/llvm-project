@@ -80,6 +80,8 @@ const MCFixup *RISCVMCExpr::getPCRelHiFixup(const MCFragment **DFOut) const {
     case RISCV::fixup_riscv_tls_gd_hi20:
     case RISCV::fixup_riscv_pcrel_hi20:
     case RISCV::fixup_riscv_tlsdesc_hi20:
+    case RISCV::fixup_riscv_tls_tgot_got_hi20:
+    case RISCV::fixup_riscv_tls_tgot_gd_hi20:
       if (DFOut)
         *DFOut = DF;
       return &F;
@@ -123,7 +125,9 @@ void RISCVMCExpr::visitUsedExpr(MCStreamer &Streamer) const {
   Streamer.visitUsedExpr(*getSubExpr());
 }
 
-RISCVMCExpr::VariantKind RISCVMCExpr::getVariantKindForName(StringRef name) {
+RISCVMCExpr::VariantKind RISCVMCExpr::getVariantKindForName(StringRef name,
+                                                            bool IsPurecap) {
+  bool IsTGOT = IsPurecap && MCTargetOptions::cheriTLSUseTGOT();
   return StringSwitch<RISCVMCExpr::VariantKind>(name)
       .Case("lo", VK_RISCV_LO)
       .Case("hi", VK_RISCV_HI)
@@ -133,12 +137,17 @@ RISCVMCExpr::VariantKind RISCVMCExpr::getVariantKindForName(StringRef name) {
       .Case("tprel_lo", VK_RISCV_TPREL_LO)
       .Case("tprel_hi", VK_RISCV_TPREL_HI)
       .Case("tprel_add", VK_RISCV_TPREL_ADD)
-      .Case("tls_ie_pcrel_hi", VK_RISCV_TLS_GOT_HI)
-      .Case("tls_gd_pcrel_hi", VK_RISCV_TLS_GD_HI)
+      .Case("tls_ie_pcrel_hi",
+            IsTGOT ? VK_RISCV_TLS_TGOT_GOT_HI : VK_RISCV_TLS_GOT_HI)
+      .Case("tls_gd_pcrel_hi",
+            IsTGOT ? VK_RISCV_TLS_TGOT_GD_HI : VK_RISCV_TLS_GD_HI)
       .Case("tlsdesc_hi", VK_RISCV_TLSDESC_HI)
       .Case("tlsdesc_load_lo", VK_RISCV_TLSDESC_LOAD_LO)
       .Case("tlsdesc_add_lo", VK_RISCV_TLSDESC_ADD_LO)
       .Case("tlsdesc_call", VK_RISCV_TLSDESC_CALL)
+      .Case("tgot_tprel_lo", VK_RISCV_TGOT_TPREL_LO)
+      .Case("tgot_tprel_hi", VK_RISCV_TGOT_TPREL_HI)
+      .Case("tgot_tprel_add", VK_RISCV_TGOT_TPREL_ADD)
       .Case("code", VK_RISCV_CODE)
       .Default(VK_RISCV_Invalid);
 }
@@ -165,6 +174,7 @@ StringRef RISCVMCExpr::getVariantKindName(VariantKind Kind) {
   case VK_RISCV_TPREL_ADD:
     return "tprel_add";
   case VK_RISCV_TLS_GOT_HI:
+  case VK_RISCV_TLS_TGOT_GOT_HI:
     return "tls_ie_pcrel_hi";
   case VK_RISCV_TLSDESC_HI:
     return "tlsdesc_hi";
@@ -175,7 +185,14 @@ StringRef RISCVMCExpr::getVariantKindName(VariantKind Kind) {
   case VK_RISCV_TLSDESC_CALL:
     return "tlsdesc_call";
   case VK_RISCV_TLS_GD_HI:
+  case VK_RISCV_TLS_TGOT_GD_HI:
     return "tls_gd_pcrel_hi";
+  case VK_RISCV_TGOT_TPREL_LO:
+    return "tgot_tprel_lo";
+  case VK_RISCV_TGOT_TPREL_HI:
+    return "tgot_tprel_hi";
+  case VK_RISCV_TGOT_TPREL_ADD:
+    return "tgot_tprel_add";
   case VK_RISCV_CALL:
     return "call";
   case VK_RISCV_CALL_PLT:
@@ -225,6 +242,9 @@ void RISCVMCExpr::fixELFSymbolsInTLSFixups(MCAssembler &Asm) const {
   case VK_RISCV_TLS_GOT_HI:
   case VK_RISCV_TLS_GD_HI:
   case VK_RISCV_TLSDESC_HI:
+  case VK_RISCV_TGOT_TPREL_HI:
+  case VK_RISCV_TLS_TGOT_GOT_HI:
+  case VK_RISCV_TLS_TGOT_GD_HI:
     break;
   }
 
@@ -240,7 +260,10 @@ bool RISCVMCExpr::evaluateAsConstant(int64_t &Res) const {
       Kind == VK_RISCV_TLS_GOT_HI || Kind == VK_RISCV_TLS_GD_HI ||
       Kind == VK_RISCV_TLSDESC_HI || Kind == VK_RISCV_TLSDESC_LOAD_LO ||
       Kind == VK_RISCV_TLSDESC_ADD_LO || Kind == VK_RISCV_TLSDESC_CALL ||
-      Kind == VK_RISCV_CALL || Kind == VK_RISCV_CALL_PLT)
+      Kind == VK_RISCV_CALL || Kind == VK_RISCV_CALL_PLT ||
+      Kind == VK_RISCV_TGOT_TPREL_HI || Kind == VK_RISCV_TGOT_TPREL_LO ||
+      Kind == VK_RISCV_TGOT_TPREL_ADD || Kind == VK_RISCV_TLS_TGOT_GOT_HI ||
+      Kind == VK_RISCV_TLS_TGOT_GD_HI)
     return false;
 
   if (!getSubExpr()->evaluateAsRelocatable(Value, nullptr, nullptr))

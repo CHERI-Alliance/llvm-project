@@ -42,6 +42,11 @@ public:
     VK_RISCV_TLSDESC_ADD_LO,
     VK_RISCV_TLSDESC_CALL,
     VK_RISCV_CODE,
+    VK_RISCV_TGOT_TPREL_LO,
+    VK_RISCV_TGOT_TPREL_HI,
+    VK_RISCV_TGOT_TPREL_ADD,
+    VK_RISCV_TLS_TGOT_GOT_HI,
+    VK_RISCV_TLS_TGOT_GD_HI,
     VK_RISCV_Invalid // Must be the last item
   };
 
@@ -85,7 +90,7 @@ public:
     return E->getKind() == MCExpr::Target;
   }
 
-  static VariantKind getVariantKindForName(StringRef name);
+  static VariantKind getVariantKindForName(StringRef name, bool IsPurecap);
   static StringRef getVariantKindName(VariantKind Kind);
 };
 

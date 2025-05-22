@@ -97,6 +97,10 @@ unsigned RISCVELFObjectWriter::getRelocType(MCContext &Ctx,
       return ELF::R_RISCV_CALL_PLT;
     case RISCV::fixup_riscv_call_plt:
       return ELF::R_RISCV_CALL_PLT;
+    case RISCV::fixup_riscv_tls_tgot_got_hi20:
+      return ELF::R_RISCV_CHERI_TLS_TGOT_GOT_HI20;
+    case RISCV::fixup_riscv_tls_tgot_gd_hi20:
+      return ELF::R_RISCV_CHERI_TLS_TGOT_GD_HI20;
     }
   }
 
@@ -163,6 +167,12 @@ unsigned RISCVELFObjectWriter::getRelocType(MCContext &Ctx,
         cast<RISCVMCExpr>(Expr)->getKind() == RISCVMCExpr::VK_RISCV_CODE)
       return ELF::R_RISCV_CHERI_CAPABILITY_CODE;
     return ELF::R_RISCV_CHERI_CAPABILITY;
+  case RISCV::fixup_riscv_tgot_tprel_hi20:
+    return ELF::R_RISCV_CHERI_TLS_TGOT_HI20;
+  case RISCV::fixup_riscv_tgot_tprel_lo12_i:
+    return ELF::R_RISCV_CHERI_TLS_TGOT_LO12_I;
+  case RISCV::fixup_riscv_tgot_tprel_add:
+    return ELF::R_RISCV_CHERI_TLS_TGOT_ADD;
   }
 }
 
