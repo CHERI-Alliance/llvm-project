@@ -686,6 +686,11 @@ def cheri_large_cap_table : Flag<["-"], "mxcaptable">, Flags<[NoXarchOption]>, G
 def no_cheri_large_cap_table : Flag<["-"], "no-mxcaptable">, Flags<[NoXarchOption]>, Group<cheri_Group>,
   HelpText<"Do not use large immediates to index the cap table">;
 
+def cheri_tgot_tls : Flag<["-"], "cheri-tgot-tls">, Group<cheri_Group>,
+  HelpText<"Use TGOT for CHERI TLS">;
+def no_cheri_tgot_tls : Flag<["-"], "no-cheri-tgot-tls">, Group<cheri_Group>,
+  HelpText<"Use traditional CHERI TLS">;
+
 def cheri_uintcap_EQ : Joined<["-"], "cheri-uintcap=">, Flags<[NoXarchOption,HelpHidden]>, Group<cheri_Group>,
   Visibility<[ClangOption, CC1Option]>,
   HelpText<"Whether to use the capability address or offset when performing arithmetic on capabilities."
