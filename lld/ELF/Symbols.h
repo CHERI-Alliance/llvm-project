@@ -49,13 +49,16 @@ enum {
   NEEDS_COPY = 1 << 3,
   NEEDS_TLSDESC = 1 << 4,
   NEEDS_TLSGD = 1 << 5,
-  // 1 << 6 unused
+  NEEDS_TGOT = 1 << 6,
   NEEDS_GOT_DTPREL = 1 << 7,
   NEEDS_TLSIE = 1 << 8,
   NEEDS_GOT_AUTH = 1 << 9,
   NEEDS_GOT_NONAUTH = 1 << 10,
   NEEDS_TLSDESC_AUTH = 1 << 11,
   NEEDS_TLSDESC_NONAUTH = 1 << 12,
+  NEEDS_TGOT_GOT = 1 << 13,
+  NEEDS_TGOT_TLSGD = 1 << 14,
+  NEEDS_TGOT_TLSDESC = 1 << 15,
 };
 
 // The base class for real symbol classes.
@@ -208,6 +211,16 @@ public:
     return ctx.symAux[auxIdx].tlsDescIdx;
   }
   uint32_t getTlsGdIdx(Ctx &ctx) const { return ctx.symAux[auxIdx].tlsGdIdx; }
+  uint32_t getTgotIdx(Ctx &ctx) const { return ctx.symAux[auxIdx].tgotIdx; }
+  uint32_t getTgotGotIdx(Ctx &ctx) const {
+    return ctx.symAux[auxIdx].tgotGotIdx;
+  }
+  uint32_t getTgotTlsDescIdx(Ctx &ctx) const {
+    return ctx.symAux[auxIdx].tgotTlsDescIdx;
+  }
+  uint32_t getTgotTlsGdIdx(Ctx &ctx) const {
+    return ctx.symAux[auxIdx].tgotTlsGdIdx;
+  }
 
   bool isInGot(Ctx &ctx) const { return getGotIdx(ctx) != uint32_t(-1); }
   bool isInPlt(Ctx &ctx) const { return getPltIdx(ctx) != uint32_t(-1); }
@@ -219,6 +232,8 @@ public:
   uint64_t getGotPltOffset(Ctx &) const;
   uint64_t getGotPltVA(Ctx &) const;
   uint64_t getPltVA(Ctx &) const;
+  uint64_t getTgotOffset(Ctx &) const;
+  uint64_t getTgotVA(Ctx &) const;
   uint64_t getMipsCheriCapTableVA(Ctx &, const InputSectionBase *isec,
                                   uint64_t offset) const;
   uint64_t getMipsCheriCapTableOffset(Ctx &, const InputSectionBase *isec,
@@ -369,7 +384,8 @@ public:
   bool needsDynReloc() const {
     return flags.load(std::memory_order_relaxed) &
            (NEEDS_COPY | NEEDS_GOT | NEEDS_PLT | NEEDS_TLSDESC | NEEDS_TLSGD |
-            NEEDS_GOT_DTPREL | NEEDS_TLSIE);
+            NEEDS_GOT_DTPREL | NEEDS_TLSIE | NEEDS_TGOT | NEEDS_TGOT_GOT |
+            NEEDS_TGOT_TLSGD | NEEDS_TGOT_TLSDESC);
   }
   void allocateAux(Ctx &ctx) {
     assert(auxIdx == 0);

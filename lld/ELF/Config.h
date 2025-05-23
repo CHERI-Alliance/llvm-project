@@ -77,6 +77,7 @@ class StringTableSection;
 class SymbolTableBaseSection;
 class SymtabShndxSection;
 class SyntheticSection;
+class TgotSection;
 
 enum ELFKind : uint8_t {
   ELFNoneKind,
@@ -523,6 +524,10 @@ struct SymbolAux {
   uint32_t pltIdx = -1;
   uint32_t tlsDescIdx = -1;
   uint32_t tlsGdIdx = -1;
+  uint32_t tgotIdx = -1;
+  uint32_t tgotTlsDescIdx = -1;
+  uint32_t tgotTlsGdIdx = -1;
+  uint32_t tgotGotIdx = -1;
 };
 
 struct DuplicateSymbol {
@@ -554,8 +559,10 @@ struct InStruct {
   std::unique_ptr<GotSection> got;
   std::unique_ptr<GotPltSection> gotPlt;
   std::unique_ptr<IgotPltSection> igotPlt;
+  std::unique_ptr<TgotSection> tgot;
   std::unique_ptr<MipsCheriCapTableSection> mipsCheriCapTable;
   std::unique_ptr<CheriCapRelocsSection> capRelocs;
+  std::unique_ptr<CheriCapRelocsSection> tgotCapRelocs;
   // For per-file/per-function tables:
   std::unique_ptr<MipsCheriCapTableMappingSection> mipsCheriCapTableMapping;
   std::unique_ptr<RelroPaddingSection> relroPadding;
@@ -573,6 +580,7 @@ struct InStruct {
   std::unique_ptr<PPC32Got2Section> ppc32Got2;
   std::unique_ptr<IBTPltSection> ibtPlt;
   std::unique_ptr<RelocationBaseSection> relaPlt;
+  std::unique_ptr<RelocationBaseSection> relaTgot;
   // Non-SHF_ALLOC sections
   std::unique_ptr<SyntheticSection> debugNames;
   std::unique_ptr<GdbIndexSection> gdbIndex;
