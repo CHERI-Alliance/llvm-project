@@ -3530,6 +3530,8 @@ void ELFDumper<ELFT>::printCheriCapRelocsCBuildCapSectionHelper(
 template <class ELFT> void ELFDumper<ELFT>::printCheriCapRelocsHelper() {
   if (const Elf_Shdr *Shdr = findSectionByName("__cap_relocs"))
     printCheriCapRelocsSection(*Shdr);
+  if (const Elf_Shdr *Shdr = findSectionByName("__tgot_cap_relocs"))
+    printCheriCapRelocsSection(*Shdr);
 }
 
 template <class ELFT>
