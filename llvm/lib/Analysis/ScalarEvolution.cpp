@@ -6276,13 +6276,6 @@ const SCEV *ScalarEvolution::createNodeForGEP(GEPOperator *GEP) {
   assert(GEP->getSourceElementType()->isSized() &&
          "GEP source element type must be sized");
 
-  const DataLayout &DL = F.getParent()->getDataLayout();
-
-  if (DisableCheriScalarEvolution) {
-    if (DL.isFatPointer(GEP->getPointerOperandType()->getPointerAddressSpace()))
-      return getUnknown(GEP);
-  }
-
   SmallVector<const SCEV *, 4> IndexExprs;
   for (Value *Index : GEP->indices())
     IndexExprs.push_back(getSCEV(Index));

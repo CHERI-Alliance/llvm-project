@@ -363,6 +363,8 @@ public:
     llvm_unreachable("unknown register class");
   }
 
+  bool isLegalBaseRegForLSR(const SCEV *S) const override;
+
   unsigned getRegisterClassForType(bool Vector, Type *Ty = nullptr) const {
     if (Vector)
       return RISCVRegisterClass::VRRC;

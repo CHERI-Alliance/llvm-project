@@ -9,6 +9,7 @@
 #include "RISCVTargetTransformInfo.h"
 #include "MCTargetDesc/RISCVMatInt.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/CodeGen/BasicTTIImpl.h"
 #include "llvm/CodeGen/CostTable.h"
@@ -1928,6 +1929,26 @@ unsigned RISCVTTIImpl::getMaximumVF(unsigned ElemWidth, unsigned Opcode) const {
   // If no vector registers, or absurd element widths, disable
   // vectorization by returning 1.
   return std::max<unsigned>(1U, RegWidth.getFixedValue() / ElemWidth);
+}
+
+bool RISCVTTIImpl::isLegalBaseRegForLSR(const SCEV *S) const {
+  if (isCheriPureCapABI(ST->getTargetABI())) {
+    // Disallow any add-recurrence SCEV where the base offset is negative.
+    // This is needed because CHERI can't represent pointers before the
+    // beginning of an array.
+    if (const auto *AddRec = dyn_cast<SCEVAddRecExpr>(S)) {
+      const auto *StartAdd = dyn_cast<SCEVAddExpr>(AddRec->getStart());
+      if (StartAdd) {
+        const auto *Offset = dyn_cast<SCEVConstant>(StartAdd->getOperand(0));
+        if (Offset && Offset->getValue()->isNegative())
+          return false;
+        Offset = dyn_cast<SCEVConstant>(StartAdd->getOperand(1));
+        if (Offset && Offset->getValue()->isNegative())
+          return false;
+      }
+    }
+  }
+  return BasicTTIImplBase::isLegalBaseRegForLSR(S);
 }
 
 bool RISCVTTIImpl::isLSRCostLess(const TargetTransformInfo::LSRCost &C1,

@@ -263,6 +263,8 @@ public:
     return TTI::AMK_None;
   }
 
+  virtual bool isLegalBaseRegForLSR(const SCEV *S) const { return true; }
+
   bool isLegalMaskedStore(Type *DataType, Align Alignment) const {
     return false;
   }
