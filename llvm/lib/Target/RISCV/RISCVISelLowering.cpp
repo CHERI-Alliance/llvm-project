@@ -16535,7 +16535,7 @@ SDValue RISCVTargetLowering::LowerCall(CallLoweringInfo &CLI,
           std::make_pair(RISCVABI::getCheriBoundedArgReg(), MemArgs));
     } else {
       bool ShouldClearArgReg = IsVarArg;
-      if (!ShouldClearArgReg && UseBoundeMemArgsCallee) {
+      if (!ShouldClearArgReg && !UseBoundeMemArgsCallee) {
         auto *G = dyn_cast<GlobalAddressSDNode>(Callee);
         ShouldClearArgReg = !G || !G->getGlobal()->hasInternalLinkage();
       }
