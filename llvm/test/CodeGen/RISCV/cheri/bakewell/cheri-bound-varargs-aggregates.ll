@@ -14,7 +14,7 @@ define dso_local i32 @g() addrspace(200) {
 ; CHECK-NEXT:    sd a0, 16(csp)
 ; CHECK-NEXT:    li a0, 8
 ; CHECK-NEXT:    li a1, 32
-; CHECK-NEXT:    scbndsr ct1, csp, a1
+; CHECK-NEXT:    scbndsr ct6, csp, a1
 ; CHECK-NEXT:    li a1, 1
 ; CHECK-NEXT:    li a2, 2
 ; CHECK-NEXT:    li a3, 3
@@ -48,7 +48,7 @@ define dso_local i128 @foo() addrspace(200) {
 ; CHECK-NEXT:    sd zero, 8(csp)
 ; CHECK-NEXT:    li a1, 456
 ; CHECK-NEXT:    li a0, 32
-; CHECK-NEXT:    scbndsr ct1, csp, a0
+; CHECK-NEXT:    scbndsr ct6, csp, a0
 ; CHECK-NEXT:    caddi ca0, cnull, 1
 ; CHECK-NEXT:    li a5, 123
 ; CHECK-NEXT:    sd a1, 0(csp)

@@ -29,7 +29,7 @@ define i32 @caller_test_scalars(i32 %x, i128 %y, i64 %z, float %f, double %d) lo
 ; CHECK-NEXT:    sd s4, 0(csp)
 ; CHECK-NEXT:    csetbounds ca0, csp, 80
 ; CHECK-NEXT:    li a2, -11
-; CHECK-NEXT:    candperm ct1, ca0, a2
+; CHECK-NEXT:    candperm ct6, ca0, a2
 ; CHECK-NEXT:    li a0, 5
 ; CHECK-NEXT:    sd a1, 48(csp)
 ; CHECK-NEXT:    call callee
@@ -59,7 +59,7 @@ define dso_local signext i32 @foo() addrspace(200) nounwind {
 ; CHECK-NEXT:    sd a1, 16(csp)
 ; CHECK-NEXT:    csetbounds ca0, csp, 32
 ; CHECK-NEXT:    li a2, -11
-; CHECK-NEXT:    candperm ct1, ca0, a2
+; CHECK-NEXT:    candperm ct6, ca0, a2
 ; CHECK-NEXT:    li a0, 2
 ; CHECK-NEXT:    sd a1, 0(csp)
 ; CHECK-NEXT:    call sum
@@ -85,7 +85,7 @@ define i32 @caller_test_struct(i32 %x, [2 x float] %y.coerce, i32 %z, { i8 addrs
 ; CHECK-NEXT:    sd a1, 16(csp)
 ; CHECK-NEXT:    csetbounds ca0, csp, 80
 ; CHECK-NEXT:    li a1, -11
-; CHECK-NEXT:    candperm ct1, ca0, a1
+; CHECK-NEXT:    candperm ct6, ca0, a1
 ; CHECK-NEXT:    li a0, 3
 ; CHECK-NEXT:    sd a6, 0(csp)
 ; CHECK-NEXT:    call callee
@@ -111,7 +111,7 @@ define i32 @caller_test_inmem_struct(%struct.inmem addrspace(200)* nocapture rea
 ; CHECK-NEXT:    call memcpy
 ; CHECK-NEXT:    csetbounds ca0, csp, 16
 ; CHECK-NEXT:    li a1, -11
-; CHECK-NEXT:    candperm ct1, ca0, a1
+; CHECK-NEXT:    candperm ct6, ca0, a1
 ; CHECK-NEXT:    li a0, 1
 ; CHECK-NEXT:    sc cs0, 0(csp)
 ; CHECK-NEXT:    call callee
@@ -135,7 +135,7 @@ define i32 @test_noargs() local_unnamed_addr addrspace(200) #0 {
 ; CHECK-LABEL: test_noargs:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    li a0, 100
-; CHECK-NEXT:    cmove ct1, cnull
+; CHECK-NEXT:    cmove ct6, cnull
 ; CHECK-NEXT:    tail callee
 entry:
   %call = tail call i32 (i32, ...) @callee(i32 100) #0
@@ -154,9 +154,9 @@ define void @callee_test_scalars(i32 %count, ...) local_unnamed_addr addrspace(2
 ; CHECK-NEXT:    sc cra, 32(csp) # 16-byte Folded Spill
 ; CHECK-NEXT:    cincoffset ca0, csp, 16
 ; CHECK-NEXT:    csetbounds ca0, ca0, 16
-; CHECK-NEXT:    sc ct1, 0(ca0)
+; CHECK-NEXT:    sc ct6, 0(ca0)
 ; CHECK-NEXT:    lc ca1, 16(csp)
-; CHECK-NEXT:    sc ct1, 0(csp)
+; CHECK-NEXT:    sc ct6, 0(csp)
 ; CHECK-NEXT:    cincoffset ca0, ca1, 16
 ; CHECK-NEXT:    sc ca0, 16(csp)
 ; CHECK-NEXT:    cincoffset ca2, ca1, 32
@@ -193,12 +193,12 @@ define i8 addrspace(200)* @test_vacopy(i32 %count, ...) local_unnamed_addr addrs
 ; CHECK-NEXT:    cincoffset csp, csp, -48
 ; CHECK-NEXT:    cincoffset ca0, csp, 32
 ; CHECK-NEXT:    csetbounds ca0, ca0, 16
-; CHECK-NEXT:    sc ct1, 0(ca0)
+; CHECK-NEXT:    sc ct6, 0(ca0)
 ; CHECK-NEXT:    lc ca0, 32(csp)
 ; CHECK-NEXT:    cincoffset ca1, csp, 16
 ; CHECK-NEXT:    csetbounds ca1, ca1, 16
-; CHECK-NEXT:    sc ct1, 0(ca1)
-; CHECK-NEXT:    sc ct1, 0(csp)
+; CHECK-NEXT:    sc ct6, 0(ca1)
+; CHECK-NEXT:    sc ct6, 0(csp)
 ; CHECK-NEXT:    cincoffset csp, csp, 48
 ; CHECK-NEXT:    ret
 entry:
