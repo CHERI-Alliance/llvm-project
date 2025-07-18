@@ -381,6 +381,8 @@ void Ioctl::doInit() {
   addFunc("cache_ioctl", 3);
   addFunc("cache_ioctl_pipefs", 2);
   addFunc("cache_ioctl_procfs", 2);
+  addFunc("cached_dev_ioctl", 3);
+  addFunc("cached_dev_ioctl", 3);
   addFunc("cachefiles_ondemand_fd_ioctl", 2);
   addFunc("can327_ldisc_ioctl", 2);
   addFunc("cap_ioctl_unlocked", 2);
@@ -434,6 +436,7 @@ void Ioctl::doInit() {
   addFunc("do_setwsubd_ioctl", 1);
   addFunc("do_unlock_ioctl", 1);
   addFunc("do_vcc_ioctl", 2);
+  addFunc("dpi_dev_ioctl", 2);
   addFunc("drm_fb_helper_ioctl", 2);
   addFunc("drm_ioctl", 2);
   addFunc("ds1286_ioctl", 2);
@@ -471,6 +474,7 @@ void Ioctl::doInit() {
   addFunc("evtchn_ioctl", 2);
   addFunc("exfat_ioctl", 2);
   addFunc("exfat_ioctl_fitrim", 1);
+  addFunc("exfat_ioctl_shutdown", 1);
   addFunc("ext2_ioctl", 2);
   addFunc("ext4_ioctl", 2);
   addFunc("ext4_ioctl_checkpoint", 1);
@@ -509,6 +513,7 @@ void Ioctl::doInit() {
   addFunc("f2fs_release_compress_blocks", 1);
   addFunc("f2fs_reserve_compress_blocks", 1);
   addFunc("f2fs_sec_trim_file", 1);
+  addFunc("f_hidg_ioctl", 2);
   addFunc("fanotify_ioctl", 2);
   addFunc("fastrpc_device_ioctl", 2);
   addFunc("fat_dir_ioctl", 2);
@@ -545,6 +550,7 @@ void Ioctl::doInit() {
   addFunc("fuse_setup_measure_verity", 0);
   addFunc("fw_device_op_ioctl", 2);
   addFunc("fw_mgmt_ioctl_unlocked", 2);
+  addFunc("fwctl_fops_ioctl", 2);
   addFunc("gadget_dev_ioctl", 2);
   addFunc("gamecube_rtc_ioctl", 2);
   addFunc("gb_tty_ioctl", 2);
@@ -572,6 +578,7 @@ void Ioctl::doInit() {
   addFunc("hci_sock_bound_ioctl", 2);
   addFunc("hci_sock_ioctl", 2);
   addFunc("hci_uart_tty_ioctl", 2);
+  addFunc("hda_hwdep_ioctl", 3);
   addFunc("hfi1_file_ioctl", 2);
   addFunc("hfsplus_ioctl", 2);
   addFunc("hiddev_ioctl", 2);
@@ -598,8 +605,10 @@ void Ioctl::doInit() {
   addFunc("ib_uverbs_ioctl", 2);
   addFunc("ibwdt_ioctl", 2);
   addFunc("ieee802154_sock_ioctl", 2);
+  addFunc("iio_buffer_chrdev_ioctl", 2);
   addFunc("iio_device_buffer_getfd", 1);
   addFunc("iio_device_buffer_ioctl", 3);
+  addFunc("iio_event_ioctl", 3);
   addFunc("iio_ioctl", 2);
   addFunc("imsttfb_ioctl", 2);
   addFunc("inet6_ioctl", 2);
@@ -734,6 +743,8 @@ void Ioctl::doInit() {
   addFunc("nsm_dev_ioctl", 2);
   addFunc("ntfs_ioctl", 2);
   addFunc("ntfs_ioctl_fitrim", 1);
+  addFunc("ntsync_char_ioctl", 2);
+  addFunc("ntsync_obj_ioctl", 2);
   addFunc("ntty_cflags_changed", 1);
   addFunc("ntty_ioctl", 2);
   addFunc("nv_tco_ioctl", 2);
@@ -767,6 +778,8 @@ void Ioctl::doInit() {
   addFunc("pfrt_log_ioctl", 2);
   addFunc("pfru_ioctl", 2);
   addFunc("phantom_ioctl", 2);
+  addFunc("pidfd_info", 2);
+  addFunc("pidfd_ioctl", 2);
   addFunc("pin_longterm_test_ioctl", 2);
   addFunc("pin_longterm_test_read", 0);
   addFunc("pin_longterm_test_start", 0);
@@ -793,11 +806,13 @@ void Ioctl::doInit() {
   addFunc("pppol2tp_ioctl", 2);
   addFunc("pppox_ioctl", 2);
   addFunc("pps_cdev_ioctl", 2);
+  addFunc("pps_gen_cdev_ioctl", 2);
   addFunc("pptp_ppp_ioctl", 2);
   addFunc("printer_ioctl", 2);
   addFunc("privcmd_ioctl", 2);
   addFunc("proc_bus_pci_ioctl", 2);
   addFunc("proc_reg_unlocked_ioctl", 2);
+  addFunc("procfs_procmap_ioctl", 2);
   addFunc("ptp_ioctl", 2);
   addFunc("pty_bsd_ioctl", 2);
   addFunc("pty_unix98_ioctl", 2);
@@ -848,6 +863,7 @@ void Ioctl::doInit() {
   addFunc("sa1100dog_ioctl", 2);
   addFunc("sbefifo_user_ioctl", 2);
   addFunc("sc1200wdt_ioctl", 2);
+  addFunc("scarlett2_hwdep_ioctl", 3);
   addFunc("sch311x_wdt_ioctl", 2);
   addFunc("scom_ioctl", 2);
   addFunc("scu_ipc_ioctl", 2);
@@ -879,15 +895,23 @@ void Ioctl::doInit() {
   addFunc("snd_compr_ioctl_avail", 1);
   addFunc("snd_compr_set_metadata", 1);
   addFunc("snd_compr_set_params", 1);
+  addFunc("snd_compr_task_create", 1);
+  addFunc("snd_compr_task_seq", 1);
+  addFunc("snd_compr_task_seq", 1);
+  addFunc("snd_compr_task_start_ioctl", 1);
+  addFunc("snd_compr_task_status_ioctl", 1);
   addFunc("snd_compr_tstamp", 1);
   addFunc("snd_ctl_ioctl", 2);
   addFunc("snd_disconnect_ioctl", 2);
   addFunc("snd_emux_ioctl_seq_oss", 2);
+  addFunc("snd_hdsp_hwdep_ioctl", 3);
+  addFunc("snd_hdspm_hwdep_ioctl", 3);
   addFunc("snd_hwdep_ioctl", 2);
   addFunc("snd_info_entry_ioctl", 2);
   addFunc("snd_mixer_oss_ioctl", 2);
   addFunc("snd_mixer_oss_ioctl1", 2);
   addFunc("snd_mixer_oss_ioctl_card", 2);
+  addFunc("snd_opl3_ioctl", 3);
   addFunc("snd_opl3_ioctl_seq_oss", 2);
   addFunc("snd_pcm_ioctl", 2);
   addFunc("snd_pcm_oss_ioctl", 2);
@@ -897,6 +921,7 @@ void Ioctl::doInit() {
   addFunc("snd_seq_oss_ioctl", 2);
   addFunc("snd_seq_oss_synth_ioctl", 3);
   addFunc("snd_timer_user_ioctl", 2);
+  addFunc("snd_utimer_ioctl", 2);
   addFunc("snp_guest_ioctl", 2);
   addFunc("sock_do_ioctl", 3);
   addFunc("sock_ioctl", 2);
@@ -954,6 +979,7 @@ void Ioctl::doInit() {
   addFunc("usb_pcwd_ioctl", 2);
   addFunc("usb_serial_generic_msr_changed", 1);
   addFunc("usb_serial_generic_tiocmiwait", 1);
+  addFunc("usb_stream_hwdep_ioctl", 3);
   addFunc("usbdev_ioctl", 2);
   addFunc("usblp_ioctl", 2);
   addFunc("usbtmc_ioctl", 2);
@@ -1009,6 +1035,7 @@ void Ioctl::doInit() {
   addFunc("video_ioctl2", 2);
   addFunc("video_usercopy", 2);
   addFunc("virtiovf_pci_ioctl_get_region_info", 2);
+  addFunc("virtiovf_precopy_ioctl", 2);
   addFunc("virtiovf_vfio_pci_core_ioctl", 2);
   addFunc("virtual_ncidev_ioctl", 2);
   addFunc("vivid_fb_ioctl", 2);
@@ -1019,6 +1046,7 @@ void Ioctl::doInit() {
   addFunc("vmw_unlocked_ioctl", 2);
   addFunc("vol_cdev_ioctl", 2);
   addFunc("vsock_dev_ioctl", 2);
+  addFunc("vsock_ioctl", 2);
   addFunc("vt_do_kdskled", 2);
   addFunc("vt_ioctl", 2);
   addFunc("vt_k_ioctl", 2);
@@ -1038,42 +1066,25 @@ void Ioctl::doInit() {
   addFunc("wwan_port_fops_ioctl", 2);
   addFunc("x25_ioctl", 2);
   addFunc("xe_drm_ioctl", 2);
+  addFunc("xe_eu_stall_stream_ioctl", 2);
+  addFunc("xe_eu_stall_stream_ioctl_locked", 2);
+  addFunc("xe_oa_add_config_ioctl", 1);
+  addFunc("xe_oa_config_locked", 1);
+  addFunc("xe_oa_info_locked", 1);
+  addFunc("xe_oa_ioctl", 2);
+  addFunc("xe_oa_ioctl_locked", 2);
+  addFunc("xe_oa_remove_config_ioctl", 1);
+  addFunc("xe_oa_status_locked", 1);
+  addFunc("xe_oa_stream_open_ioctl", 1);
+  addFunc("xe_oa_user_extensions", 2);
   addFunc("xen_mce_chrdev_ioctl", 2);
   addFunc("xenbus_backend_ioctl", 2);
   addFunc("xfs_file_ioctl", 2);
   addFunc("xr_ioctl", 2);
   addFunc("xsdfec_dev_ioctl", 2);
   addFunc("zf_ioctl", 2);
-  addFunc("virtiovf_precopy_ioctl", 2);
-  addFunc("ntsync_obj_ioctl", 2);
-  addFunc("ntsync_char_ioctl", 2);
-  addFunc("xe_eu_stall_stream_ioctl", 2);
-  addFunc("iio_buffer_chrdev_ioctl", 2);
-  addFunc("procfs_procmap_ioctl", 2);
-  addFunc("f_hidg_ioctl", 2);
-  addFunc("dpi_dev_ioctl", 2);
-  addFunc("pidfd_ioctl", 2);
-  addFunc("vsock_ioctl", 2);
-  addFunc("snd_utimer_ioctl", 2);
-  addFunc("snd_compr_task_create", 1);
-  addFunc("snd_compr_task_seq", 1);
-  addFunc("snd_compr_task_start_ioctl", 1);
-  addFunc("snd_compr_task_seq", 1);
-  addFunc("snd_compr_task_status_ioctl", 1);
-  addFunc("xe_oa_ioctl", 2);
-  addFunc("fwctl_fops_ioctl", 2);
-  addFunc("exfat_ioctl_shutdown", 1);
-  addFunc("pps_gen_cdev_ioctl", 2);
-  addFunc("xe_eu_stall_stream_ioctl_locked", 2);
-  addFunc("xe_oa_ioctl_locked", 2);
-  addFunc("xe_oa_config_locked", 1);
-  addFunc("xe_oa_user_extensions", 2);
-  addFunc("xe_oa_status_locked", 1);
-  addFunc("xe_oa_info_locked", 1);
-  addFunc("pidfd_info", 2);
-  addFunc("xe_oa_remove_config_ioctl", 1);
-  addFunc("xe_oa_add_config_ioctl", 1);
-  addFunc("xe_oa_stream_open_ioctl", 1);
+  addFunc("scarlett2_ioctl_select_flash_segment", 1);
+  addFunc("scarlett2_ioctl_get_erase_progress", 1);
 }
 
 /*
@@ -1647,7 +1658,7 @@ void IoctlCheck::registerMatchers(MatchFinder *Finder) {
           this
       );
 
-      /* Assignment to an ioctl field. */
+      /* Assignment to an ioctl field with "->field = ...". */
       Finder->addMatcher(
           binaryOperator(
               hasOperatorName("="),
@@ -1659,6 +1670,30 @@ void IoctlCheck::registerMatchers(MatchFinder *Finder) {
                                   recordDecl(
                                       hasName(M.StructName_)
                                   )
+                              )
+                          )
+                      ),
+                      hasDeclaration(
+                          fieldDecl(
+                              hasName(M.FieldName_)
+                          )
+                      )
+                  )
+              )
+          ).bind("assign"),
+          this
+      );
+
+      /* Assignment to an ioctl field with ".field = ..." */
+      Finder->addMatcher(
+          binaryOperator(
+              hasOperatorName("="),
+              hasLHS(
+                  memberExpr(
+                      hasObjectExpression(
+                          hasType(
+                              recordDecl(
+                                  hasName(M.StructName_)
                               )
                           )
                       ),
