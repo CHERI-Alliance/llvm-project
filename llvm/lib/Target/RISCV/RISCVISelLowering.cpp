@@ -6518,7 +6518,8 @@ SDValue RISCVTargetLowering::lowerVASTARTCap(SDValue Op, SelectionDAG &DAG) cons
   unsigned PtrSize = MF.getDataLayout().getPointerSize(AllocaAS);
   bool IsPurecap = RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI());
   bool UseBoundedMemArgsCallee =
-      IsPurecap && Subtarget.hasCheriBoundMemArgCallee();
+      IsPurecap && Subtarget.hasCheriBoundMemArgCallee() &&
+      MF.getFunction().getCallingConv() != CallingConv::Fast;
 
   int Index = FuncInfo->getPureCapVarArgsIndex();
   SDValue FI = DAG.getFrameIndex(Index, PtrVT);
@@ -15699,7 +15700,8 @@ static SDValue unpackFromMemLoc(SelectionDAG &DAG, SDValue Chain,
   const RISCVSubtarget &STI = MF.getSubtarget<RISCVSubtarget>();
   const bool IsPureCapABI = RISCVABI::isCheriPureCapABI(STI.getTargetABI());
   const bool UseBoundedMemArgsCallee =
-      IsPureCapABI && STI.hasCheriBoundMemArgCallee();
+      IsPureCapABI && STI.hasCheriBoundMemArgCallee() &&
+      MF.getFunction().getCallingConv() != CallingConv::Fast;
 
   EVT LocVT = VA.getLocVT();
   EVT ValVT = VA.getValVT();
@@ -16041,11 +16043,13 @@ SDValue RISCVTargetLowering::LowerFormalArguments(
   bool HasMemArgs = false;
   const bool IsCheriPureCapABI =
       RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI());
+  const bool IsFastCC = CallConv == CallingConv::Fast;
   const bool UseBoundedMemArgsCallee =
-      IsCheriPureCapABI && Subtarget.hasCheriBoundMemArgCallee();
+      IsCheriPureCapABI && Subtarget.hasCheriBoundMemArgCallee() && !IsFastCC;
   const bool UseBoundedMemArgsCaller =
-      IsCheriPureCapABI && Subtarget.hasCheriBoundMemArgCaller();
-  const bool UseBoundedVarArgs = IsCheriPureCapABI && Subtarget.hasCheriBoundVarArg();
+      IsCheriPureCapABI && Subtarget.hasCheriBoundMemArgCaller() && !IsFastCC;
+  const bool UseBoundedVarArgs =
+      IsCheriPureCapABI && Subtarget.hasCheriBoundVarArg();
   if (UseBoundedMemArgsCallee) {
     for (size_t I = 0; I < Ins.size(); I++) {
       CCValAssign &VA = ArgLocs[I];
@@ -16287,11 +16291,13 @@ SDValue RISCVTargetLowering::LowerCall(CallLoweringInfo &CLI,
 
   MachineFunction &MF = DAG.getMachineFunction();
   bool PureCapABI = RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI());
-  bool UseBoundedVarArgs = PureCapABI && Subtarget.hasCheriBoundVarArg();
+  bool IsFastCC = CallConv == CallingConv::Fast;
+  bool UseBoundedVarArgs =
+      PureCapABI && Subtarget.hasCheriBoundVarArg() && !IsFastCC;
   bool UseBoundeMemArgsCaller =
-      PureCapABI && Subtarget.hasCheriBoundMemArgCaller();
+      PureCapABI && Subtarget.hasCheriBoundMemArgCaller() && !IsFastCC;
   bool UseBoundeMemArgsCallee =
-      PureCapABI && Subtarget.hasCheriBoundMemArgCallee();
+      PureCapABI && Subtarget.hasCheriBoundMemArgCallee() && !IsFastCC;
 
   // Analyze the operands of the call, assigning locations to each operand.
   SmallVector<CCValAssign, 16> ArgLocs;
