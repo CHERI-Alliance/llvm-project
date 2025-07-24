@@ -36,19 +36,20 @@ define dso_local void @hoist_csetbounds(i32 signext %cond, ptr addrspace(200) %f
 ; CHECK-NEXT:    sc cs3, 8(csp) # 8-byte Folded Spill
 ; CHECK-NEXT:    sc cs4, 0(csp) # 8-byte Folded Spill
 ; CHECK-NEXT:    cmv cs0, ca1
-; CHECK-NEXT:    caddi ca0, ca1, 4
-; CHECK-NEXT:    li s3, -1
-; CHECK-NEXT:    li s4, 99
-; CHECK-NEXT:    li a1, 4
-; CHECK-NEXT:    scbndsr cs1, cs0, a1
-; CHECK-NEXT:    scbndsr cs2, ca0, a1
+; CHECK-NEXT:    li a0, 0
+; CHECK-NEXT:    caddi ca1, ca1, 4
+; CHECK-NEXT:    li s3, 99
+; CHECK-NEXT:    li a2, 4
+; CHECK-NEXT:    scbndsr cs1, cs0, a2
+; CHECK-NEXT:    scbndsr cs2, ca1, a2
 ; CHECK-NEXT:    j .LBB0_2
 ; CHECK-NEXT:  .LBB0_1: # %for.inc
 ; CHECK-NEXT:    # in Loop: Header=BB0_2 Depth=1
-; CHECK-NEXT:    addi s3, s3, 1
-; CHECK-NEXT:    bgeu s3, s4, .LBB0_4
+; CHECK-NEXT:    addi a0, s4, 1
+; CHECK-NEXT:    bgeu s4, s3, .LBB0_4
 ; CHECK-NEXT:  .LBB0_2: # %for.body
 ; CHECK-NEXT:    # =>This Inner Loop Header: Depth=1
+; CHECK-NEXT:    mv s4, a0
 ; CHECK-NEXT:    beqz s0, .LBB0_1
 ; CHECK-NEXT:  # %bb.3: # %if.then
 ; CHECK-NEXT:    # in Loop: Header=BB0_2 Depth=1
