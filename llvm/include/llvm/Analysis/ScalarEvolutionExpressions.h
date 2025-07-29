@@ -954,6 +954,183 @@ private:
   LoopToScevMapT &Map;
 };
 
+/// The SCEVIntegerRewriter takes a fat pointer scev and extracts the integer
+/// the part.
+class SCEVIntegerRewriter : public SCEVRewriteVisitor<SCEVIntegerRewriter> {
+public:
+  static const SCEV *rewrite(const SCEV *Scev, ScalarEvolution &SE) {
+    SCEVIntegerRewriter Rewriter(SE);
+    return Rewriter.visit(Scev);
+  }
+
+  SCEVIntegerRewriter(ScalarEvolution &SE) : SCEVRewriteVisitor(SE) {}
+
+  const SCEV *visitAddRecExpr(const SCEVAddRecExpr *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+
+    SmallVector<const SCEV *, 2> Operands;
+    bool First = true;
+    // The first operand is the start, which should be the fat
+    // pointer. Extract the integer part from that and the rest
+    // stays the same.
+    for (auto *Op : Expr->operands()) {
+      if (First) {
+        Operands.push_back(visit(Op));
+        First = false;
+        continue;
+      }
+      Operands.push_back(Op);
+    }
+
+    return SE.getAddRecExpr(Operands, Expr->getLoop(), Expr->getNoWrapFlags());
+  }
+
+  const SCEV *visitAddExpr(const SCEVAddExpr *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+
+    SmallVector<const SCEV *, 2> Operands;
+    // Find the first fat pointer operand from the back, which will be our
+    // base. We shouldn't expand ambiguous expressions, so this should be ok.
+    // Rewrite it to extract the integer part, then push it and all other
+    // operands and create a new add expression.
+    bool Found = false;
+    for (size_t NumOps = Expr->getNumOperands() - 1;;) {
+      auto *Op = Expr->getOperand(NumOps);
+      if (SE.getDataLayout().isFatPointer(Op->getType()) && !Found) {
+        Operands.push_back(visit(Op));
+        Found = true;
+      } else {
+        Operands.push_back(Op);
+      }
+      if (NumOps == 0)
+        break;
+      NumOps--;
+    }
+    return SE.getAddExpr(Operands);
+  }
+
+  const SCEV *visitUnknown(const SCEVUnknown *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitSMaxExpr(const SCEVSMaxExpr *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitUMaxExpr(const SCEVUMaxExpr *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitUDivExpr(const SCEVUDivExpr *Expr) { return Expr; }
+
+  const SCEV *visitMulExpr(const SCEVMulExpr *Expr) { return Expr; }
+
+  const SCEV *visitTruncateExpr(const SCEVTruncateExpr *Expr) { return Expr; }
+
+  const SCEV *visitZeroExtendExpr(const SCEVZeroExtendExpr *Expr) {
+    return Expr;
+  }
+
+  const SCEV *visitSignExtendExpr(const SCEVSignExtendExpr *Expr) {
+    return Expr;
+  }
+};
+
+/// The SCEVFatRewriter takes a fat pointer scev and extracts the fat poiner
+/// part.
+class SCEVFatRewriter : public SCEVRewriteVisitor<SCEVFatRewriter> {
+public:
+  static const SCEV *rewrite(const SCEV *Scev, ScalarEvolution &SE) {
+    SCEVFatRewriter Rewriter(SE);
+    return Rewriter.visit(Scev);
+  }
+
+  SCEVFatRewriter(ScalarEvolution &SE) : SCEVRewriteVisitor(SE) {}
+
+  const SCEV *visitAddRecExpr(const SCEVAddRecExpr *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    return visit(Expr->getOperand(0));
+  }
+
+  const SCEV *visitAddExpr(const SCEVAddExpr *Expr) {
+    if (!SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+
+    for (size_t NumOps = Expr->getNumOperands() - 1;; NumOps--) {
+      auto *Op = Expr->getOperand(NumOps);
+      if (!SE.getDataLayout().isFatPointer(Op->getType()))
+        continue;
+      return visit(Op);
+    }
+    llvm_unreachable("At least one of the operands should be a fat pointer");
+  }
+
+  const SCEV *visitUnknown(const SCEVUnknown *Expr) {
+    if (SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitSMaxExpr(const SCEVSMaxExpr *Expr) {
+    if (SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitUMaxExpr(const SCEVUMaxExpr *Expr) {
+    if (SE.getDataLayout().isFatPointer(Expr->getType()))
+      return Expr;
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitUDivExpr(const SCEVUDivExpr *Expr) {
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitMulExpr(const SCEVMulExpr *Expr) {
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitTruncateExpr(const SCEVTruncateExpr *Expr) { return Expr; }
+
+  const SCEV *visitZeroExtendExpr(const SCEVZeroExtendExpr *Expr) {
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+
+  const SCEV *visitSignExtendExpr(const SCEVSignExtendExpr *Expr) {
+    ConstantInt *CI = cast<ConstantInt>(
+        ConstantInt::get(SE.getEffectiveSCEVType(Expr->getType()), 0));
+    return SE.getConstant(CI);
+  }
+};
+
 } // end namespace llvm
 
 #endif // LLVM_ANALYSIS_SCALAREVOLUTIONEXPRESSIONS_H

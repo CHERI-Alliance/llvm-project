@@ -474,13 +474,38 @@ Value *SCEVExpander::visitAddExpr(const SCEVAddExpr *S) {
   // Emit instructions to add all the operands. Hoist as much as possible
   // out of loops, and form meaningful getelementptrs where possible.
   Value *Sum = nullptr;
+  Value *BasePtr = nullptr;
+
+  // For a + b where b is a capability chrec, extract the capability part from the
+  // base.
+  // a + {b,+,c} gets expanded to a + {extract_integer(b) + c} + extract_capability(b)
+  // For example:
+  // a + {b + 1,+,c} -> a + {1,+,c} + b
   for (auto I = OpsAndLoops.begin(), E = OpsAndLoops.end(); I != E;) {
     const Loop *CurLoop = I->first;
     const SCEV *Op = I->second;
     if (!Sum) {
-      // This is the first operand. Just expand it.
-      Sum = expand(Op);
-      ++I;
+      if (DL.isFatPointer(Op->getType()) && !BasePtr &&
+          OpsAndLoops.size() > 1) {
+        if (auto *AddRec = dyn_cast<SCEVAddRecExpr>(Op)) {
+          // Prevent hoisting of parts of the GEP for fat pointers as the
+          // computations might clear the tag.
+          auto *BaseSum = SCEVFatRewriter::rewrite(AddRec, SE);
+          auto *IntSum = SCEVIntegerRewriter::rewrite(AddRec, SE);
+          // Expand the fat pointer part and the integer part (if any).
+          BasePtr = expand(BaseSum);
+          Sum = expand(IntSum);
+          ++I;
+        } else {
+          BasePtr = expand(Op);
+          Sum = nullptr;
+          ++I;
+        }
+      } else {
+        // This is the first operand. Just expand it.
+        Sum = expand(Op);
+        ++I;
+      }
       continue;
     }
 
@@ -516,6 +541,12 @@ Value *SCEVExpander::visitAddExpr(const SCEVAddExpr *S) {
                         /*IsSafeToHoist*/ true);
       ++I;
     }
+  }
+  if (BasePtr) {
+    SmallVector<const SCEV *, 4> NewOps;
+    NewOps.push_back(isa<Instruction>(Sum) ? SE.getUnknown(Sum)
+                                           : SE.getSCEV(Sum));
+    Sum = expandAddToGEP(SE.getAddExpr(NewOps), Ty, BasePtr);
   }
 
   return Sum;
