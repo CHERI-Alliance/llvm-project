@@ -240,6 +240,7 @@ void Ioctl::doInit() {
   addBlacklist("cdrom_ioctl_select_disc");
   addBlacklist("cdrom_ioctl_select_speed");
   addBlacklist("cdrom_ioctl_set_options");
+  addBlacklist("compat_ptr");
   addBlacklist("gru_find_lock_gts");
   addBlacklist("gru_ktest");
   addBlacklist("hcall_set_irqline");
@@ -286,6 +287,7 @@ void Ioctl::doInit() {
   addField("snd_info_entry_ops", "ioctl", 4);
   addField("snd_kctl_ioctl", "fioctl", 3);
   addField("snd_seq_oss_callback", "ioctl", 2);
+  addField("target_type", "prepare_ioctl", 3);
   addField("thread_with_stdio_ops", "unlocked_ioctl", 2);
   addField("tty_ldisc_ops", "ioctl", 2);
   addField("tty_operations", "ioctl", 2);
@@ -421,10 +423,12 @@ void Ioctl::doInit() {
   addFunc("dlfb_ops_ioctl", 2);
   addFunc("dm_blk_ioctl", 3);
   addFunc("dm_ctl_ioctl", 2);
+  addFunc("dm_prepare_ioctl", 4);
   addFunc("dm_verity_ioctl", 2);
   addFunc("dma_buf_ioctl", 2);
   addFunc("dma_heap_ioctl", 2);
   addFunc("dmirror_fops_unlocked_ioctl", 2);
+  addFunc("dmz_prepare_ioctl", 3);
   addFunc("do_cancel_ioctl", 1);
   addFunc("do_execute_ddcb", 1);
   addFunc("do_fb_ioctl", 2);
@@ -441,6 +445,7 @@ void Ioctl::doInit() {
   addFunc("drm_ioctl", 2);
   addFunc("ds1286_ioctl", 2);
   addFunc("dst_ca_ioctl", 2);
+  addFunc("dust_prepare_ioctl", 3);
   addFunc("dvb_ca_en50221_io_ioctl", 2);
   addFunc("dvb_demux_ioctl", 2);
   addFunc("dvb_dvr_ioctl", 2);
@@ -448,6 +453,7 @@ void Ioctl::doInit() {
   addFunc("dvb_generic_ioctl", 2);
   addFunc("dvb_net_ioctl", 2);
   addFunc("dvb_usercopy", 2);
+  addFunc("ebs_prepare_ioctl", 3);
   addFunc("ecryptfs_unlocked_ioctl", 2);
   addFunc("edge_ioctl", 2);
   addFunc("efi_runtime_get_nexthighmonocount", 0);
@@ -527,6 +533,7 @@ void Ioctl::doInit() {
   addFunc("ffs_ep0_ioctl", 2);
   addFunc("ffs_epfile_ioctl", 2);
   addFunc("fitpc2_wdt_ioctl", 2);
+  addFunc("flakey_prepare_ioctl", 3);
   addFunc("flash_dev_ioctl", 3);
   addFunc("fme_global_error_ioctl", 3);
   addFunc("fme_hdr_ioctl", 3);
@@ -655,6 +662,7 @@ void Ioctl::doInit() {
   addFunc("kyrofb_ioctl", 2);
   addFunc("lane_ioctl", 2);
   addFunc("lcd_ioctl", 2);
+  addFunc("linear_prepare_ioctl", 3);
   addFunc("lineevent_ioctl", 2);
   addFunc("linehandle_ioctl", 2);
   addFunc("linereq_ioctl", 2);
@@ -662,6 +670,7 @@ void Ioctl::doInit() {
   addFunc("llc_ui_ioctl", 2);
   addFunc("lo_ioctl", 3);
   addFunc("lo_simple_ioctl", 2);
+  addFunc("log_writes_prepare_ioctl", 3);
   addFunc("loop_control_ioctl", 2);
   addFunc("lp_do_ioctl", 2);
   addFunc("lp_ioctl", 2);
@@ -722,6 +731,7 @@ void Ioctl::doInit() {
   addFunc("mtrr_ioctl", 2);
   addFunc("mtty_ioctl", 2);
   addFunc("mtty_precopy_ioctl", 2);
+  addFunc("multipath_prepare_ioctl", 3);
   addFunc("mwave_ioctl", 2);
   addFunc("mxser_cflags_changed", 1);
   addFunc("mxser_ioctl", 2);
@@ -862,8 +872,11 @@ void Ioctl::doInit() {
   addFunc("s3c_fb_ioctl", 2);
   addFunc("sa1100dog_ioctl", 2);
   addFunc("sbefifo_user_ioctl", 2);
+  addFunc("sbrmi_ioctl", 2);
   addFunc("sc1200wdt_ioctl", 2);
   addFunc("scarlett2_hwdep_ioctl", 3);
+  addFunc("scarlett2_ioctl_get_erase_progress", 1);
+  addFunc("scarlett2_ioctl_select_flash_segment", 1);
   addFunc("sch311x_wdt_ioctl", 2);
   addFunc("scom_ioctl", 2);
   addFunc("scu_ipc_ioctl", 2);
@@ -940,6 +953,7 @@ void Ioctl::doInit() {
   addFunc("sw_sync_ioctl_create_fence", 1);
   addFunc("sw_sync_ioctl_get_deadline", 1);
   addFunc("sw_sync_ioctl_inc", 1);
+  addFunc("switch_prepare_ioctl", 3);
   addFunc("switchtec_dev_ioctl", 2);
   addFunc("sync_file_ioctl", 2);
   addFunc("sync_file_ioctl_fence_info", 1);
@@ -1004,12 +1018,14 @@ void Ioctl::doInit() {
   addFunc("userfaultfd_writeprotect", 1);
   addFunc("userfaultfd_zeropage", 1);
   addFunc("uv_mmtimer_ioctl", 2);
+  addFunc("uvc_v4l2_unlocked_ioctl", 2);
   addFunc("v4l2_ioctl", 2);
   addFunc("vbg_misc_device_ioctl", 2);
   addFunc("vcc_ioctl", 2);
   addFunc("vchiq_ioctl", 2);
   addFunc("vduse_dev_ioctl", 2);
   addFunc("vduse_ioctl", 2);
+  addFunc("verity_prepare_ioctl", 3);
   addFunc("vfio_container_ioctl_check_extension", 1);
   addFunc("vfio_device_fops_unl_ioctl", 2);
   addFunc("vfio_fops_unl_ioctl", 2);
@@ -1083,8 +1099,6 @@ void Ioctl::doInit() {
   addFunc("xr_ioctl", 2);
   addFunc("xsdfec_dev_ioctl", 2);
   addFunc("zf_ioctl", 2);
-  addFunc("scarlett2_ioctl_select_flash_segment", 1);
-  addFunc("scarlett2_ioctl_get_erase_progress", 1);
 }
 
 /*
@@ -1123,35 +1137,39 @@ void IoctlCheck::createArgFixup(const Expr *Arg, SourceManager *SM) {
 void IoctlCheck::checkFunctionDecl(
     const ast_matchers::MatchFinder::MatchResult &Result,
     const FunctionDecl *Func) {
-  auto F = Ioctl::findFunc(Func->getName());
+  auto F = Ioctl::findFunc(Func->getDeclName().getAsString());
 
   if (!F)
     return;
 
-  if (Ioctl::isBlacklisted(Func->getName())) {
+  if (Ioctl::isBlacklisted(Func->getDeclName().getAsString())) {
     diag(Func->getLocation(), "CHERI: ERROR: Ioctl function also on blacklist");
     return;
   }
 
   if (!F) {
     diag(Func->getLocation(), "CHERI: ERROR: Ioctl function mismatch for '%0'")
-        << Func->getName();
+        << Func->getDeclName().getAsString();
     return;
   }
 
   if (F->PtrArg_ >= Func->getNumParams()) {
     diag(Func->getLocation(),
          "CHERI: Ioctl function '%0' should have at least %1 parameter(s)!")
-        << Func->getName() << (F->PtrArg_ + 1);
+        << Func->getDeclName().getAsString() << (F->PtrArg_ + 1);
     return;
   }
 
   auto P = Func->getParamDecl(F->PtrArg_);
+  if (!P) {
+    diag(Func->getLocation(), "CHERI: ERROR: Cannot find ParamDecl");
+    return;
+  }
   if (P->getType().getUnqualifiedType().getAsString() !=
       StringRef("user_uintptr_t")) {
     diag(P->getLocation(), "CHERI: Parameter %0 of ioctl function '%1' should "
                            "have type 'user_uintptr_t'")
-        << (F->PtrArg_ + 1) << Func->getName();
+        << (F->PtrArg_ + 1) << Func->getDeclName().getAsString();
     /*
      * Hack:
      * Do not create a fixup for extern typeof(func_name) func_name.
@@ -1179,7 +1197,7 @@ void IoctlCheck::checkFieldDecl(
     return;
   }
 
-  auto F = Ioctl::findField(Rec->getName(), Field->getName());
+  auto F = Ioctl::findField(Rec->getDeclName().getAsString(), Field->getDeclName().getAsString());
   if (!F) {
     diag(Field->getLocation(), "CHERI: ERROR: Field is not an ioctl field");
     return;
@@ -1322,20 +1340,20 @@ void IoctlCheck::checkFieldInitializer(const Expr *I, const RecordDecl *Record,
   if (!Decl)
     return;
   const Ioctl::Field *M =
-      Record ? Ioctl::findField(Record->getName(), Field->getName()) : nullptr;
+      Record ? Ioctl::findField(Record->getDeclName().getAsString(), Field->getDeclName().getAsString()) : nullptr;
   if (!Record || !Field || !M) {
     diag(I->getExprLoc(), "ERROR: Cannot extract struct type and field name");
     return;
   }
-  auto F = Ioctl::findFunc(Decl->getName());
+  auto F = Ioctl::findFunc(Decl->getDeclName().getAsString());
   if (!F) {
     diag(I->getExprLoc(),
          "CHERI: Initialization of "
          "ioctl field '%0' in '%1' with non-ioctl function '%2'")
-        << M->FieldName_ << M->StructName_ << Decl->getName();
-    if (!Ioctl::isBlacklisted(Decl->getName()))
+        << M->FieldName_ << M->StructName_ << Decl->getDeclName().getAsString();
+    if (!Ioctl::isBlacklisted(Decl->getDeclName().getAsString()))
       diag(I->getExprLoc(), "MISSING: addFunc(\"%0\", %1)")
-          << Decl->getName() << M->PtrArg_;
+          << Decl->getDeclName().getAsString() << M->PtrArg_;
   } else if (F->PtrArg_ != M->PtrArg_) {
     diag(I->getExprLoc(), "CHERI: Different pointer argument "
                           "positions in initialization of ioctl field '%0' "
@@ -1364,12 +1382,12 @@ void IoctlCheck::checkInitList(const InitListExpr *InitList) {
     return;
   }
 
-  const auto *FL = Ioctl::findField(RD->getName());
+  const auto *FL = Ioctl::findField(RD->getDeclName().getAsString());
   if (!FL)
     return;
   for (auto M : *FL) {
     for (const auto F : RD->fields()) {
-      if (F->getName() != StringRef(M.FieldName_))
+      if (F->getDeclName().getAsString() != StringRef(M.FieldName_))
         continue;
       if (F->getFieldIndex() >= InitList->getNumInits())
         continue;
@@ -1422,7 +1440,7 @@ void IoctlCheck::checkCallWithArg(
   }
 
   /* Ignore anything that is not in an ioctl function. */
-  const auto *F = Ioctl::findFunc(Outer->getName());
+  const auto *F = Ioctl::findFunc(Outer->getDeclName().getAsString());
   if (!F)
     return;
 
@@ -1458,7 +1476,7 @@ void IoctlCheck::checkCallWithArg(
   if (Outer->getParamDecl(F->PtrArg_) != Param)
     return;
 
-  if (Ioctl::isBlacklisted(Outer->getName())) {
+  if (Ioctl::isBlacklisted(Outer->getDeclName().getAsString())) {
     diag(Outer->getLocation(),
          "CHERI: ERROR: Ioctl function also on blacklist");
     return;
@@ -1543,18 +1561,18 @@ void IoctlCheck::checkCallWithArg(
       return;
 
     /* Do not warn for explicit cast with __c_ua() */
-    if (Decl->getName() == StringRef("__c_ua"))
+    if (Decl->getDeclName().getAsString() == StringRef("__c_ua"))
       return;
 
-    const auto *CF = Ioctl::findFunc(Decl->getName());
+    const auto *CF = Ioctl::findFunc(Decl->getDeclName().getAsString());
     if (!CF || CF->PtrArg_ != ArgPos) {
       diag(Arg->getExprLoc(),
            "CHERI: Ioctl pointer parameter '%0' of ioctl function '%1' "
            "used as argument %2 in call to non-ioctl function '%3'")
-          << Param->getName() << F->Name_ << (ArgPos + 1) << Decl->getName();
-      if (!Ioctl::isBlacklisted(Decl->getName()))
+          << Param->getDeclName().getAsString() << F->Name_ << (ArgPos + 1) << Decl->getDeclName().getAsString();
+      if (!Ioctl::isBlacklisted(Decl->getDeclName().getAsString()))
         diag(Arg->getExprLoc(), "MISSING: addFunc(\"%0\", %1)")
-            << Decl->getName() << ArgPos;
+            << Decl->getDeclName().getAsString() << ArgPos;
       else
         createArgFixup(Arg, Result.SourceManager);
     }
@@ -1562,22 +1580,22 @@ void IoctlCheck::checkCallWithArg(
 
   extractFieldDecl(Call->getCallee(), Record, Field);
   if (Record && Field) {
-    const auto *M = Ioctl::findField(Record->getName(), Field->getName());
+    const auto *M = Ioctl::findField(Record->getDeclName().getAsString(), Field->getDeclName().getAsString());
     if (!M || M->PtrArg_ != ArgPos) {
       diag(Arg->getExprLoc(),
            "CHERI: Ioctl pointer parameter '%0' of ioctl function '%1' "
            "used as argument %2 "
            "in call to non-ioctl function pointed to by field '%3' in '%4'")
-          << Param->getName() << F->Name_ << (ArgPos + 1) << Field->getName()
-          << Record->getName();
+          << Param->getDeclName().getAsString() << F->Name_ << (ArgPos + 1) << Field->getDeclName().getAsString()
+          << Record->getDeclName().getAsString();
       diag(Arg->getExprLoc(), "MISSING: addField(\"%0\", \"%1\", %2)")
-          << Record->getName() << Field->getName() << ArgPos;
+          << Record->getDeclName().getAsString() << Field->getDeclName().getAsString() << ArgPos;
     }
   } else if (!Decl) {
     diag(Arg->getExprLoc(),
          "CHERI: Ioctl pointer parameter '%0' of ioctl function '%1' "
          "used as argument %2 in a call to an unknown object")
-        << Param->getName() << F->Name_ << (ArgPos + 1);
+        << Param->getDeclName().getAsString() << F->Name_ << (ArgPos + 1);
   }
 }
 

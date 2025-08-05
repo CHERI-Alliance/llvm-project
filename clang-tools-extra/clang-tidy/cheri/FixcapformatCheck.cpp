@@ -57,10 +57,17 @@ void FixcapformatCheck::check(const MatchFinder::MatchResult &Result) {
     if (!Util::isIntegerCapability(Ctx, A->getType().getTypePtr()))
       continue;
 
-    diag(A->getExprLoc(),
-         "CHERI: Integer capability passed to a variadic function. "
-         "Need cast to 'unsigned long'")
-        << FixItHint::CreateInsertion(A->getBeginLoc(), "(unsigned long)");
+    if (Util::is64bitCapTypedef(A->getType().getTypePtr())) {
+      diag(A->getExprLoc(),
+           "CHERI: Integer capability passed to a variadic function. "
+           "Need cast to '__u64'")
+          << FixItHint::CreateInsertion(A->getBeginLoc(), "(__u64)");
+    } else {
+      diag(A->getExprLoc(),
+           "CHERI: Integer capability passed to a variadic function. "
+           "Need cast to 'unsigned long'")
+          << FixItHint::CreateInsertion(A->getBeginLoc(), "(unsigned long)");
+    }
   }
 }
 

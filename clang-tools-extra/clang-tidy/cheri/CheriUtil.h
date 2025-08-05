@@ -50,7 +50,7 @@ public:
     if (!N)
       return false;
 
-    return N->getName() == StringRef("user");
+    return N->getDeclName().getAsString() == StringRef("user");
 #else
     return AT->getAttrKind() == attr::AnnotateType;
 #endif
@@ -106,7 +106,7 @@ public:
   static bool isIntCapTypedef(const Type *T) {
     const auto *TD = T->getAs<TypedefType>();
     if (TD) {
-      const auto &Name = TD->getDecl()->getName();
+      const auto &Name = TD->getDecl()->getDeclName().getAsString();
       if (Name == StringRef("uintptr_t"))
         return true;
       if (Name == StringRef("intptr_t"))
@@ -116,6 +116,10 @@ public:
       if (Name == StringRef("user_intptr_t"))
         return true;
       if (Name == StringRef("__kernel_uintptr_t"))
+        return true;
+      if (Name == StringRef("__uptr"))
+        return true;
+      if (Name == StringRef("__u64ptr"))
         return true;
       if (Name == StringRef("register_t"))
         return true;
@@ -131,12 +135,27 @@ public:
   static bool isUserIntCapTypedef(const Type *T) {
     const auto *TD = T->getAs<TypedefType>();
     if (TD) {
-      const auto &Name = TD->getDecl()->getName();
+      const auto &Name = TD->getDecl()->getDeclName().getAsString();
       if (Name == StringRef("user_uintptr_t"))
         return true;
       if (Name == StringRef("user_intptr_t"))
         return true;
       if (Name == StringRef("__kernel_uintptr_t"))
+        return true;
+      if (Name == StringRef("__uptr"))
+        return true;
+      if (Name == StringRef("__u64ptr"))
+        return true;
+    }
+
+    return false;
+  }
+
+  static bool is64bitCapTypedef(const Type *T) {
+    const auto *TD = T->getAs<TypedefType>();
+    if (TD) {
+      const auto &Name = TD->getDecl()->getDeclName().getAsString();
+      if (Name == StringRef("__u64ptr"))
         return true;
     }
 
@@ -146,10 +165,12 @@ public:
   static bool isNonCapTypedef(const Type *T) {
     const auto *TD = T->getAs<TypedefType>();
     if (TD) {
-      const auto &Name = TD->getDecl()->getName();
+      const auto &Name = TD->getDecl()->getDeclName().getAsString();
       if (Name == StringRef("__ptraddr_t"))
         return true;
       if (Name == StringRef("__ptraddr64_t"))
+        return true;
+      if (Name == StringRef("__kernel_ptraddr_t"))
         return true;
       if (Name == StringRef("resource_size_t"))
         return true;

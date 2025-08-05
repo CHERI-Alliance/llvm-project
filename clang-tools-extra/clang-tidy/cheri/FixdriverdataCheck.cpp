@@ -56,8 +56,8 @@ void FixdriverdataCheck::registerMatchers(MatchFinder *Finder) {
 /* Check if a field is a driver data field. */
 bool FixdriverdataCheck::isDriverData(ASTContext *Ctx, const FieldDecl *Field) {
   /* The field must have the correct name. */
-  if (Field->getName() != StringRef("driver_data") &&
-      Field->getName() != StringRef("driver_info"))
+  if (Field->getDeclName().getAsString() != StringRef("driver_data") &&
+      Field->getDeclName().getAsString() != StringRef("driver_info"))
     return false;
 
   /* If the field is of pointer type we don't touch it. */
