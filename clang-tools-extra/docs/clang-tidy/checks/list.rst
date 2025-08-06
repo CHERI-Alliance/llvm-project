@@ -167,6 +167,7 @@ Clang-Tidy Checks
    `cheri-FixDriverData <cheri/FixDriverData.html>`_, "Yes"
    `cheri-FixIntToPtrCast <cheri/FixIntToPtrCast.html>`_, "Yes"
    `cheri-FixPtrToUlongCast <cheri/FixPtrToUlongCast.html>`_, "Yes"
+   `cheri-FixUserCopy <cheri/FixUserCopy.html>`_, "Yes"
    `cheri-FixUserPtrToAddr <cheri/FixUserPtrToAddr.html>`_, "Yes"
    `cheri-Ioctl <cheri/Ioctl.html>`_, "Yes"
    `cheri-PtrToIntCast <cheri/PtrToIntCast.html>`_,

@@ -14,6 +14,7 @@
 #include "FixdriverdataCheck.h"
 #include "FixinttoptrcastCheck.h"
 #include "FixptrtoulongcastCheck.h"
+#include "FixusercopyCheck.h"
 #include "FixuserptrtoaddrCheck.h"
 #include "IoctlCheck.h"
 #include "PtrtointcastCheck.h"
@@ -35,6 +36,8 @@ public:
         "cheri-FixIntToPtrCast");
     CheckFactories.registerCheck<FixptrtoulongcastCheck>(
         "cheri-FixPtrToUlongCast");
+    CheckFactories.registerCheck<FixusercopyCheck>(
+        "cheri-FixUserCopy");
     CheckFactories.registerCheck<FixuserptrtoaddrCheck>(
         "cheri-FixUserPtrToAddr");
     CheckFactories.registerCheck<IoctlCheck>(

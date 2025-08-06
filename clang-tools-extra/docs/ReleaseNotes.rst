@@ -184,6 +184,11 @@ New checks
   Warn about explicit casts of pointers to a type that can only hold
   an address.
 
+- New :doc:`cheri-FixUserCopy
+  <clang-tidy/checks/cheri/FixUserCopy>` check.
+
+  Check linux user copy calls that copy pointers.
+
 - New :doc:`cheri-FixUserPtrToAddr
   <clang-tidy/checks/cheri/FixUserPtrToAddr>` check.
 
