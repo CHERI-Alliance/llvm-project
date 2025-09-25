@@ -1752,6 +1752,12 @@ void SelectionDAGLegalize::ExpandDYNAMIC_STACKALLOC(SDNode* Node,
     } else {
       Tmp2 = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, dl, SizeVT, CRRL, Size);
       Tmp3 = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, dl, SizeVT, CRAM, Size);
+      // Actually. If the *requested* alignment is greater than the required
+      // alignment (from CRAM), we still need to apply it. So create a secondary
+      // AND operation - that could get eliminated if unnecessary.
+      if (Alignment > StackAlign)
+        Tmp3 = DAG.getNode(ISD::AND, dl, SizeVT, Tmp3,
+                           DAG.getConstant(-Alignment.value(), dl, SizeVT));
     }
 
     Tmp1 = DAG.getNode(Opc, dl, SizeVT, Tmp1, Tmp2);

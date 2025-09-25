@@ -28,12 +28,14 @@ define void @dynamic_alloca(i32 signext %x) local_unnamed_addr #0 {
 ; CHECK-NEXT:    daddiu $2, $1, 15
 ; CHECK-NEXT:    dsll $3, $3, 35
 ; CHECK-NEXT:    daddiu $3, $3, -16
-; CHECK-NEXT:    and $4, $2, $3
-; CHECK-NEXT:    croundrepresentablelength $2, $4
+; CHECK-NEXT:    and $3, $2, $3
+; CHECK-NEXT:    croundrepresentablelength $2, $3
 ; CHECK-NEXT:    cmove $c2, $c11
-; CHECK-NEXT:    cgetaddr $3, $c2
-; CHECK-NEXT:    dsubu $3, $3, $2
-; CHECK-NEXT:    crepresentablealignmentmask $4, $4
+; CHECK-NEXT:    cgetaddr $4, $c2
+; CHECK-NEXT:    dsubu $4, $4, $2
+; CHECK-NEXT:    crepresentablealignmentmask $3, $3
+; CHECK-NEXT:    and $3, $3, $4
+; CHECK-NEXT:    daddiu $4, $zero, -64
 ; CHECK-NEXT:    and $3, $3, $4
 ; CHECK-NEXT:    csetaddr $c3, $c2, $3
 ; CHECK-NEXT:    csetbounds $c2, $c3, $2
