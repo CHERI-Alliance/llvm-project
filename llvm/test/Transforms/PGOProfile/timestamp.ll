@@ -5,8 +5,8 @@ target triple = "x86_64-unknown-linux-gnu"
 
 define void @foo() {
 entry:
-  ; CHECK: call void @llvm.instrprof.timestamp({{.*}})
+  ; CHECK: call void @llvm.instrprof.timestamp.p0({{.*}})
   ret void
 }
 
-; CHECK: declare void @llvm.instrprof.timestamp(
+; CHECK: declare void @llvm.instrprof.timestamp.p0(

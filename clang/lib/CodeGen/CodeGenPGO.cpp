@@ -960,17 +960,21 @@ void CodeGenPGO::emitCounterIncrement(CGBuilderTy &Builder, const Stmt *S,
   unsigned Counter = (*RegionCounterMap)[S];
   auto *I8PtrTy = CGM.Int8PtrTy;
 
+  unsigned IncrementIntr =
+          llvm::Intrinsic::instrprof_increment;
+   unsigned IncrementStepIntr =
+          llvm::Intrinsic::instrprof_increment_step;
+
   llvm::Value *Args[] = {llvm::ConstantExpr::getBitCast(FuncNameVar, I8PtrTy),
                          Builder.getInt64(FunctionHash),
                          Builder.getInt32(NumRegionCounters),
                          Builder.getInt32(Counter), StepV};
   if (!StepV)
-    Builder.CreateCall(CGM.getIntrinsic(llvm::Intrinsic::instrprof_increment),
+    Builder.CreateCall(CGM.getIntrinsic(IncrementIntr, {I8PtrTy}),
                        ArrayRef(Args, 4));
   else
-    Builder.CreateCall(
-        CGM.getIntrinsic(llvm::Intrinsic::instrprof_increment_step),
-        ArrayRef(Args));
+    Builder.CreateCall(CGM.getIntrinsic(IncrementStepIntr, {I8PtrTy}),
+                       ArrayRef(Args));
 }
 
 void CodeGenPGO::setValueProfilingFlag(llvm::Module &M) {
@@ -1004,8 +1008,8 @@ void CodeGenPGO::valueProfile(CGBuilderTy &Builder, uint32_t ValueKind,
         Builder.getInt32(ValueKind),
         Builder.getInt32(NumValueSites[ValueKind]++)
     };
-    Builder.CreateCall(
-        CGM.getIntrinsic(llvm::Intrinsic::instrprof_value_profile), Args);
+    unsigned ValueProfIntr = llvm::Intrinsic::instrprof_value_profile;
+    Builder.CreateCall(CGM.getIntrinsic(ValueProfIntr, {CGM.Int8PtrTy}), Args);
     Builder.restoreIP(BuilderInsertPoint);
     return;
   }

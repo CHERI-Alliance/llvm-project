@@ -875,6 +875,10 @@ static void instrumentOneFunc(
       PGOBlockCoverage);
 
   Type *I8PtrTy = Type::getInt8PtrTy(M->getContext());
+  unsigned CoverIntr = Intrinsic::instrprof_cover;
+  unsigned TimestampIntr = Intrinsic::instrprof_timestamp;
+  unsigned IncrementIntr = Intrinsic::instrprof_increment;
+  unsigned ValProfIntr = Intrinsic::instrprof_value_profile;
   auto Name = ConstantExpr::getBitCast(FuncInfo.FuncNameVar, I8PtrTy);
   auto CFGHash = ConstantInt::get(Type::getInt64Ty(M->getContext()),
                                   FuncInfo.FunctionHash);
@@ -884,7 +888,7 @@ static void instrumentOneFunc(
     // llvm.instrprof.cover(i8* <name>, i64 <hash>, i32 <num-counters>,
     //                      i32 <index>)
     Builder.CreateCall(
-        Intrinsic::getDeclaration(M, Intrinsic::instrprof_cover),
+        Intrinsic::getDeclaration(M, CoverIntr, {I8PtrTy}),
         {Name, CFGHash, Builder.getInt32(1), Builder.getInt32(0)});
     return;
   }
@@ -902,7 +906,7 @@ static void instrumentOneFunc(
     // llvm.instrprof.timestamp(i8* <name>, i64 <hash>, i32 <num-counters>,
     //                          i32 <index>)
     Builder.CreateCall(
-        Intrinsic::getDeclaration(M, Intrinsic::instrprof_timestamp),
+        Intrinsic::getDeclaration(M, TimestampIntr, {I8PtrTy}),
         {Name, CFGHash, Builder.getInt32(NumCounters), Builder.getInt32(I)});
     I += PGOBlockCoverage ? 8 : 1;
   }
@@ -915,8 +919,8 @@ static void instrumentOneFunc(
     //                          i32 <index>)
     Builder.CreateCall(
         Intrinsic::getDeclaration(M, PGOBlockCoverage
-                                         ? Intrinsic::instrprof_cover
-                                         : Intrinsic::instrprof_increment),
+                                         ? CoverIntr : IncrementIntr,
+                                  {I8PtrTy}),
         {Name, CFGHash, Builder.getInt32(NumCounters), Builder.getInt32(I++)});
   }
 
@@ -963,7 +967,7 @@ static void instrumentOneFunc(
       SmallVector<OperandBundleDef, 1> OpBundles;
       populateEHOperandBundle(Cand, BlockColors, OpBundles);
       Builder.CreateCall(
-          Intrinsic::getDeclaration(M, Intrinsic::instrprof_value_profile),
+          Intrinsic::getDeclaration(M, ValProfIntr, {I8PtrTy}),
           {ConstantExpr::getBitCast(FuncInfo.FuncNameVar, I8PtrTy),
            Builder.getInt64(FuncInfo.FunctionHash), ToProfile,
            Builder.getInt32(Kind), Builder.getInt32(SiteIndex++)},
@@ -1648,9 +1652,10 @@ void SelectInstVisitor::instrumentOneSelectInst(SelectInst &SI) {
   IRBuilder<> Builder(&SI);
   Type *Int64Ty = Builder.getInt64Ty();
   Type *I8PtrTy = Builder.getInt8PtrTy();
+  unsigned IncrementStepIntr = Intrinsic::instrprof_increment_step;
   auto *Step = Builder.CreateZExt(SI.getCondition(), Int64Ty);
   Builder.CreateCall(
-      Intrinsic::getDeclaration(M, Intrinsic::instrprof_increment_step),
+      Intrinsic::getDeclaration(M, IncrementStepIntr, {I8PtrTy}),
       {ConstantExpr::getBitCast(FuncNameVar, I8PtrTy),
        Builder.getInt64(FuncHash), Builder.getInt32(TotalNumCtrs),
        Builder.getInt32(*CurCtrIdx), Step});

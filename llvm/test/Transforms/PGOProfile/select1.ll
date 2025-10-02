@@ -13,8 +13,8 @@ entry:
 if.then:
   %add = add nsw i32 %i, 2
 ;GEN: %[[STEP:[0-9]+]] = zext i1 %cmp to i64
-;GEN: call void @llvm.instrprof.increment.step({{.*}} i32 3, i32 2, i64 %[[STEP]])
-;NOSELECT-NOT: call void @llvm.instrprof.increment.step
+;GEN: call void @llvm.instrprof.increment.step.p0({{.*}} i32 3, i32 2, i64 %[[STEP]])
+;NOSELECT-NOT: call void @llvm.instrprof.increment.step.p0
   %s = select i1 %cmp, i32 %add, i32 0
 ;USE: select i1 %cmp{{.*}}, !prof ![[BW_ENTRY:[0-9]+]]
 ;USE: ![[BW_ENTRY]] = !{!"branch_weights", i32 1, i32 3}

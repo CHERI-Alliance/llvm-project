@@ -1382,7 +1382,8 @@ TEST_F(PatternMatchTest, IntrinsicMatcher) {
   Value *Ops[] = {Name, Hash, Num, Index, Step};
   Module *M = BB->getParent()->getParent();
   Function *TheFn =
-      Intrinsic::getDeclaration(M, Intrinsic::instrprof_increment_step);
+      Intrinsic::getDeclaration(M, Intrinsic::instrprof_increment_step,
+                                {IRB.getInt8PtrTy()});
 
   Value *Intrinsic5 = CallInst::Create(TheFn, Ops, "", BB);
 

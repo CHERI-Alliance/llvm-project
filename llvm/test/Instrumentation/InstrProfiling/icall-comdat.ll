@@ -69,9 +69,9 @@ attributes #0 = { nounwind }
 
 ; ALIGN: @__profc_foo = private global {{.*}} section "__llvm_prf_cnts",{{.*}} align 8
 ; ALIGN: @__profvp_foo = private global {{.*}} section "__llvm_prf_vals",{{.*}} align 8
-; ALIGN: @__profd_foo = private global {{.*}} section "__llvm_prf_data",{{.*}} align 8
+; ALIGN: @__profd_foo = private global {{.*}} section "__llvm_prf_data",{{.*}}
 ; ALIGN: @__profc_bar = private global {{.*}} section "__llvm_prf_cnts",{{.*}} align 8
 ; ALIGN: @__profvp_bar = private global {{.*}} section "__llvm_prf_vals",{{.*}}  align 8
-; ALIGN: @__profd_bar = private global {{.*}} section "__llvm_prf_data",{{.*}} align 8
+; ALIGN: @__profd_bar = private global {{.*}} section "__llvm_prf_data",{{.*}}
 ; ALIGN: @__llvm_prf_vnodes = private global {{.*}} section "__llvm_prf_vnds", align 8
 ; ALIGN: @__llvm_prf_nm = private constant {{.*}} section "__llvm_prf_names", align 1

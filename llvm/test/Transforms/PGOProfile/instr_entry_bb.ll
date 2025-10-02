@@ -13,7 +13,7 @@ target triple = "x86_64-unknown-linux-gnu"
 define i32 @test_br_2(i32 %i) {
 entry:
 ; GEN: entry:
-; GEN: call void @llvm.instrprof.increment(ptr @__profn_test_br_2, i64 {{[0-9]+}}, i32 2, i32 0)
+; GEN: call void @llvm.instrprof.increment.p0(ptr @__profn_test_br_2, i64 {{[0-9]+}}, i32 2, i32 0)
 ; GENA: entry:
 ; GENA: %{{[0-9+]}} = atomicrmw add ptr @__profc_test_br_2, i64 1 monotonic
 ; USE: br i1 %cmp, label %if.then, label %if.else
@@ -30,7 +30,7 @@ if.then:
 
 if.else:
 ; GEN: if.else:
-; GEN: call void @llvm.instrprof.increment(ptr @__profn_test_br_2, i64 {{[0-9]+}}, i32 2, i32 1)
+; GEN: call void @llvm.instrprof.increment.p0(ptr @__profn_test_br_2, i64 {{[0-9]+}}, i32 2, i32 1)
 ; GENA: if.else:
 ; GENA:  %pgocount = load i64, ptr getelementptr inbounds ([2 x i64], ptr @__profc_test_br_2, i32 0, i32 1), align 8
 ; GENA:  [[V:%[0-9]*]] = add i64 %pgocount, 1

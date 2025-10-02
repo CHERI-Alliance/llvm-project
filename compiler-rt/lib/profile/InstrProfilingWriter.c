@@ -13,6 +13,7 @@
 /* For _alloca */
 #include <malloc.h>
 #endif
+#include <stdlib.h>
 #include <string.h>
 
 #include "InstrProfiling.h"
@@ -216,8 +217,8 @@ static int writeOneValueProfData(ProfBufferIO *BufferIO,
 
 static int writeValueProfData(ProfDataWriter *Writer,
                               VPDataReaderType *VPDataReader,
-                              const __llvm_profile_data *DataBegin,
-                              const __llvm_profile_data *DataEnd) {
+                              const __llvm_profile_data *OrigDataBegin,
+                              const __llvm_profile_data *OrigDataEnd) {
   ProfBufferIO *BufferIO;
   const __llvm_profile_data *DI = 0;
 
@@ -226,7 +227,7 @@ static int writeValueProfData(ProfDataWriter *Writer,
 
   BufferIO = lprofCreateBufferIO(Writer);
 
-  for (DI = DataBegin; DI < DataEnd; DI++) {
+  for (DI = OrigDataBegin; DI < OrigDataEnd; DI++) {
     if (writeOneValueProfData(BufferIO, VPDataReader, DI))
       return -1;
   }
@@ -238,24 +239,115 @@ static int writeValueProfData(ProfDataWriter *Writer,
   return 0;
 }
 
+/* Expanding the buffer only makes sense (and is only possible) if we're using a
+ * CHERI compiler which has __CHERI_CAP_PERMISSION_EXECUTE__ defined. */
+#ifdef __CHERI_CAP_PERMISSION_EXECUTE__
+static uintptr_t *__llvm_cheri_expand_buf(uintptr_t *buf_begin, uint64_t size)
+{
+    uintptr_t *returned_cap;
+    /* On Linux we derived our cap from a global which has existing
+     * permissions/bounds. We still may need to tighten them. */
+#if defined(__linux__)
+    returned_cap = buf_begin;
+#else
+    __asm__ volatile ( "csrr %0, ddc"   :  "=C"(returned_cap) );
+    returned_cap = __builtin_cheri_offset_set( returned_cap, (uint64_t)buf_begin );
+#endif
+    returned_cap = __builtin_cheri_perms_and( returned_cap, ~__CHERI_CAP_PERMISSION_EXECUTE__ );
+    returned_cap = __builtin_cheri_bounds_set( returned_cap, size);
+    return returned_cap;
+
+}
+#endif
+
 COMPILER_RT_VISIBILITY int lprofWriteData(ProfDataWriter *Writer,
                                           VPDataReaderType *VPDataReader,
                                           int SkipNameDataWrite) {
   /* Match logic in __llvm_profile_write_buffer(). */
-  const __llvm_profile_data *DataBegin = __llvm_profile_begin_data();
-  const __llvm_profile_data *DataEnd = __llvm_profile_end_data();
+  const __llvm_profile_data *OrigDataBegin = __llvm_profile_begin_data();
+  const __llvm_profile_data *OrigDataEnd = __llvm_profile_end_data();
+
+  /* There are two llvm profile data format sizes, for CHERI. The first where
+   * each pointer is a full capability, used internally, and the second where
+   * each pointer is simply a ptraddr_t, used for the raw binary output. */
+
+  uint64_t NumData = __llvm_profile_get_num_data(OrigDataBegin, OrigDataEnd);
+#ifdef __CHERI_CAP_PERMISSION_EXECUTE__
+  uint64_t OrigDataSize = NumData * sizeof(__llvm_profile_data);
+  OrigDataBegin =
+      (__llvm_profile_data *)__llvm_cheri_expand_buf(OrigDataBegin, OrigDataSize);
+#endif
+
+  /* Convert all profile data entries to the raw format. First copy them all out
+   * to a new location so we can retain the original data entries (with all
+   * their capabilities intact for CHERI. We need to keep this around because
+   * later code still reads from some of the pointers even after we've written
+   * the raw profile data. */
+
+  __llvm_raw_profile_data *DataBegin = (__llvm_raw_profile_data *)OrigDataBegin;
+  OrigDataBegin = malloc(sizeof(__llvm_profile_data) * NumData);
+  memcpy(OrigDataBegin, DataBegin, sizeof(__llvm_profile_data) * NumData);
+  OrigDataEnd = &OrigDataBegin[NumData];
+
+  /* Track the accumulated offset between the original location of each data
+   * entry, and it's new location. */
+  uint64_t AccOffset = 0;
+
+  for (uint64_t i = 0; i < NumData; ++i) {
+    __llvm_profile_data OrigData = OrigDataBegin[i];
+    __llvm_raw_profile_data Tmp = {
+      OrigData.NameRef,
+      OrigData.FuncHash,
+      /* See the format specification for LLVM's profiling; we increase the
+       * CounterPtr if we decrease the size of each profile data entries,
+       * because it is actually an offset. */
+      __builtin_cheri_address_get(OrigData.CounterPtr) + AccOffset,
+      __builtin_cheri_address_get(OrigData.FunctionPointer),
+      __builtin_cheri_address_get(OrigData.Values),
+      OrigData.NumCounters,
+      { 0 },
+    };
+    AccOffset += sizeof(__llvm_profile_data) - sizeof(__llvm_raw_profile_data);
+    memcpy(Tmp.NumValueSites, OrigData.NumValueSites,
+           sizeof(OrigData.NumValueSites));
+
+    memcpy(&DataBegin[i], &Tmp, sizeof(__llvm_raw_profile_data));
+  }
+
+  /* Resize the buffer, and set DataEnd appropriately, now that we're done. */
+
+#ifdef __CHERI_CAP_PERMISSION_EXECUTE__
+  uint64_t DataSize = NumData * sizeof(__llvm_raw_profile_data);
+  DataBegin = (__llvm_raw_profile_data *)__llvm_cheri_expand_buf(DataBegin, DataSize);
+#endif
+  const __llvm_raw_profile_data *DataEnd = &DataBegin[NumData];
+
   const char *CountersBegin = __llvm_profile_begin_counters();
   const char *CountersEnd = __llvm_profile_end_counters();
+
+#ifdef __CHERI_CAP_PERMISSION_EXECUTE__
+  uint64_t CountersSize =
+      __llvm_profile_get_counters_size(CountersBegin, CountersEnd);
+  CountersBegin = (char *)__llvm_cheri_expand_buf(CountersBegin, CountersSize);
+#endif
+
+
   const char *NamesBegin = __llvm_profile_begin_names();
   const char *NamesEnd = __llvm_profile_end_names();
-  return lprofWriteDataImpl(Writer, DataBegin, DataEnd, CountersBegin,
-                            CountersEnd, VPDataReader, NamesBegin, NamesEnd,
+
+
+  return lprofWriteDataImpl(Writer, DataBegin, DataEnd, OrigDataBegin,
+                            OrigDataEnd, CountersBegin, CountersEnd,
+                            VPDataReader, NamesBegin, NamesEnd,
                             SkipNameDataWrite);
 }
 
 COMPILER_RT_VISIBILITY int
-lprofWriteDataImpl(ProfDataWriter *Writer, const __llvm_profile_data *DataBegin,
-                   const __llvm_profile_data *DataEnd,
+lprofWriteDataImpl(ProfDataWriter *Writer,
+                   const __llvm_raw_profile_data *DataBegin,
+                   const __llvm_raw_profile_data *DataEnd,
+                   const __llvm_profile_data *OrigDataBegin,
+                   const __llvm_profile_data *OrigDataEnd,
                    const char *CountersBegin, const char *CountersEnd,
                    VPDataReaderType *VPDataReader, const char *NamesBegin,
                    const char *NamesEnd, int SkipNameDataWrite) {
@@ -264,9 +356,9 @@ lprofWriteDataImpl(ProfDataWriter *Writer, const __llvm_profile_data *DataBegin,
 
   /* Calculate size of sections. */
   const uint64_t DataSectionSize =
-      DebugInfoCorrelate ? 0 : __llvm_profile_get_data_size(DataBegin, DataEnd);
+      DebugInfoCorrelate ? 0 : __llvm_profile_get_raw_data_size(DataBegin, DataEnd);
   const uint64_t NumData =
-      DebugInfoCorrelate ? 0 : __llvm_profile_get_num_data(DataBegin, DataEnd);
+      DebugInfoCorrelate ? 0 : __llvm_profile_get_num_raw_data(DataBegin, DataEnd);
   const uint64_t CountersSectionSize =
       __llvm_profile_get_counters_size(CountersBegin, CountersEnd);
   const uint64_t NumCounters =
@@ -334,7 +426,7 @@ lprofWriteDataImpl(ProfDataWriter *Writer, const __llvm_profile_data *DataBegin,
   if (__llvm_profile_is_continuous_mode_enabled())
     return 0;
 
-  return writeValueProfData(Writer, VPDataReader, DataBegin, DataEnd);
+  return writeValueProfData(Writer, VPDataReader, OrigDataBegin, OrigDataEnd);
 }
 
 /*

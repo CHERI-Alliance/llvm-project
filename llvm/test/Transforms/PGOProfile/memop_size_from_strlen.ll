@@ -5,7 +5,7 @@ declare i32 @strlen(ptr nocapture)
 
 ; CHECK-LABEL: test
 ; CHECK: %1 = zext i32 %c to i64
-; CHECK:  call void @llvm.instrprof.value.profile(ptr @__profn_test, i64 {{[0-9]+}}, i64 %1, i32 1, i32 0)
+; CHECK:  call void @llvm.instrprof.value.profile.p0(ptr @__profn_test, i64 {{[0-9]+}}, i64 %1, i32 1, i32 0)
 
 define void @test(ptr %a, ptr %p) {
   %c = call i32 @strlen(ptr %p)

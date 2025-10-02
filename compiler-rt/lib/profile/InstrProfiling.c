@@ -28,9 +28,10 @@ void INSTR_PROF_PROFILE_SET_TIMESTAMP(uint64_t *Probe) {
     *Probe = __llvm_profile_global_timestamp++;
 }
 
+// TODO: sizeof(void *) == sizeof(uint64_t) is not applicaple for CHERI
+
 COMPILER_RT_VISIBILITY uint64_t __llvm_profile_get_magic(void) {
-  return sizeof(void *) == sizeof(uint64_t) ? (INSTR_PROF_RAW_MAGIC_64)
-                                            : (INSTR_PROF_RAW_MAGIC_32);
+  return INSTR_PROF_RAW_MAGIC_64;
 }
 
 COMPILER_RT_VISIBILITY void __llvm_profile_set_dumped(void) {

@@ -6,18 +6,18 @@ target triple = "x86_64-unknown-linux-gnu"
 define void @foo() {
 ; CHECK-LABEL: entry:
 entry:
-  ; ENTRY: call void @llvm.instrprof.cover({{.*}})
+  ; ENTRY: call void @llvm.instrprof.cover.p0({{.*}})
   %c = call i1 @choice()
   br i1 %c, label %if.then, label %if.else
 
 ; CHECK-LABEL: if.then:
 if.then:
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end
 
 ; CHECK-LABEL: if.else:
 if.else:
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end
 
 ; CHECK-LABEL: if.end:
@@ -28,35 +28,35 @@ if.end:
 define void @bar() {
 ; CHECK-LABEL: entry:
 entry:
-  ; ENTRY: call void @llvm.instrprof.cover({{.*}})
+  ; ENTRY: call void @llvm.instrprof.cover.p0({{.*}})
   %c = call i1 @choice()
   br i1 %c, label %if.then, label %if.end
 
 ; CHECK-LABEL: if.then:
 if.then:
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end
 
 ; CHECK-LABEL: if.end:
 if.end:
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   ret void
 }
 
 define void @goo() {
 ; CHECK-LABEL: entry:
 entry:
-  ; CHECK: call void @llvm.instrprof.cover({{.*}})
+  ; CHECK: call void @llvm.instrprof.cover.p0({{.*}})
   ret void
 }
 
 define void @loop() {
 ; CHECK-LABEL: entry:
 entry:
-  ; CHECK: call void @llvm.instrprof.cover({{.*}})
+  ; CHECK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %while
 while:
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %while
 }
 
@@ -64,7 +64,7 @@ while:
 define void @hoo(i32 %a) #0 {
 ; CHECK-LABEL: entry:
 entry:
-  ; ENTRY: call void @llvm.instrprof.cover({{.*}})
+  ; ENTRY: call void @llvm.instrprof.cover.p0({{.*}})
   %a.addr = alloca i32, align 4
   %i = alloca i32, align 4
   store i32 %a, i32* %a.addr, align 4
@@ -75,12 +75,12 @@ entry:
 
 ; CHECK-LABEL: if.then:
 if.then:                                          ; preds = %entry
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end
 
 ; CHECK-LABEL: if.else:
 if.else:                                          ; preds = %entry
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end
 
 ; CHECK-LABEL: if.end:
@@ -104,7 +104,7 @@ for.body:                                         ; preds = %for.cond
 
 ; CHECK-LABEL: if.then4:
 if.then4:                                         ; preds = %for.body
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end10
 
 ; CHECK-LABEL: if.else5:
@@ -116,12 +116,12 @@ if.else5:                                         ; preds = %for.body
 
 ; CHECK-LABEL: if.then8:
 if.then8:                                         ; preds = %if.else5
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %return
 
 ; CHECK-LABEL: if.end9:
 if.end9:                                          ; preds = %if.else5
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %if.end10
 
 ; CHECK-LABEL: if.end10:
@@ -137,7 +137,7 @@ for.inc:                                          ; preds = %if.end10
 
 ; CHECK-LABEL: for.end:
 for.end:                                          ; preds = %for.cond
-  ; BLOCK: call void @llvm.instrprof.cover({{.*}})
+  ; BLOCK: call void @llvm.instrprof.cover.p0({{.*}})
   br label %return
 
 ; CHECK-LABEL: return:
@@ -147,4 +147,4 @@ return:                                           ; preds = %for.end, %if.then8
 
 declare i1 @choice()
 
-; CHECK: declare void @llvm.instrprof.cover({{.*}})
+; CHECK: declare void @llvm.instrprof.cover.p0({{.*}})

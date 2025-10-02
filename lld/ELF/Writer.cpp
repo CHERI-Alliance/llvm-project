@@ -302,6 +302,7 @@ template <class ELFT> void elf::createSyntheticSections() {
 
   Out::programHeaders = make<OutputSection>("", 0, SHF_ALLOC);
   Out::programHeaders->addralign = config->wordsize;
+  addOptionalRegular("__phdr_start", Out::programHeaders, 0, STV_HIDDEN);
 
   if (config->strip != StripPolicy::All) {
     in.strTab = std::make_unique<StringTableSection>(".strtab", false);
@@ -2174,6 +2175,10 @@ template <class ELFT> void Writer<ELFT>::finalizeSections() {
         addPhdrForSection(part, SHT_RISCV_ATTRIBUTES, PT_RISCV_ATTRIBUTES,
                           PF_R);
     }
+    // See similar logic for Out::elfHeader; a value of 0 means undef, so we set
+    // it to 1 to make __phdr_start defined. The section number is not
+    // particularly relevant.
+    Out::programHeaders->sectionIndex = 1;
     Out::programHeaders->size = sizeof(Elf_Phdr) * mainPart->phdrs.size();
 
     // Find the TLS segment. This happens before the section layout loop so that

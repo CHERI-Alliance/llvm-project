@@ -25,22 +25,22 @@ DerivedABC *useABCVTable() { return new DerivedABC(); }
 // MSVC-NOT: @"__profn_??_G{{.*}}" =
 
 // MSVC-LABEL: define linkonce_odr dso_local noundef ptr @"??_GDerivedABC@@UEAAPEAXI@Z"(ptr {{[^,]*}} %this, {{.*}})
-// MSVC-NOT:   call void @llvm.instrprof.increment({{.*}})
+// MSVC-NOT:   call void @llvm.instrprof.increment.p0({{.*}})
 // MSVC:   call void @"??1DerivedABC@@UEAA@XZ"({{.*}})
 // MSVC:   ret void
 
 // MSVC-LABEL: define linkonce_odr dso_local noundef ptr @"??_GABC@@UEAAPEAXI@Z"(ptr {{[^,]*}} %this, {{.*}})
-// MSVC-NOT:   call void @llvm.instrprof.increment({{.*}})
+// MSVC-NOT:   call void @llvm.instrprof.increment.p0({{.*}})
 // MSVC:   call void @llvm.trap()
 // MSVC-NEXT:   unreachable
 
 // MSVC-LABEL: define linkonce_odr dso_local void @"??1DerivedABC@@UEAA@XZ"({{.*}})
-// MSVC:   call void @llvm.instrprof.increment({{.*}})
+// MSVC:   call void @llvm.instrprof.increment.p0({{.*}})
 // MSVC:   call void @"??1ABC@@UEAA@XZ"({{.*}})
 // MSVC:   ret void
 
 // MSVC-LABEL: define linkonce_odr dso_local void @"??1ABC@@UEAA@XZ"({{.*}})
-// MSVC:   call void @llvm.instrprof.increment({{.*}})
+// MSVC:   call void @llvm.instrprof.increment.p0({{.*}})
 // MSVC:   ret void
 
 
@@ -53,31 +53,31 @@ DerivedABC *useABCVTable() { return new DerivedABC(); }
 // LINUX-NOT: @__profn_{{.*D[01]Ev}} =
 
 // LINUX-LABEL: define linkonce_odr void @_ZN10DerivedABCD1Ev(ptr {{[^,]*}} %this)
-// LINUX-NOT:   call void @llvm.instrprof.increment({{.*}})
+// LINUX-NOT:   call void @llvm.instrprof.increment.p0({{.*}})
 // LINUX:   call void @_ZN10DerivedABCD2Ev({{.*}})
 // LINUX:   ret void
 
 // LINUX-LABEL: define linkonce_odr void @_ZN10DerivedABCD0Ev(ptr {{[^,]*}} %this)
-// LINUX-NOT:   call void @llvm.instrprof.increment({{.*}})
+// LINUX-NOT:   call void @llvm.instrprof.increment.p0({{.*}})
 // LINUX:   call void @_ZN10DerivedABCD1Ev({{.*}})
 // LINUX:   call void @_ZdlPv({{.*}})
 // LINUX:   ret void
 
 // LINUX-LABEL: define linkonce_odr void @_ZN3ABCD1Ev(ptr {{[^,]*}} %this)
-// LINUX-NOT:   call void @llvm.instrprof.increment({{.*}})
+// LINUX-NOT:   call void @llvm.instrprof.increment.p0({{.*}})
 // LINUX:   call void @llvm.trap()
 // LINUX-NEXT:   unreachable
 
 // LINUX-LABEL: define linkonce_odr void @_ZN3ABCD0Ev(ptr {{[^,]*}} %this)
-// LINUX-NOT:   call void @llvm.instrprof.increment({{.*}})
+// LINUX-NOT:   call void @llvm.instrprof.increment.p0({{.*}})
 // LINUX:   call void @llvm.trap()
 // LINUX-NEXT:   unreachable
 
 // LINUX-LABEL: define linkonce_odr void @_ZN10DerivedABCD2Ev(ptr {{[^,]*}} %this)
-// LINUX:   call void @llvm.instrprof.increment({{.*}})
+// LINUX:   call void @llvm.instrprof.increment.p0({{.*}})
 // LINUX:   call void @_ZN3ABCD2Ev({{.*}})
 // LINUX:   ret void
 
 // LINUX-LABEL: define linkonce_odr void @_ZN3ABCD2Ev(ptr {{[^,]*}} %this)
-// LINUX:   call void @llvm.instrprof.increment({{.*}})
+// LINUX:   call void @llvm.instrprof.increment.p0({{.*}})
 // LINUX:   ret void

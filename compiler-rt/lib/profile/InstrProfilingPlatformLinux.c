@@ -156,9 +156,9 @@ static int WriteBinaryIds(ProfDataWriter *Writer, const ElfW(Nhdr) * Note,
  */
 COMPILER_RT_VISIBILITY int __llvm_write_binary_ids(ProfDataWriter *Writer) {
   extern const ElfW(Ehdr) __ehdr_start __attribute__((visibility("hidden")));
+  extern const ElfW(Ehdr) __phdr_start __attribute__((visibility("hidden")));
   const ElfW(Ehdr) *ElfHeader = &__ehdr_start;
-  const ElfW(Phdr) *ProgramHeader =
-      (const ElfW(Phdr) *)((uintptr_t)ElfHeader + ElfHeader->e_phoff);
+  const ElfW(Phdr) *ProgramHeader = &__phdr_start;
 
   int TotalBinaryIdsSize = 0;
   uint32_t I;

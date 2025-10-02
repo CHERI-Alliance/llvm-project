@@ -54,7 +54,7 @@ try.cont:                                         ; preds = %catch, %entry
 }
 
 ; GEN: catch:
-; GEN: call void @llvm.instrprof.value.profile(
+; GEN: call void @llvm.instrprof.value.profile.p0(
 ; GEN-SAME: [ "funclet"(token %tmp1) ]
 
 ; LOWER: catch:

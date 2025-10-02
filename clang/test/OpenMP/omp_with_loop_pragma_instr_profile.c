@@ -13,10 +13,10 @@ void sub(double *restrict a, double *restrict b, int n) {
 
 // CHECK-LABEL: @sub.omp_outlined(
 // CHECK-NEXT:  entry:
-// CHECK:         call void @llvm.instrprof.increment(
+// CHECK:         call void @llvm.instrprof.increment.p0(
 // CHECK:       omp.precond.then:
-// CHECK-NEXT:    call void @llvm.instrprof.increment(
+// CHECK-NEXT:    call void @llvm.instrprof.increment.p0(
 // CHECK:       cond.true:
-// CHECK-NEXT:    call void @llvm.instrprof.increment(
+// CHECK-NEXT:    call void @llvm.instrprof.increment.p0(
 // CHECK:       omp.inner.for.body:
-// CHECK-NEXT:    call void @llvm.instrprof.increment(
+// CHECK-NEXT:    call void @llvm.instrprof.increment.p0(

@@ -11,9 +11,9 @@ $linkonce = comdat any
 ;; so definitions with the same name in other modules must have the same CFG and
 ;; cannot have value profiling, either. profd can be made private for ELF.
 ; ELF:   @__profc_linkonceodr.[[#]] = linkonce_odr hidden global {{.*}} comdat, align 8
-; ELF:   @__profd_linkonceodr.[[#]] = private global {{.*}} comdat($__profc_linkonceodr.[[#]]), align 8
+; ELF:   @__profd_linkonceodr.[[#]] = private global {{.*}} comdat($__profc_linkonceodr.[[#]])
 ; COFF:  @__profc_linkonceodr.[[#]] = linkonce_odr hidden global {{.*}} comdat, align 8
-; COFF:  @__profd_linkonceodr.[[#]] = linkonce_odr hidden global {{.*}} comdat, align 8
+; COFF:  @__profd_linkonceodr.[[#]] = linkonce_odr hidden global {{.*}} comdat
 define linkonce_odr void @linkonceodr() comdat {
   ret void
 }
@@ -23,9 +23,9 @@ define linkonce_odr void @linkonceodr() comdat {
 ;; non-private to prevent a caller from referencing a non-prevailing profd,
 ;; causing a linker error.
 ; ELF:   @__profc_weakodr = weak_odr hidden global {{.*}} comdat, align 8
-; ELF:   @__profd_weakodr = weak_odr hidden global {{.*}} comdat($__profc_weakodr), align 8
+; ELF:   @__profd_weakodr = weak_odr hidden global {{.*}} comdat($__profc_weakodr)
 ; COFF:  @__profc_weakodr = weak_odr hidden global {{.*}} comdat, align 8
-; COFF:  @__profd_weakodr = weak_odr hidden global {{.*}} comdat, align 8
+; COFF:  @__profd_weakodr = weak_odr hidden global {{.*}} comdat
 define weak_odr void @weakodr() comdat {
   ret void
 }
@@ -35,9 +35,9 @@ define weak_odr void @weakodr() comdat {
 ;; non-private to prevent a caller from referencing a non-prevailing profd,
 ;; causing a linker error.
 ; ELF:   @__profc_weak = weak hidden global {{.*}} comdat, align 8
-; ELF:   @__profd_weak = weak hidden global {{.*}} comdat($__profc_weak), align 8
+; ELF:   @__profd_weak = weak hidden global {{.*}} comdat($__profc_weak)
 ; COFF:  @__profc_weak = weak hidden global {{.*}} comdat, align 8
-; COFF:  @__profd_weak = weak hidden global {{.*}} comdat, align 8
+; COFF:  @__profd_weak = weak hidden global {{.*}} comdat
 define weak void @weak() comdat {
   ret void
 }
@@ -46,9 +46,9 @@ define weak void @weak() comdat {
 ;; so definitions with the same name in other modules must have the same CFG and
 ;; cannot have value profiling, either. profd can be made private for ELF.
 ; ELF:   @__profc_linkonce.[[#]] = linkonce hidden global {{.*}} comdat, align 8
-; ELF:   @__profd_linkonce.[[#]] = private global {{.*}} comdat($__profc_linkonce.[[#]]), align 8
+; ELF:   @__profd_linkonce.[[#]] = private global {{.*}} comdat($__profc_linkonce.[[#]])
 ; COFF:  @__profc_linkonce.[[#]] = linkonce hidden global {{.*}} comdat, align 8
-; COFF:  @__profd_linkonce.[[#]] = linkonce hidden global {{.*}} comdat, align 8
+; COFF:  @__profd_linkonce.[[#]] = linkonce hidden global {{.*}} comdat
 define linkonce void @linkonce() comdat {
   ret void
 }

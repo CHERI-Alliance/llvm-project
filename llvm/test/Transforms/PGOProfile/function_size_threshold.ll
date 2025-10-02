@@ -6,14 +6,14 @@ target triple = "x86_64-unknown-linux-gnu"
 
 ; CHECK-LABEL: define i32 @small(
 define i32 @small(i32 %i) {
-  ; ALL: call void @llvm.instrprof.increment({{.*}})
+  ; ALL: call void @llvm.instrprof.increment.p0({{.*}})
   %add = add i32 %i, 4
   ret i32 %add
 }
 
 ; CHECK-LABEL: define i32 @large(
 define i32 @large(i32 %0) {
-  ; CHECK: call void @llvm.instrprof.increment({{.*}})
+  ; CHECK: call void @llvm.instrprof.increment.p0({{.*}})
   %2 = shl nsw i32 %0, 3
   %3 = or i32 %2, 4
   %4 = mul i32 %3, %0
@@ -26,4 +26,4 @@ define i32 @large(i32 %0) {
   ret i32 %10
 }
 
-; CHECK: declare void @llvm.instrprof.increment({{.*}})
+; CHECK: declare void @llvm.instrprof.increment.p0({{.*}})

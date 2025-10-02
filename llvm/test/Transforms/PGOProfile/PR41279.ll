@@ -25,7 +25,7 @@ define void @foo(ptr, ptr) personality ptr @__CxxFrameHandler3 {
 6:
   cleanupret from %17 unwind to caller
 ; GEN: 6:
-; GEN:  call void @llvm.instrprof.increment(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 2)
+; GEN:  call void @llvm.instrprof.increment.p0(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 2)
 
 7:
   store i8 1, ptr %3, align 1
@@ -48,13 +48,13 @@ define void @foo(ptr, ptr) personality ptr @__CxxFrameHandler3 {
   store i8 0, ptr %3, align 1
   br label %14
 ; GEN: 12:
-; GEN:  call void @llvm.instrprof.increment(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 1)
+; GEN:  call void @llvm.instrprof.increment.p0(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 1)
 
 13:
   call void @f3(ptr %0, ptr %1, i64 1)
   br label %14
 ; GEN: 13:
-; GEN:  call void @llvm.instrprof.increment(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 0)
+; GEN:  call void @llvm.instrprof.increment.p0(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 0)
 
 14:
   ret void
@@ -63,7 +63,7 @@ define void @foo(ptr, ptr) personality ptr @__CxxFrameHandler3 {
   store i8 0, ptr %3, align 1
   br label %6
 ; GEN: 15:
-; GEN:  call void @llvm.instrprof.increment(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 3)
+; GEN:  call void @llvm.instrprof.increment.p0(ptr @__profn_foo, i64 {{[0-9]+}}, i32 4, i32 3)
 
 16:
   %17 = cleanuppad within none []

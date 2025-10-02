@@ -8,7 +8,7 @@ define i32 @f1() {
 entry:
 ; CHECK: call void @llvm.instrprof.increment
 ; CHECK-NOT: ptrtoint ptr asm sideeffect
-; CHECK-NOT: call void @llvm.instrprof.value.profile
+; CHECK-NOT: call void @llvm.instrprof.value.profile.p0
 ; CHECK: tail call void asm sideeffect 
   tail call void asm sideeffect "", "imr,~{memory},~{dirflag},~{fpsr},~{flags}"(ptr undef) #0
   ret i32 0
@@ -17,7 +17,7 @@ entry:
 define i32 @f2() {
 entry:
 ; CHECK: call void @llvm.instrprof.increment
-; CHECK-NOT: call void @llvm.instrprof.value.profile
+; CHECK-NOT: call void @llvm.instrprof.value.profile.p0
   call void (i32, ...) @foo(i32 21)
   ret i32 0
 }

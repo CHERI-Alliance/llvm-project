@@ -150,8 +150,10 @@ typedef struct VPDataReaderType {
 int lprofWriteData(ProfDataWriter *Writer, VPDataReaderType *VPDataReader,
                    int SkipNameDataWrite);
 int lprofWriteDataImpl(ProfDataWriter *Writer,
-                       const __llvm_profile_data *DataBegin,
-                       const __llvm_profile_data *DataEnd,
+                       const __llvm_raw_profile_data *DataBegin,
+                       const __llvm_raw_profile_data *DataEnd,
+                       const __llvm_profile_data *OrigDataBegin,
+                       const __llvm_profile_data *OrigDataEnd,
                        const char *CountersBegin, const char *CountersEnd,
                        VPDataReaderType *VPDataReader, const char *NamesBegin,
                        const char *NamesEnd, int SkipNameDataWrite);

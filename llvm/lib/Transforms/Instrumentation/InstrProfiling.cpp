@@ -506,7 +506,8 @@ static bool needsRuntimeHookUnconditionally(const Triple &TT) {
 /// Check if the module contains uses of any profiling intrinsics.
 static bool containsProfilingIntrinsics(Module &M) {
   auto containsIntrinsic = [&](int ID) {
-    if (auto *F = M.getFunction(Intrinsic::getName(ID)))
+    Type *PtrTy = Type::getInt8PtrTy(M.getContext());
+    if (auto *F = M.getFunction(Intrinsic::getNameNoUnnamedTypes(ID, {PtrTy})))
       return !F->use_empty();
     return false;
   };
@@ -643,6 +644,7 @@ void InstrProfiling::lowerValueProfileInst(InstrProfValueProfileInst *Ind) {
                       llvm::InstrProfValueKind::IPVK_MemOPSize);
   CallInst *Call = nullptr;
   auto *TLI = &GetTLI(*Ind->getFunction());
+  auto GlobalsAddrSpace = M->getDataLayout().getGlobalsAddressSpace();
 
   // To support value profiling calls within Windows exception handlers, funclet
   // information contained within operand bundles needs to be copied over to
@@ -652,13 +654,15 @@ void InstrProfiling::lowerValueProfileInst(InstrProfValueProfileInst *Ind) {
   Ind->getOperandBundlesAsDefs(OpBundles);
   if (!IsMemOpSize) {
     Value *Args[3] = {Ind->getTargetValue(),
-                      Builder.CreateBitCast(DataVar, Builder.getInt8PtrTy()),
+                      Builder.CreateBitCast(DataVar,
+                          Builder.getInt8PtrTy(GlobalsAddrSpace)),
                       Builder.getInt32(Index)};
     Call = Builder.CreateCall(getOrInsertValueProfilingCall(*M, *TLI), Args,
                               OpBundles);
   } else {
     Value *Args[3] = {Ind->getTargetValue(),
-                      Builder.CreateBitCast(DataVar, Builder.getInt8PtrTy()),
+                      Builder.CreateBitCast(DataVar,
+                          Builder.getInt8PtrTy(GlobalsAddrSpace)),
                       Builder.getInt32(Index)};
     Call = Builder.CreateCall(
         getOrInsertValueProfilingCall(*M, *TLI, ValueProfilingCallType::MemOp),
@@ -878,7 +882,8 @@ static inline bool shouldUsePublicSymbol(Function *Fn) {
 }
 
 static inline Constant *getFuncAddrForProfData(Function *Fn) {
-  auto *Int8PtrTy = Type::getInt8PtrTy(Fn->getContext());
+  auto *Int8PtrTy = Type::getInt8PtrTy(Fn->getContext(),
+      Fn->getParent()->getDataLayout().getGlobalsAddressSpace());
   // Store a nullptr in __llvm_profd, if we shouldn't use a real address
   if (!shouldRecordFunctionAddr(Fn))
     return ConstantPointerNull::get(Int8PtrTy);
@@ -1065,7 +1070,8 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfInstBase *Inc) {
     }
   }
 
-  auto *Int8PtrTy = Type::getInt8PtrTy(Ctx);
+  auto *Int8PtrTy = Type::getInt8PtrTy(Ctx,
+      M->getDataLayout().getGlobalsAddressSpace());
   // Allocate statically the array of pointers to value profile nodes for
   // the current function.
   Constant *ValuesPtrExpr = ConstantPointerNull::get(Int8PtrTy);
@@ -1083,8 +1089,8 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfInstBase *Inc) {
         getInstrProfSectionName(IPSK_vals, TT.getObjectFormat()));
     ValuesVar->setAlignment(Align(8));
     MaybeSetComdat(ValuesVar);
-    ValuesPtrExpr =
-        ConstantExpr::getBitCast(ValuesVar, Type::getInt8PtrTy(Ctx));
+    ValuesPtrExpr = ConstantExpr::getBitCast(ValuesVar,
+        Type::getInt8PtrTy(Ctx, M->getDataLayout().getGlobalsAddressSpace()));
   }
 
   if (DebugInfoCorrelate) {
@@ -1094,7 +1100,8 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfInstBase *Inc) {
   }
 
   // Create data variable.
-  auto *IntPtrTy = M->getDataLayout().getIntPtrType(M->getContext());
+  auto *IntPtrTy = M->getDataLayout().getIntPtrType(M->getContext(),
+      M->getDataLayout().getGlobalsAddressSpace());
   auto *Int16Ty = Type::getInt16Ty(Ctx);
   auto *Int16ArrayTy = ArrayType::get(Int16Ty, IPVK_Last + 1);
   Type *DataTypes[] = {
@@ -1248,7 +1255,8 @@ void InstrProfiling::emitRegistration() {
 
   // Construct the function.
   auto *VoidTy = Type::getVoidTy(M->getContext());
-  auto *VoidPtrTy = Type::getInt8PtrTy(M->getContext());
+  auto *VoidPtrTy = Type::getInt8PtrTy(M->getContext(),
+      M->getDataLayout().getProgramAddressSpace());
   auto *Int64Ty = Type::getInt64Ty(M->getContext());
   auto *RegisterFTy = FunctionType::get(VoidTy, false);
   auto *RegisterF = Function::Create(RegisterFTy, GlobalValue::InternalLinkage,

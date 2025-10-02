@@ -28,7 +28,7 @@ __except1:
   store i32 %2, ptr %__exception_code, align 4
   br label %__try.cont7
 ;GEN:  _except1:
-;GEN:    call void @llvm.instrprof.increment(ptr @__profn_f, i64 {{[0-9]+}}, i32 2, i32 1)
+;GEN:    call void @llvm.instrprof.increment.p0(ptr @__profn_f, i64 {{[0-9]+}}, i32 2, i32 1)
 
 invoke.cont:
   br label %__try.cont
@@ -57,7 +57,7 @@ __try.cont7:
 invoke.cont3:
   br label %__try.cont7
 ;GEN: invoke.cont3:
-;GEN:  call void @llvm.instrprof.increment(ptr @__profn_f, i64 {{[0-9]+}}, i32 2, i32 0)
+;GEN:  call void @llvm.instrprof.increment.p0(ptr @__profn_f, i64 {{[0-9]+}}, i32 2, i32 0)
 
 }
 

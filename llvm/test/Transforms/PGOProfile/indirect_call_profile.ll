@@ -34,10 +34,10 @@ define void @foo() {
 entry:
 ; GEN: @foo()
 ; GEN: entry:
-; GEN-NEXT: call void @llvm.instrprof.increment(ptr @__profn_foo, i64 [[#FOO_HASH:]], i32 1, i32 0)
+; GEN-NEXT: call void @llvm.instrprof.increment.p0(ptr @__profn_foo, i64 [[#FOO_HASH:]], i32 1, i32 0)
   %tmp = load ptr, ptr @bar, align 8
 ; GEN: [[ICALL_TARGET:%[0-9]+]] = ptrtoint ptr %tmp to i64
-; GEN-NEXT: call void @llvm.instrprof.value.profile(ptr @__profn_foo, i64 [[#FOO_HASH]], i64 [[ICALL_TARGET]], i32 0, i32 0)
+; GEN-NEXT: call void @llvm.instrprof.value.profile.p0(ptr @__profn_foo, i64 [[#FOO_HASH]], i64 [[ICALL_TARGET]], i32 0, i32 0)
 ; LOWER: call void @__llvm_profile_instrument_target(i64 %1, ptr @__profd_foo, i32 0)
   call void %tmp()
   ret void
@@ -47,10 +47,10 @@ define linkonce_odr void @vp_inline() comdat {
 entry:
 ; GEN: @vp_inline()
 ; GEN: entry:
-; GEN-NEXT: call void @llvm.instrprof.increment(ptr @__profn_vp_inline, i64 [[#FOO_HASH:]], i32 1, i32 0)
+; GEN-NEXT: call void @llvm.instrprof.increment.p0(ptr @__profn_vp_inline, i64 [[#FOO_HASH:]], i32 1, i32 0)
   %tmp = load ptr, ptr @bar, align 8
 ; GEN: [[ICALL_TARGET:%[0-9]+]] = ptrtoint ptr %tmp to i64
-; GEN-NEXT: call void @llvm.instrprof.value.profile(ptr @__profn_vp_inline, i64 [[#FOO_HASH]], i64 [[ICALL_TARGET]], i32 0, i32 0)
+; GEN-NEXT: call void @llvm.instrprof.value.profile.p0(ptr @__profn_vp_inline, i64 [[#FOO_HASH]], i64 [[ICALL_TARGET]], i32 0, i32 0)
 ; LOWER: call void @__llvm_profile_instrument_target(i64 %1, ptr @__profd_vp_inline.[[#]], i32 0)
   call void %tmp()
   ret void
@@ -65,7 +65,7 @@ bb:
   invoke void %tmp2()
           to label %bb10 unwind label %bb2
 ; GEN: [[ICALL_TARGET2:%[0-9]+]] = ptrtoint ptr %tmp2 to i64
-; GEN-NEXT: call void @llvm.instrprof.value.profile(ptr @__profn_foo2, i64 [[FOO2_HASH:[0-9]+]], i64 [[ICALL_TARGET2]], i32 0, i32 0)
+; GEN-NEXT: call void @llvm.instrprof.value.profile.p0(ptr @__profn_foo2, i64 [[FOO2_HASH:[0-9]+]], i64 [[ICALL_TARGET2]], i32 0, i32 0)
 
 bb2:                                              ; preds = %bb
   %tmp3 = landingpad { ptr, i32 }

@@ -29,34 +29,34 @@ $foo_private_profn = comdat any
 ;; non-local which requires separate comdat on COFF due to a link.exe limitation.
 
 ; ELF:   @__profc_foo_inline = linkonce_odr hidden global {{.*}}, section "__llvm_prf_cnts", comdat, align 8
-; ELF0:  @__profd_foo_inline = private global {{.*}}, section "__llvm_prf_data", comdat($__profc_foo_inline), align 8
-; ELF1:  @__profd_foo_inline = linkonce_odr hidden global {{.*}}, section "__llvm_prf_data", comdat($__profc_foo_inline), align 8
+; ELF0:  @__profd_foo_inline = private global {{.*}}, section "__llvm_prf_data", comdat($__profc_foo_inline)
+; ELF1:  @__profd_foo_inline = linkonce_odr hidden global {{.*}}, section "__llvm_prf_data", comdat($__profc_foo_inline)
 ; COFF0: @__profc_foo_inline = linkonce_odr hidden global {{.*}}, section ".lprfc$M", comdat, align 8
-; COFF0: @__profd_foo_inline = internal global {{.*}}, section ".lprfd$M", comdat($__profc_foo_inline), align 8
+; COFF0: @__profd_foo_inline = internal global {{.*}}, section ".lprfd$M", comdat($__profc_foo_inline)
 ; COFF1: @__profc_foo_inline = linkonce_odr hidden global {{.*}}, section ".lprfc$M", comdat, align 8
-; COFF1: @__profd_foo_inline = linkonce_odr hidden global {{.*}}, section ".lprfd$M", comdat, align 8
+; COFF1: @__profd_foo_inline = linkonce_odr hidden global {{.*}}, section ".lprfd$M", comdat
 define weak_odr void @foo_inline() comdat {
   call void @llvm.instrprof.increment(ptr @__profn_foo_inline, i64 0, i32 1, i32 0)
   ret void
 }
 
 ; ELF:   @__profc_foo_extern = linkonce_odr hidden global{{.*}}, section "__llvm_prf_cnts", comdat, align 8
-; ELF0:  @__profd_foo_extern = private global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_extern), align 8
-; ELF1:  @__profd_foo_extern = linkonce_odr hidden global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_extern), align 8
+; ELF0:  @__profd_foo_extern = private global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_extern)
+; ELF1:  @__profd_foo_extern = linkonce_odr hidden global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_extern)
 ; COFF:  @__profc_foo_extern = linkonce_odr hidden global{{.*}}, section ".lprfc$M", comdat, align 8
-; COFF0: @__profd_foo_extern = internal global{{.*}}, section ".lprfd$M", comdat($__profc_foo_extern), align 8
-; COFF1: @__profd_foo_extern = linkonce_odr hidden global{{.*}}, section ".lprfd$M", comdat, align 8
+; COFF0: @__profd_foo_extern = internal global{{.*}}, section ".lprfd$M", comdat($__profc_foo_extern)
+; COFF1: @__profd_foo_extern = linkonce_odr hidden global{{.*}}, section ".lprfd$M", comdat
 define available_externally void @foo_extern() {
   call void @llvm.instrprof.increment(ptr @__profn_foo_extern, i64 0, i32 1, i32 0)
   ret void
 }
 
 ; ELF:   @__profc_foo_private_profn = private global{{.*}}, section "__llvm_prf_cnts", comdat, align 8
-; ELF0:  @__profd_foo_private_profn = private global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_private_profn), align 8
-; ELF1:  @__profd_foo_private_profn = private global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_private_profn), align 8
+; ELF0:  @__profd_foo_private_profn = private global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_private_profn)
+; ELF1:  @__profd_foo_private_profn = private global{{.*}}, section "__llvm_prf_data", comdat($__profc_foo_private_profn)
 ; COFF:  @__profc_foo_private_profn = internal global{{.*}}, section ".lprfc$M", comdat, align 8
-; COFF0: @__profd_foo_private_profn = internal global{{.*}}, section ".lprfd$M", comdat($__profc_foo_private_profn), align 8
-; COFF1: @__profd_foo_private_profn = internal global{{.*}}, section ".lprfd$M", comdat, align 8
+; COFF0: @__profd_foo_private_profn = internal global{{.*}}, section ".lprfd$M", comdat($__profc_foo_private_profn)
+; COFF1: @__profd_foo_private_profn = internal global{{.*}}, section ".lprfd$M", comdat
 define void @foo_private_profn() comdat {
   call void @llvm.instrprof.increment(ptr @__profn_foo_private_profn, i64 0, i32 1, i32 0)
   ret void

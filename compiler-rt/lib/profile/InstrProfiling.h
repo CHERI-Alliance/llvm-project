@@ -12,6 +12,12 @@
 #include "InstrProfilingPort.h"
 #include <stdio.h>
 
+/* We need ptraddr_t available. */
+#ifndef _PTRADDR_T
+typedef size_t ptraddr_t;
+#define _PTRADDR_T
+#endif
+
 #define INSTR_PROF_VISIBILITY COMPILER_RT_VISIBILITY
 #include "profile/InstrProfData.inc"
 
@@ -26,6 +32,26 @@ typedef struct COMPILER_RT_ALIGNAS(INSTR_PROF_DATA_ALIGNMENT)
 #define INSTR_PROF_DATA(Type, LLVMType, Name, Initializer) Type Name;
 #include "profile/InstrProfData.inc"
 } __llvm_profile_data;
+
+/* The raw profile data format, which is what actually gets written. Internally
+ * we use the above format because on CHERI pointers/capabilities need
+ * additional metadata for us to do anything with them, however we should not
+ * export that metadata since a host will not know what to do with those bits -
+ * plus we only account for 32-bit and 64-bit formats when reading. Hence, we
+ * only use the address for pointers when writing out the profile data. Note
+ * that in places we rely upon this raw data format being smaller or equivalent
+ * in size to the internal data format above. */
+#define IntPtrT ptraddr_t
+typedef struct COMPILER_RT_ALIGNAS(INSTR_PROF_DATA_ALIGNMENT)
+    __llvm_raw_profile_data {
+#define INSTR_PROF_DATA(Type, LLVMType, Name, Initializer) Type Name;
+#include "profile/InstrProfData.inc"
+} __llvm_raw_profile_data;
+#undef IntPtrT
+
+#if __STDC_VERSION__ >= 201112L
+_Static_assert(sizeof(__llvm_raw_profile_data) <= sizeof(__llvm_profile_data));
+#endif
 
 typedef struct __llvm_profile_header {
 #define INSTR_PROF_RAW_HEADER(Type, Name, Initializer) Type Name;
@@ -263,9 +289,21 @@ uint64_t __llvm_profile_get_version(void);
 uint64_t __llvm_profile_get_num_data(const __llvm_profile_data *Begin,
                                      const __llvm_profile_data *End);
 
+/*! \brief Get the number of entries in the raw profile data section. NOTE: Must
+ * only be used *after* the entries between Begin/End have all been converted to
+ * the raw data format. */
+uint64_t __llvm_profile_get_num_raw_data(const __llvm_raw_profile_data *Begin,
+                                         const __llvm_raw_profile_data *End);
+
 /*! \brief Get the size of the profile data section in bytes. */
 uint64_t __llvm_profile_get_data_size(const __llvm_profile_data *Begin,
                                       const __llvm_profile_data *End);
+
+/*! \brief Get the size of the raw profile data section in bytes. NOTE: Must
+ * only be used *after* the entries between Begin/End have all been converted to
+ * the raw data format. */
+uint64_t __llvm_profile_get_raw_data_size(const __llvm_raw_profile_data *Begin,
+                                          const __llvm_raw_profile_data *End);
 
 /*! \brief Get the size in bytes of a single counter entry. */
 size_t __llvm_profile_counter_entry_size(void);

@@ -897,27 +897,28 @@ def int_stackprotector : DefaultAttrsIntrinsic<[], [llvm_ptr_ty, llvm_anyptr_ty]
 def int_stackguard : DefaultAttrsIntrinsic<[llvm_ptr_ty], [], []>;
 
 // A cover for instrumentation based profiling.
-def int_instrprof_cover : Intrinsic<[], [llvm_ptr_ty, llvm_i64_ty,
+def int_instrprof_cover : Intrinsic<[], [llvm_anyptr_ty, llvm_i64_ty,
                                          llvm_i32_ty, llvm_i32_ty]>;
 
 // A counter increment for instrumentation based profiling.
 def int_instrprof_increment : Intrinsic<[],
-                                        [llvm_ptr_ty, llvm_i64_ty,
+                                        [llvm_anyptr_ty, llvm_i64_ty,
                                          llvm_i32_ty, llvm_i32_ty]>;
 
 // A counter increment with step for instrumentation based profiling.
 def int_instrprof_increment_step : Intrinsic<[],
-                                        [llvm_ptr_ty, llvm_i64_ty,
-                                         llvm_i32_ty, llvm_i32_ty, llvm_i64_ty]>;
+                                             [llvm_anyptr_ty, llvm_i64_ty,
+                                              llvm_i32_ty, llvm_i32_ty,
+                                              llvm_i64_ty]>;
 
 // A timestamp for instrumentation based profiling.
-def int_instrprof_timestamp : Intrinsic<[], [llvm_ptr_ty, llvm_i64_ty,
+def int_instrprof_timestamp : Intrinsic<[], [llvm_anyptr_ty, llvm_i64_ty,
                                              llvm_i32_ty, llvm_i32_ty]>;
 
 // A call to profile runtime for value profiling of target expressions
 // through instrumentation based profiling.
 def int_instrprof_value_profile : Intrinsic<[],
-                                            [llvm_ptr_ty, llvm_i64_ty,
+                                            [llvm_anyptr_ty, llvm_i64_ty,
                                              llvm_i64_ty, llvm_i32_ty,
                                              llvm_i32_ty]>;
 

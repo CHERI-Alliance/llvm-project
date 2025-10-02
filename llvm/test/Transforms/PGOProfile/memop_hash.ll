@@ -19,6 +19,6 @@ entry:
 ; The two hashes should not be equal as the existence of the memcpy should change the hash.
 ;
 ; CHECK: @foo1
-; CHECK: call void @llvm.instrprof.increment(ptr @__profn_foo1, i64 [[FOO1_HASH:[0-9]+]], i32 1, i32 0)
+; CHECK: call void @llvm.instrprof.increment.p0(ptr @__profn_foo1, i64 [[FOO1_HASH:[0-9]+]], i32 1, i32 0)
 ; CHECK: @foo2
-; CHECK-NOT: call void @llvm.instrprof.increment(ptr @__profn_foo2, i64 [[FOO1_HASH]], i32 1, i32 0)
+; CHECK-NOT: call void @llvm.instrprof.increment.p0(ptr @__profn_foo2, i64 [[FOO1_HASH]], i32 1, i32 0)

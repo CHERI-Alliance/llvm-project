@@ -24,4 +24,4 @@ if.end4:
   ret void
 }
 
-; CHECK-NOT: call void @llvm.instrprof.increment(ptr @__profn_foo
+; CHECK-NOT: call void @llvm.instrprof.increment.p0(ptr @__profn_foo

@@ -8,7 +8,6 @@ target triple = "x86_64-apple-macosx10.13.0"
 ;; Don't record the address of an available_externally alwaysinline function.
 ; CHECK:      @__profd_foo = linkonce_odr hidden global
 ; CHECK-NOT:  @foo
-; CHECK-SAME: , align 8
 
 @__profn_foo = linkonce_odr hidden constant [3 x i8] c"foo"
 
