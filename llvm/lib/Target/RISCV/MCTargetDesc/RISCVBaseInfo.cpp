@@ -136,7 +136,7 @@ MCRegister getSCSPReg(ABI TargetABI) {
 }
 
 // Returns the register used for bounded mem/var args
-MCRegister getCheriBoundedArgReg() { return RISCV::C6; }
+MCRegister getCheriBoundedArgReg() { return RISCV::C31; }
 
 } // namespace RISCVABI
 

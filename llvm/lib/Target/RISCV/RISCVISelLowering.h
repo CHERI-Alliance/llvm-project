@@ -1020,6 +1020,10 @@ private:
                                          const APInt &AndMask) const override;
 
   unsigned getMinimumJumpTableEntries() const override;
+
+  bool functionArgumentNeedsConsecutiveRegisters(
+      Type *Ty, CallingConv::ID CallConv, bool isVarArg,
+      const DataLayout &DL) const override;
 };
 
 namespace RISCV {
