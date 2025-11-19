@@ -11,8 +11,8 @@ define i32 @foo(i32 %x, i32 %y, i32 %z, i32 %u, i32 %v, i32 %w, i32 %t1, i32 %t2
 ; CHECK-NEXT:    sc cra, 32(csp) # 16-byte Folded Spill
 ; CHECK-NEXT:    sc cs0, 16(csp) # 16-byte Folded Spill
 ; CHECK-NEXT:    sc cs1, 0(csp) # 16-byte Folded Spill
-; CHECK-NEXT:    lc cs0, 16(ct1)
-; CHECK-NEXT:    ld a0, 0(ct1)
+; CHECK-NEXT:    lc cs0, 16(ct6)
+; CHECK-NEXT:    ld a0, 0(ct6)
 ; CHECK-NEXT:    call bar
 ; CHECK-NEXT:    mv s1, a0
 ; CHECK-NEXT:    cmv ca0, cs0
@@ -49,13 +49,14 @@ define i32 @baf(i32 %z, i32 %u, i32 %v, i32 %w, i32 %t1, i32 %t2, i32 %t3, ptr a
 ; CHECK-NEXT:    sc cs1, 32(csp) # 16-byte Folded Spill
 ; CHECK-NEXT:    caddi ca0, csp, 16
 ; CHECK-NEXT:    scbndsi ca0, ca0, 16
-; CHECK-NEXT:    li a1, -11
-; CHECK-NEXT:    acperm ca1, ct1, a1
+; CHECK-NEXT:    lui a1, 1048544
+; CHECK-NEXT:    addiw a1, a1, -2
+; CHECK-NEXT:    acperm ca1, ct6, a1
 ; CHECK-NEXT:    sc ca1, 0(ca0)
 ; CHECK-NEXT:    lc ca0, 16(csp)
 ; CHECK-NEXT:    cmv cs0, ca7
 ; CHECK-NEXT:    mv s1, a6
-; CHECK-NEXT:    sc ct1, 0(csp)
+; CHECK-NEXT:    sc ct6, 0(csp)
 ; CHECK-NEXT:    call try
 ; CHECK-NEXT:    mv a0, s1
 ; CHECK-NEXT:    call bar
@@ -94,10 +95,11 @@ define i32 @bb([4 x float] %f1.coerce, [4 x float] %f2.coerce, [4 x float] %f3.c
 ; CHECK-NEXT:    caddi csp, csp, -32
 ; CHECK-NEXT:    caddi ca2, csp, 16
 ; CHECK-NEXT:    scbndsi ca2, ca2, 16
-; CHECK-NEXT:    li a4, -11
-; CHECK-NEXT:    acperm ca4, ct1, a4
+; CHECK-NEXT:    lui a4, 1048544
+; CHECK-NEXT:    addiw a4, a4, -2
+; CHECK-NEXT:    acperm ca4, ct6, a4
 ; CHECK-NEXT:    sc ca4, 0(ca2)
-; CHECK-NEXT:    sc ct1, 0(csp)
+; CHECK-NEXT:    sc ct6, 0(csp)
 ; CHECK-NEXT:    lc ca2, 16(csp)
 ; CHECK-NEXT:    fmv.w.x fa5, a1
 ; CHECK-NEXT:    fmv.w.x fa4, a0
@@ -146,8 +148,9 @@ define i32 @biz() local_unnamed_addr addrspace(200) nounwind {
 ; CHECK-NEXT:    sd a0, 16(csp)
 ; CHECK-NEXT:    li a1, 32
 ; CHECK-NEXT:    scbndsr ca1, csp, a1
-; CHECK-NEXT:    li a2, -11
-; CHECK-NEXT:    acperm ct1, ca1, a2
+; CHECK-NEXT:    lui a2, 1048544
+; CHECK-NEXT:    addiw a2, a2, -2
+; CHECK-NEXT:    acperm ct6, ca1, a2
 ; CHECK-NEXT:    li a1, 1
 ; CHECK-NEXT:    li a2, 2
 ; CHECK-NEXT:    li a3, 3
@@ -167,7 +170,7 @@ define i32 @biz() local_unnamed_addr addrspace(200) nounwind {
 ; CHECK-NEXT:    li a6, 6
 ; CHECK-NEXT:    li a0, 0
 ; CHECK-NEXT:    cmv ca7, cnull
-; CHECK-NEXT:    cmv ct1, cnull
+; CHECK-NEXT:    cmv ct6, cnull
 ; CHECK-NEXT:    call fiz
 ; CHECK-NEXT:    addw a0, a0, s0
 ; CHECK-NEXT:    lc cra, 48(csp) # 16-byte Folded Reload
