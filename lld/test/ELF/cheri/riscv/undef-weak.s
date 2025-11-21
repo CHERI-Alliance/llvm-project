@@ -10,7 +10,8 @@
 # RUN: llvm-readobj --cap-relocs %t.64 | FileCheck --check-prefix=RELOC %s
 # RUN: llvm-readobj -x .got -x .data %t.64 | FileCheck --check-prefix=HEX64 %s
 
-# RELOC: There is no __cap_relocs section in the file.
+# RELOC-LABEL: CHERI Capability Relocations [
+# RELOC-NEXT:  ]
 
 # HEX32-LABEL: section '.got':
 # HEX32-NEXT:  [[#%x,]] 00000000 00000000 00000000 00000000

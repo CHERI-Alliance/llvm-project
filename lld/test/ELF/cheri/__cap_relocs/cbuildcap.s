@@ -34,11 +34,13 @@
 
 # RODATA: Contents of section .rodata:
 
-#CAPRELOCS: CHERI __rela_dyn relocs [
-#CAPRELOCS-NEXT: 0x0121c0 (foo) Base: 0x111ac (_start+0) Length: 12 Perms: Function
-#CAPRELOCS-NEXT: 0x0121d0 Base: 0x121f0 ($d+0) Length: 4 Perms: Object
-#CAPRELOCS-NEXT: 0x0121e0 Base: 0x101a4 (y+0) Length: 4 Perms: Constant
-#CAPRELOCS-NEXT: ]
+# CAPRELOCS-LABEL: CHERI CBuildCap Capability Relocations [
+# CAPRELOCS-NEXT:    Section ({{.+}}) .rela.dyn {
+# CAPRELOCS-NEXT:      0x121C0 FUNC - 0x111AC [0x111AC-0x111B8]
+# CAPRELOCS-NEXT:      0x121D0 DATA - 0x121F0 [0x121F0-0x121F4]
+# CAPRELOCS-NEXT:      0x121E0 RODATA - 0x101A4 [0x101A4-0x101A8]
+# CAPRELOCS-NEXT:    }
+# CAPRELOCS-NEXT:  ]
 
 # SYM:      0000000000010158    72 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
 # SYM-NEXT: 00000000000101a0    0  NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end
@@ -79,11 +81,13 @@
 #                     meta = 0xf60800fc
 #                     address = 0x100fc -> matches symbol VA (y)
 
-#CAPRELOCS32: CHERI __rela_dyn relocs [
-#CAPRELOCS32: 0x012110 (foo) Base: 0x11104 (_start+0) Length: 12 Perms: Function
-#CAPRELOCS32: 0x012118 Base: 0x12128 ($d+0) Length: 4 Perms: Object
-#CAPRELOCS32: 0x012120 Base: 0x100fc (y+0) Length: 4 Perms: Constant
-#CAPRELOCS32-NEXT: ]
+# CAPRELOCS32-LABEL: CHERI CBuildCap Capability Relocations [
+# CAPRELOCS32-NEXT:    Section ({{.+}}) .rela.dyn {
+# CAPRELOCS32-NEXT:      0x12110 FUNC - 0x11104 [0x11104-0x11110]
+# CAPRELOCS32-NEXT:      0x12118 DATA - 0x12128 [0x12128-0x1212C]
+# CAPRELOCS32-NEXT:      0x12120 RODATA - 0x100FC [0x100FC-0x10100]
+# CAPRELOCS32-NEXT:    }
+# CAPRELOCS32-NEXT:  ]
 
 # SYM32:      000100d4    36 NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_start
 # SYM32-NEXT: 000100f8    0  NOTYPE  LOCAL  HIDDEN      1 __rela_dyn_end

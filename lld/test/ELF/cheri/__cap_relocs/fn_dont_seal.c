@@ -17,5 +17,5 @@ void __start(void) {
   leave_unsealed();
 }
 
-// DUMP-CAPRELOCS: CHERI __cap_relocs [
-// DUMP-CAPRELOCS: [[ADDR:0x[0-9A-Fa-f]+]] (leave_unsealed) Base: [[BASE:0x[0-9A-Fa-f]+]] (__leave_unsealed+0) Length: 12 Perms: Function(Unsealed)
+// DUMP-CAPRELOCS: __cap_relocs {
+// DUMP-CAPRELOCS: 0x{{[0-9A-F]+}} FUNC(UNSEALED) - 0x{{[0-9A-F]+}} [0x{{[0-9A-F]+}}-0x{{[0-9A-F]+}}]
