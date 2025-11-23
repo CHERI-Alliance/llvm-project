@@ -740,7 +740,8 @@ unsigned elf::getSectionRank(Ctx &ctx, OutputSection &osec) {
     // Make PROGBITS sections (e.g .rodata .eh_frame) closer to .text to
     // alleviate relocation overflow pressure. Large special sections such as
     // .dynstr and .dynsym can be away from .text.
-    else if (osec.type != SHT_PROGBITS)
+    // Treat __cap_relocs like REL* even though it's PROGBITS.
+    else if (osec.type != SHT_PROGBITS || osec.name == "__cap_relocs")
       rank |= 4;
     else
       rank |= RF_RODATA;
