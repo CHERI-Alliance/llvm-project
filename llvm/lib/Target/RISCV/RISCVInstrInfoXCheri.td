@@ -527,6 +527,10 @@ def : InstAlias<"cincoffsetimm $cd, $cs1, $imm",
                 (CIncOffsetImm GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
 def : InstAlias<"csetboundsimm $cd, $cs1, $imm",
                 (CSetBoundsImm GPCR:$cd, GPCR:$cs1, uimm12:$imm), 0>;
+def : InstAlias<"caddi $cd, $cs1, $imm",
+                (CIncOffsetImm GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
+def : InstAlias<"cadd $cd, $cs1, $rs2",
+                (CIncOffset GPCR:$cd, GPCR:$cs1, GPR:$rs2), 0>;
 }
 
 //===----------------------------------------------------------------------===//
