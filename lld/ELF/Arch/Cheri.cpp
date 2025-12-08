@@ -102,6 +102,66 @@ bool isCheriAbi(Ctx &ctx, const InputFile &f) {
   }
 }
 
+template <typename ELFT>
+static void getMipsCheriAbiVariant(std::optional<unsigned> &abi,
+                                   SyntheticSection &sec) {
+  abi = static_cast<MipsAbiFlagsSection<ELFT> &>(sec).getCheriAbiVariant();
+}
+
+static bool isCheriMipsTrampolineAbi(Ctx &ctx) {
+  if (ctx.arg.emachine != EM_MIPS)
+    return false;
+
+  if (!ctx.in.mipsAbiFlags)
+    return false;
+
+  std::optional<unsigned> abi;
+  invokeELFT(getMipsCheriAbiVariant, abi, *ctx.in.mipsAbiFlags);
+  if (!abi)
+    return false;
+
+  if (*abi != DF_MIPS_CHERI_ABI_PLT && *abi != DF_MIPS_CHERI_ABI_FNDESC)
+    return false;
+
+  return true;
+}
+
+static bool needsCheriMipsTrampoline(Ctx &ctx, RelType type,
+                                     const Symbol &sym) {
+  // In the PLT ABI (and fndesc?) we have to use an elf relocation for function
+  // pointers to ensure that the runtime linker adds the required trampolines
+  // that sets $cgp:
+
+  if (!isCheriMipsTrampolineAbi(ctx))
+    return false;
+
+  if (!sym.isFunc() || type == *ctx.target->symbolicCapCallRel)
+    return false;
+
+  // In static binaries we do not need PLT stubs for function pointers since
+  // all functions share the same $cgp
+  // TODO: this is no longer true if we were to support dlopen() in static
+  // binaries
+  if (!hasDynamicLinker(ctx))
+    return false;
+
+  return true;
+}
+
+static Symbol &getCheriMipsTrampolineSym(Ctx &ctx, RelType type, Symbol &sym) {
+  assert(needsCheriMipsTrampoline(ctx, type, sym));
+
+  if (sym.includeInDynsym(ctx))
+    return sym;
+
+  Defined &newSym = *ctx.symtab->ensureSymbolWillBeInDynsym(&sym);
+  assert(newSym.isFunc() && "This should only be used for functions");
+  assert(newSym.includeInDynsym(ctx));
+  assert(newSym.binding == llvm::ELF::STB_GLOBAL);
+  assert(newSym.visibility() == llvm::ELF::STV_HIDDEN);
+  return newSym;
+}
+
 // See CheriBSD crt_init_globals()
 template <class ELFT> struct InMemoryCapRelocEntry {
   static constexpr size_t fieldSize = ELFT::Is64Bits ? 8 : 4;
@@ -262,6 +322,18 @@ void CheriCapRelocsSection::addReloc(
 
   assert(expr == R_ABS_CAP);
   assert(!sym || !sym->isPreemptible);
+
+  if (sym && needsCheriMipsTrampoline(ctx, type, *sym)) {
+    if (ctx.arg.verboseCapRelocs)
+      message("Forcing symbolic relocation for non-preemptible "
+              "trampoline-using function pointer against " +
+              verboseToString(ctx, sym));
+
+    sym = &getCheriMipsTrampolineSym(ctx, type, *sym);
+    getPartition(ctx).relaDyn->addSymbolReloc(type, isec, offsetInSec, *sym,
+                                              addend, type);
+    return;
+  }
 
   auto sourceMsg = [&]() { return loc.toString(ctx); };
   if (isa<Symbol *>(target.symOrSec) && target.sym()->isUndefined() &&
@@ -1028,86 +1100,17 @@ void MipsCheriCapTableMappingSection::writeTo(uint8_t *buf) {
   memcpy(buf, entries.data(), entries.size() * sizeof(CaptableMappingEntry));
 }
 
-template <typename ELFT>
-static void getMipsCheriAbiVariant(std::optional<unsigned> &abi,
-                                   SyntheticSection &sec) {
-  abi = static_cast<MipsAbiFlagsSection<ELFT> &>(sec).getCheriAbiVariant();
-}
-
-static bool isCheriMipsTrampolineAbi(Ctx &ctx) {
-  if (ctx.arg.emachine != EM_MIPS)
-    return false;
-
-  if (!ctx.in.mipsAbiFlags)
-    return false;
-
-  std::optional<unsigned> abi;
-  invokeELFT(getMipsCheriAbiVariant, abi, *ctx.in.mipsAbiFlags);
-  if (!abi)
-    return false;
-
-  if (*abi != DF_MIPS_CHERI_ABI_PLT && *abi != DF_MIPS_CHERI_ABI_FNDESC)
-    return false;
-
-  return true;
-}
-
-static bool needsCheriMipsTrampoline(Ctx &ctx, RelType type, const Symbol &sym) {
-  // In the PLT ABI (and fndesc?) we have to use an elf relocation for function
-  // pointers to ensure that the runtime linker adds the required trampolines
-  // that sets $cgp:
-
-  if (!isCheriMipsTrampolineAbi(ctx))
-    return false;
-
-  if (!sym.isFunc() || type == *ctx.target->symbolicCapCallRel)
-    return false;
-
-  // In static binaries we do not need PLT stubs for function pointers since
-  // all functions share the same $cgp
-  // TODO: this is no longer true if we were to support dlopen() in static
-  // binaries
-  if (!hasDynamicLinker(ctx))
-    return false;
-
-  return true;
-}
-
-static Symbol &getCheriMipsTrampolineSym(Ctx &ctx, RelType type, Symbol &sym) {
-  assert(needsCheriMipsTrampoline(ctx, type, sym));
-
-  if (sym.includeInDynsym(ctx))
-    return sym;
-
-  Defined &newSym = *ctx.symtab->ensureSymbolWillBeInDynsym(&sym);
-  assert(newSym.isFunc() && "This should only be used for functions");
-  assert(newSym.includeInDynsym(ctx));
-  assert(newSym.binding == llvm::ELF::STB_GLOBAL);
-  assert(newSym.visibility() == llvm::ELF::STV_HIDDEN);
-  return newSym;
-}
-
 void addRelativeCapabilityRelocation(
     Ctx &ctx, InputSectionBase &isec, uint64_t offsetInSec,
     llvm::PointerUnion<Symbol *, InputSectionBase *> symOrSec, int64_t addend,
     RelExpr expr, RelType type) {
   Partition &part = isec.getPartition(ctx);
-  Symbol *sym = dyn_cast<Symbol *>(symOrSec);
-  assert(expr == R_ABS_CAP);
-  if (sym && needsCheriMipsTrampoline(ctx, type, *sym)) {
-    if (ctx.arg.verboseCapRelocs)
-      message("Forcing symbolic relocation for non-preemptible "
-              "trampoline-using function pointer against " +
-              verboseToString(ctx, sym));
-
-    sym = &getCheriMipsTrampolineSym(ctx, type, *sym);
-    part.relaDyn->addSymbolReloc(type, isec, offsetInSec, *sym, addend, type);
-    return;
-  }
   // assert(!ctx.arg.useRelativeElfCheriRelocs &&
   //        "relative ELF capability relocations not currently implemented");
 
   if (ctx.arg.useRelativeElfCheriRelocs) {
+    Symbol *sym = dyn_cast<Symbol *>(symOrSec);
+    assert(expr == R_ABS_CAP);
     assert(!sym->isPreemptible && "Must not be a preemptible symbol");
     if (ctx.arg.emachine != EM_RISCV)
       error("Relative Relocs method not implemented yet!");
