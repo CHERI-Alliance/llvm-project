@@ -920,8 +920,8 @@ uint64_t MipsCheriCapTableSection::assignIndices(uint64_t startIndex,
     else if (targetSym->isUndefWeak())
       addConstant({R_ABS_CAP, elfCapabilityReloc, off, 0, targetSym});
     else
-      addRelativeCapabilityRelocation(ctx, *this, off, targetSym, 0, R_ABS_CAP,
-                                      elfCapabilityReloc);
+      ctx.mainPart->capRelocs->addReloc(*this, off, *targetSym, 0, R_ABS_CAP,
+                                        elfCapabilityReloc);
   }
   assert(assignedSmallIndexes + assignedLargeIndexes == entries.size());
   return assignedSmallIndexes + assignedLargeIndexes;
@@ -1098,28 +1098,6 @@ void MipsCheriCapTableMappingSection::writeTo(uint8_t *buf) {
   }
   assert(entries.size() * sizeof(CaptableMappingEntry) == getSize());
   memcpy(buf, entries.data(), entries.size() * sizeof(CaptableMappingEntry));
-}
-
-void addRelativeCapabilityRelocation(
-    Ctx &ctx, InputSectionBase &isec, uint64_t offsetInSec,
-    llvm::PointerUnion<Symbol *, InputSectionBase *> symOrSec, int64_t addend,
-    RelExpr expr, RelType type) {
-  Partition &part = isec.getPartition(ctx);
-  // assert(!ctx.arg.useRelativeElfCheriRelocs &&
-  //        "relative ELF capability relocations not currently implemented");
-
-  if (ctx.arg.useRelativeElfCheriRelocs) {
-    Symbol *sym = dyn_cast<Symbol *>(symOrSec);
-    assert(expr == R_ABS_CAP);
-    assert(!sym->isPreemptible && "Must not be a preemptible symbol");
-    if (ctx.arg.emachine != EM_RISCV)
-      error("Relative Relocs method not implemented yet!");
-    part.relaDyn->addReloc(DynamicReloc::AddendOnlyWithTargetVA,
-                           R_RISCV_CHERI_RELATIVE, isec, offsetInSec, *sym,
-                           addend, expr, type);
-    return;
-  }
-  part.capRelocs->addReloc(isec, offsetInSec, symOrSec, addend, expr, type);
 }
 
 static uint64_t getExecCapMetaBits(Ctx &ctx, bool dontSeal) {

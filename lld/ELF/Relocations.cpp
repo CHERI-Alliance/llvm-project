@@ -858,18 +858,18 @@ template <bool shard = false>
 static void addRelativeReloc(Ctx &ctx, InputSectionBase &isec, uint64_t offsetInSec,
                              Symbol &sym, int64_t addend, RelExpr expr,
                              RelType type) {
-  if (expr == R_ABS_CAP) {
+  Partition &part = isec.getPartition(ctx);
+
+  if (expr == R_ABS_CAP && !ctx.arg.useRelativeElfCheriRelocs) {
     if (shard) {
       std::lock_guard<std::mutex> lock(ctx.relocMutex);
       addRelativeReloc(ctx, isec, offsetInSec, sym, addend, expr, type);
       return;
     }
 
-    addRelativeCapabilityRelocation(ctx, isec, offsetInSec, &sym, addend, expr,
-                                    type);
+    part.capRelocs->addReloc(isec, offsetInSec, sym, addend, expr, type);
     return;
   }
-  Partition &part = isec.getPartition(ctx);
 
   if (sym.isTagged()) {
     std::lock_guard<std::mutex> lock(ctx.relocMutex);
@@ -906,6 +906,11 @@ static void addRelativeReloc(Ctx &ctx, InputSectionBase &isec, uint64_t offsetIn
   RelType relativeType = ctx.target->relativeRel;
   if (ctx.target->relativeFuncRel && sym.isFunc())
     relativeType = *ctx.target->relativeFuncRel;
+  if (expr == R_ABS_CAP) {
+    if (ctx.arg.emachine != EM_RISCV)
+      error("Relative Relocs method not implemented yet!");
+    relativeType = R_RISCV_CHERI_RELATIVE;
+  }
   part.relaDyn->addRelativeReloc<shard>(relativeType, isec, offsetInSec, sym,
                                         addend, type, expr);
 }
@@ -918,13 +923,15 @@ static void addPltEntry(Ctx &ctx, PltSection &plt, GotPltSection &gotPlt,
 
   if (ctx.arg.isCheriAbi && !ctx.arg.useRelativeElfCheriRelocs) {
     if (!sym.isPreemptible) {
-      addRelativeCapabilityRelocation(ctx, gotPlt, sym.getGotPltOffset(ctx), &sym, 0,
-                                      R_ABS_CAP, *ctx.target->symbolicCapRel);
+      ctx.mainPart->capRelocs->addReloc(gotPlt, sym.getGotPltOffset(ctx), sym,
+                                        0, R_ABS_CAP,
+                                        *ctx.target->symbolicCapRel);
       return;
     }
 
-    addRelativeCapabilityRelocation(ctx, gotPlt, sym.getGotPltOffset(ctx), &plt, 0,
-                                    R_ABS_CAP, *ctx.target->symbolicCodeCapRel);
+    ctx.mainPart->capRelocs->addReloc(gotPlt, sym.getGotPltOffset(ctx), plt, 0,
+                                      R_ABS_CAP,
+                                      *ctx.target->symbolicCodeCapRel);
   }
 
   rel.addReloc({type, &gotPlt, sym.getGotPltOffset(ctx),

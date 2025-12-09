@@ -320,11 +320,6 @@ inline void readOnlyCapRelocsError(Ctx &ctx, Symbol &sym, const Twine &sourceMsg
         sourceMsg);
 }
 
-void addRelativeCapabilityRelocation(
-    Ctx &ctx, InputSectionBase &isec, uint64_t offsetInSec,
-    llvm::PointerUnion<Symbol *, InputSectionBase *> symOrSec, int64_t addend,
-    RelExpr expr, RelType type);
-
 uint64_t getCapMetaBits(Ctx &ctx, int64_t a, const Symbol &sym,
                         const InputSectionBase *isec, uint64_t offset);
 
