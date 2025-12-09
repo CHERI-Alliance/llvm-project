@@ -1734,14 +1734,14 @@ DynamicSection<ELFT>::computeContents() {
       addInt(DT_MIPS_CHERI_CAPTABLE_MAPPINGSZ,
              ctx.in.mipsCheriCapTableMapping->getParent()->size);
     }
-    if (ctx.in.capRelocs && ctx.in.capRelocs->isNeeded()) {
-      addInSec(DT_MIPS_CHERI___CAPRELOCS, *ctx.in.capRelocs);
-      addInt(DT_MIPS_CHERI___CAPRELOCSSZ, ctx.in.capRelocs->getParent()->size);
+    if (part.capRelocs && part.capRelocs->isNeeded()) {
+      addInSec(DT_MIPS_CHERI___CAPRELOCS, *part.capRelocs);
+      addInt(DT_MIPS_CHERI___CAPRELOCSSZ, part.capRelocs->getParent()->size);
     }
   } else if (ctx.arg.emachine == EM_RISCV) {
-    if (ctx.in.capRelocs && ctx.in.capRelocs->isNeeded()) {
-      addInSec(DT_RISCV_CHERI___CAPRELOCS, *ctx.in.capRelocs);
-      addInt(DT_RISCV_CHERI___CAPRELOCSSZ, ctx.in.capRelocs->getParent()->size);
+    if (part.capRelocs && part.capRelocs->isNeeded()) {
+      addInSec(DT_RISCV_CHERI___CAPRELOCS, *part.capRelocs);
+      addInt(DT_RISCV_CHERI___CAPRELOCSSZ, part.capRelocs->getParent()->size);
     }
     if (ctx.in.tgotCapRelocs && ctx.in.tgotCapRelocs->isNeeded()) {
       addInSec(DT_RISCV_CHERI___TGOTCAPRELOCS, *ctx.in.tgotCapRelocs);
@@ -4955,8 +4955,6 @@ template <class ELFT> void elf::createSyntheticSections(Ctx &ctx) {
   add(*ctx.in.bssRelRo);
 
   if (ctx.arg.capabilitySize > 0) {
-    ctx.in.capRelocs = std::make_unique<CheriCapRelocsSection>(ctx, "__cap_relocs");
-
     if (ctx.arg.emachine == EM_MIPS) {
       ctx.in.mipsCheriCapTable = std::make_unique<MipsCheriCapTableSection>(ctx);
       add(*ctx.in.mipsCheriCapTable);
@@ -4967,10 +4965,6 @@ template <class ELFT> void elf::createSyntheticSections(Ctx &ctx) {
       }
     }
   }
-
-  if (ctx.arg.isCheriAbi)
-    ctx.in.tgotCapRelocs =
-        std::make_unique<CheriCapRelocsSection>(ctx, "__tgot_cap_relocs");
 
   // Add MIPS-specific sections.
   if (ctx.arg.emachine == EM_MIPS) {
@@ -5015,6 +5009,10 @@ template <class ELFT> void elf::createSyntheticSections(Ctx &ctx) {
     part.dynStrTab = std::make_unique<StringTableSection>(ctx, ".dynstr", true);
     part.dynSymTab =
         std::make_unique<SymbolTableSection<ELFT>>(ctx, *part.dynStrTab);
+
+    if (ctx.arg.capabilitySize > 0)
+      part.capRelocs =
+          std::make_unique<CheriCapRelocsSection>(ctx, "__cap_relocs");
 
     if (ctx.arg.relocatable)
       continue;
@@ -5171,6 +5169,10 @@ template <class ELFT> void elf::createSyntheticSections(Ctx &ctx) {
       /*threadCount=*/1);
   add(*ctx.in.relaTgot);
 
+  if (ctx.arg.isCheriAbi)
+    ctx.in.tgotCapRelocs =
+        std::make_unique<CheriCapRelocsSection>(ctx, "__tgot_cap_relocs");
+
   if ((ctx.arg.emachine == EM_386 || ctx.arg.emachine == EM_X86_64) &&
       (ctx.arg.andFeatures & GNU_PROPERTY_X86_FEATURE_1_IBT)) {
     ctx.in.ibtPlt = std::make_unique<IBTPltSection>(ctx);
@@ -5224,6 +5226,8 @@ template <class ELFT> void elf::createSyntheticSections(Ctx &ctx) {
   if (ctx.in.strTab)
     add(*ctx.in.strTab);
 }
+
+Partition::Partition(Ctx &ctx) : ctx(ctx) {}
 
 template void elf::splitSections<ELF32LE>(Ctx &);
 template void elf::splitSections<ELF32BE>(Ctx &);

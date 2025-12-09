@@ -563,8 +563,6 @@ struct InStruct {
   std::unique_ptr<TgotSection> tgot;
   std::unique_ptr<MipsCheriCapTableSection> mipsCheriCapTable;
   std::unique_ptr<CheriPccPaddingSection> pccPadding;
-  std::unique_ptr<CheriCapRelocsSection> capRelocs;
-  std::unique_ptr<CheriCapRelocsSection> tgotCapRelocs;
   // For per-file/per-function tables:
   std::unique_ptr<MipsCheriCapTableMappingSection> mipsCheriCapTableMapping;
   std::unique_ptr<RelroPaddingSection> relroPadding;
@@ -583,6 +581,7 @@ struct InStruct {
   std::unique_ptr<IBTPltSection> ibtPlt;
   std::unique_ptr<RelocationBaseSection> relaPlt;
   std::unique_ptr<RelocationBaseSection> relaTgot;
+  std::unique_ptr<CheriCapRelocsSection> tgotCapRelocs;
   // Non-SHF_ALLOC sections
   std::unique_ptr<SyntheticSection> debugNames;
   std::unique_ptr<GdbIndexSection> gdbIndex;

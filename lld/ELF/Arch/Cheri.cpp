@@ -1087,6 +1087,7 @@ void addRelativeCapabilityRelocation(
     Ctx &ctx, InputSectionBase &isec, uint64_t offsetInSec,
     llvm::PointerUnion<Symbol *, InputSectionBase *> symOrSec, int64_t addend,
     RelExpr expr, RelType type) {
+  Partition &part = isec.getPartition(ctx);
   Symbol *sym = dyn_cast<Symbol *>(symOrSec);
   assert(expr == R_ABS_CAP);
   if (sym && needsCheriMipsTrampoline(ctx, type, *sym)) {
@@ -1096,8 +1097,7 @@ void addRelativeCapabilityRelocation(
               verboseToString(ctx, sym));
 
     sym = &getCheriMipsTrampolineSym(ctx, type, *sym);
-    ctx.mainPart->relaDyn->addSymbolReloc(type, isec, offsetInSec, *sym, addend,
-                                      type);
+    part.relaDyn->addSymbolReloc(type, isec, offsetInSec, *sym, addend, type);
     return;
   }
   bool isCode = type == ctx.target->symbolicCodeCapRel;
@@ -1109,13 +1109,13 @@ void addRelativeCapabilityRelocation(
     assert(!sym->isPreemptible && "Must not be a preemptible symbol");
     if (ctx.arg.emachine != EM_RISCV)
       error("Relative Relocs method not implemented yet!");
-    ctx.mainPart->relaDyn->addReloc(DynamicReloc::AddendOnlyWithTargetVA,
-                                    R_RISCV_CHERI_RELATIVE, isec, offsetInSec,
-                                    *sym, addend, expr, type);
+    part.relaDyn->addReloc(DynamicReloc::AddendOnlyWithTargetVA,
+                           R_RISCV_CHERI_RELATIVE, isec, offsetInSec, *sym,
+                           addend, expr, type);
     return;
   }
-  ctx.in.capRelocs->addCapReloc(isCode, {&isec, offsetInSec}, {symOrSec, 0u},
-                            addend);
+  part.capRelocs->addCapReloc(isCode, {&isec, offsetInSec}, {symOrSec, 0u},
+                              addend);
 }
 
 static uint64_t getExecCapMetaBits(Ctx &ctx, bool dontSeal) {

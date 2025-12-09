@@ -1571,11 +1571,12 @@ struct Partition {
   std::unique_ptr<RelocationBaseSection> relaDyn;
   std::unique_ptr<RelrBaseSection> relrDyn;
   std::unique_ptr<RelrBaseSection> relrAuthDyn;
+  std::unique_ptr<CheriCapRelocsSection> capRelocs;
   std::unique_ptr<VersionDefinitionSection> verDef;
   std::unique_ptr<SyntheticSection> verNeed;
   std::unique_ptr<VersionTableSection> verSym;
 
-  Partition(Ctx &ctx) : ctx(ctx) {}
+  Partition(Ctx &ctx);
   unsigned getNumber(Ctx &ctx) const { return this - &ctx.partitions[0] + 1; }
 };
 
