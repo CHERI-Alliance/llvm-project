@@ -24,7 +24,8 @@ uint8_t getMipsIsaExt(uint64_t oldExt, llvm::StringRef oldFile, uint64_t newExt,
 void checkMipsShlibCompatible(Ctx &, InputFile *f, uint64_t shlibCheriFlags,
                               uint64_t targetCheriFlags);
 
-bool isRelroSection(Ctx& ctx, const OutputSection *sec);
+bool isRelroSection(Ctx &ctx, const OutputSection *sec,
+                    bool ignoreZRelro = false);
 bool isCheriAbi(Ctx &, const InputFile &f);
 } // namespace lld::elf
 
