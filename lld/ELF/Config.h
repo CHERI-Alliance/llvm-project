@@ -602,6 +602,7 @@ struct Ctx : CommonLinkerContext {
   uint8_t *bufferStart = nullptr;
   Partition *mainPart = nullptr;
   PhdrEntry *tlsPhdr = nullptr;
+  PhdrEntry *tgotPhdr = nullptr;
   PhdrEntry *cheriBounds = nullptr;
   struct OutSections {
     std::unique_ptr<OutputSection> elfHeader;

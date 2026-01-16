@@ -2313,9 +2313,12 @@ template <class ELFT> void Writer<ELFT>::finalizeSections() {
     // Android relocation packing can look up TLS symbol addresses. We only need
     // to care about the main partition here because all TLS symbols were moved
     // to the main partition (see MarkLive.cpp).
-    for (auto &p : ctx.mainPart->phdrs)
+    for (auto &p : ctx.mainPart->phdrs) {
       if (p->p_type == PT_TLS)
         ctx.tlsPhdr = p.get();
+      if (p->p_type == PT_CHERI_TGOT)
+        ctx.tgotPhdr = p.get();
+    }
   }
 
   // Some symbols are defined in term of program headers. Now that we

@@ -815,7 +815,7 @@ static int64_t getTlsTpOffset(Ctx &ctx, const Symbol &s) {
 }
 
 static int64_t getTlsTgotOffset(Ctx &ctx, const Symbol &s) {
-  return s.getTgotOffset(ctx);
+  return s.getTgotVA(ctx);
 }
 
 uint64_t InputSectionBase::getRelocTargetVA(Ctx &ctx, const Relocation &r,
@@ -1050,7 +1050,7 @@ uint64_t InputSectionBase::getRelocTargetVA(Ctx &ctx, const Relocation &r,
   case R_TLSLD_PC:
     return ctx.in.got->getTlsIndexVA() + a - p;
   case R_TGOT:
-    return r.sym->getTgotOffset(ctx) + a;
+    return r.sym->getTgotVA(ctx) + a;
   case R_TGOT_TP:
   case R_RELAX_TGOT_TLS_GD_TO_LE:
   case R_RELAX_TGOT_TLS_IE_TO_LE:
