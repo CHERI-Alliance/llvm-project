@@ -754,13 +754,7 @@ static Relocation *getRISCVPCRelHi20(Ctx &ctx, const InputSectionBase *loSec,
   return nullptr;
 }
 
-// A TLS symbol's virtual address is relative to the TLS segment. Add a
-// target-specific adjustment to produce a thread-pointer-relative offset.
-static int64_t getTlsTpOffset(Ctx &ctx, const Symbol &s) {
-  // On targets that support TLSDESC, _TLS_MODULE_BASE_@tpoff = 0.
-  if (&s == ctx.sym.tlsModuleBase)
-    return 0;
-
+static int64_t getTpOffset(Ctx &ctx, uint64_t va, PhdrEntry *p) {
   // There are 2 TLS layouts. Among targets we support, x86 uses TLS Variant 2
   // while most others use Variant 1. At run time TP will be aligned to p_align.
 
@@ -772,15 +766,15 @@ static int64_t getTlsTpOffset(Ctx &ctx, const Symbol &s) {
   // Variant 2. Static TLS blocks, followed by alignment padding are placed
   // before TP. The alignment padding is added so that (TP - padding -
   // p_memsz) is congruent to p_vaddr modulo p_align.
-  PhdrEntry *tls = ctx.tlsPhdr;
-  if (!tls) // Reported an error in getSymVA
-    return 0;
+  //
+  // For TGOT-based TLS, this function instead considers the static TGOT
+  // accessed via TP, rather than the TLS data itself.
   switch (ctx.arg.emachine) {
     // Variant 1.
   case EM_ARM:
   case EM_AARCH64:
-    return s.getVA(ctx, 0) + ctx.arg.wordsize * 2 +
-           ((tls->p_vaddr - ctx.arg.wordsize * 2) & (tls->p_align - 1));
+    return va + ctx.arg.wordsize * 2 +
+           ((p->p_vaddr - ctx.arg.wordsize * 2) & (p->p_align - 1));
   case EM_MIPS:
   case EM_PPC:
   case EM_PPC64:
@@ -790,16 +784,11 @@ static int64_t getTlsTpOffset(Ctx &ctx, const Symbol &s) {
     //
     // For CheriABI we always use an offset of 0 to stay representable.
     if (!ctx.arg.isCheriAbi)
-      return s.getVA(ctx, 0) + (tls->p_vaddr & (tls->p_align - 1)) - 0x7000;
+      return va + (p->p_vaddr & (p->p_align - 1)) - 0x7000;
     LLVM_FALLTHROUGH;
   case EM_LOONGARCH:
   case EM_RISCV:
-    // See the comment in handleTlsRelocation. For TLSDESC=>IE,
-    // R_RISCV_TLSDESC_{LOAD_LO12,ADD_LO12_I,CALL} also reach here. While
-    // `tls` may be null, the return value is ignored.
-    if (s.type != STT_TLS)
-      return 0;
-    return s.getVA(ctx, 0) + (tls->p_vaddr & (tls->p_align - 1));
+    return va + (p->p_vaddr & (p->p_align - 1));
 
     // Variant 2.
   case EM_HEXAGON:
@@ -807,15 +796,34 @@ static int64_t getTlsTpOffset(Ctx &ctx, const Symbol &s) {
   case EM_SPARCV9:
   case EM_386:
   case EM_X86_64:
-    return s.getVA(ctx, 0) - tls->p_memsz -
-           ((-tls->p_vaddr - tls->p_memsz) & (tls->p_align - 1));
+    return va - p->p_memsz - ((-p->p_vaddr - p->p_memsz) & (p->p_align - 1));
   default:
     llvm_unreachable("unhandled ctx.arg.emachine");
   }
 }
 
-static int64_t getTlsTgotOffset(Ctx &ctx, const Symbol &s) {
-  return s.getTgotVA(ctx);
+// A TLS symbol's virtual address is relative to the TLS segment. Add a
+// target-specific adjustment to produce a thread-pointer-relative offset.
+static int64_t getTlsTpOffset(Ctx &ctx, const Symbol &s) {
+  // On targets that support TLSDESC, _TLS_MODULE_BASE_@tpoff = 0.
+  if (&s == ctx.sym.tlsModuleBase)
+    return 0;
+
+  PhdrEntry *tls = ctx.tlsPhdr;
+  if (!tls) // Reported an error in getSymVA
+    return 0;
+
+  // See the comment in handleTlsRelocation. For TLSDESC=>IE,
+  // R_RISCV_TLSDESC_{LOAD_LO12,ADD_LO12_I,CALL} also reach here. While
+  // `tls` may be null, the return value is ignored.
+  if (ctx.arg.emachine == EM_RISCV && s.type != STT_TLS)
+    return 0;
+
+  return getTpOffset(ctx, s.getVA(ctx, 0), tls);
+}
+
+static int64_t getTgotTpOffset(Ctx &ctx, const Symbol &s) {
+  return getTpOffset(ctx, s.getTgotVA(ctx), ctx.tgotPhdr);
 }
 
 uint64_t InputSectionBase::getRelocTargetVA(Ctx &ctx, const Relocation &r,
@@ -1054,7 +1062,7 @@ uint64_t InputSectionBase::getRelocTargetVA(Ctx &ctx, const Relocation &r,
   case R_TGOT_TP:
   case R_RELAX_TGOT_TLS_GD_TO_LE:
   case R_RELAX_TGOT_TLS_IE_TO_LE:
-    return getTlsTgotOffset(ctx, *r.sym) + a;
+    return getTgotTpOffset(ctx, *r.sym) + a;
   case R_TGOT_GOT:
   case R_RELAX_TGOT_TLS_GD_TO_IE_ABS:
     return ctx.in.got->getTgotAddr(*r.sym) + a;
