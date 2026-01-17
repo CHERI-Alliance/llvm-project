@@ -1366,12 +1366,11 @@ TgotSection::TgotSection(Ctx &ctx)
 void TgotSection::addConstant(const Relocation &r) { relocations.push_back(r); }
 void TgotSection::addEntry(Symbol &sym) {
   assert(sym.auxIdx == ctx.symAux.size() - 1);
-  ctx.symAux.back().tgotIdx = entries.size();
-  entries.push_back(&sym);
+  ctx.symAux.back().tgotIdx = numEntries++;
 }
 
 size_t TgotSection::getSize() const {
-  return entries.size() * ctx.target->gotEntrySize;
+  return numEntries * ctx.target->gotEntrySize;
 }
 
 void TgotSection::writeTo(uint8_t *buf) {
