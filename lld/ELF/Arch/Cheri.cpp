@@ -353,12 +353,6 @@ void CheriCapRelocsSection::addReloc(
             " is less than 0:\n>>> Location: " + loc.toString(ctx) +
             "\n>>> Target: " + target.verboseToString(ctx));
 
-  bool canWriteLoc = (loc.section->flags & SHF_WRITE) || !ctx.arg.zText;
-  if (!canWriteLoc) {
-    readOnlyCapRelocsError(ctx, *target.sym(), "\n>>> referenced by " + sourceMsg());
-    return;
-  }
-
   bool isCode = type == ctx.target->symbolicCodeCapRel;
   addEntry(loc, {isCode, target, addend});
 }
