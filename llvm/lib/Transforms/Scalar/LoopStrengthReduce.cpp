@@ -1235,11 +1235,10 @@ public:
     return C.NumRegs == ~0u;
   }
 
-  void RateFormula(const Formula &F,
-                   SmallPtrSetImpl<const SCEV *> &Regs,
-                   const DenseSet<const SCEV *> &VisitedRegs,
-                   const LSRUse &LU,
-                   SmallPtrSetImpl<const SCEV *> *LoserRegs = nullptr);
+  void RateFormula(const Formula &F, SmallPtrSetImpl<const SCEV *> &Regs,
+                   const DenseSet<const SCEV *> &VisitedRegs, const LSRUse &LU,
+                   SmallPtrSetImpl<const SCEV *> *LoserRegs = nullptr,
+                   bool IsBaseline = false);
 
   void print(raw_ostream &OS) const;
   void dump() const;
@@ -1499,11 +1498,11 @@ void Cost::RatePrimaryRegister(const Formula &F, const SCEV *Reg,
   }
 }
 
-void Cost::RateFormula(const Formula &F,
-                       SmallPtrSetImpl<const SCEV *> &Regs,
+void Cost::RateFormula(const Formula &F, SmallPtrSetImpl<const SCEV *> &Regs,
                        const DenseSet<const SCEV *> &VisitedRegs,
                        const LSRUse &LU,
-                       SmallPtrSetImpl<const SCEV *> *LoserRegs) {
+                       SmallPtrSetImpl<const SCEV *> *LoserRegs,
+                       bool IsBaseline) {
   if (isLoser())
     return;
   assert(F.isCanonical(*L) && "Cost is accurate only for canonical formula");
@@ -1516,12 +1515,16 @@ void Cost::RateFormula(const Formula &F,
       Lose();
       return;
     }
+    if (!IsBaseline && !TTI->isLegalBaseRegForLSR(ScaledReg)) {
+      Lose();
+      return;
+    }
     RatePrimaryRegister(F, ScaledReg, Regs, LoserRegs);
     if (isLoser())
       return;
   }
   for (const SCEV *BaseReg : F.BaseRegs) {
-    if (!TTI->isLegalBaseRegForLSR(BaseReg)) {
+    if (!IsBaseline && !TTI->isLegalBaseRegForLSR(BaseReg)) {
       Lose();
       return;
     }
@@ -3633,7 +3636,7 @@ void LSRInstance::CollectFixupsAndInitialFormulae() {
     if (!VisitedLSRUse.count(LUIdx) && !LF.isUseFullyOutsideLoop(L)) {
       Formula F;
       F.initialMatch(S, L, SE);
-      BaselineCost.RateFormula(F, Regs, VisitedRegs, LU);
+      BaselineCost.RateFormula(F, Regs, VisitedRegs, LU, nullptr, true);
       VisitedLSRUse.insert(LUIdx);
     }
 
