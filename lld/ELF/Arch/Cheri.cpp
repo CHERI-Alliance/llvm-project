@@ -1040,8 +1040,8 @@ void MipsCheriCapTableMappingSection::writeTo(uint8_t *buf) {
 
   // Write the mapping from function vaddr -> captable subset for RTLD
   std::vector<CaptableMappingEntry> entries;
-  // Note: Symtab->getSymbols() only returns the symbols in .dynsym. We need
-  // to use In.sym()tab instead since we also want to add all local functions!
+  // Note: symTab->getSymbols() only returns the symbols in .dynsym. We need
+  // to use in.symTab instead since we also want to add all local functions!
   for (const SymbolTableEntry &ste : ctx.in.symTab->getSymbols()) {
     Symbol* sym = ste.sym;
     if (!sym->isDefined() || !sym->isFunc())
