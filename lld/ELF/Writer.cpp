@@ -1856,6 +1856,7 @@ static bool isCheriBoundsSection(Ctx &ctx, const OutputSection *sec) {
   // Treat __(tgot_)cap_relocs like REL* even though it's PROGBITS.
   if (sec->type == SHT_PROGBITS && sec->name != "__cap_relocs" &&
       sec->name != "__tgot_cap_relocs" && sec != ctx.in.tgot->getParent() &&
+      (flags & SHF_TLS) == 0 &&
       ((flags & SHF_WRITE) == 0 ||
        isRelroSection(ctx, sec, /*ignoreZRelro=*/true)))
     return true;
