@@ -1,0 +1,61 @@
+name: CHERI LLVM CI
+
+on: [push]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    runs-on: the-capable-hub-aws-ci
+    env:
+      CMAKE_GENERATOR: Ninja
+      LLVM_LIT_ARGS: --max-time 3600 --timeout 300 -s -vv --xunit-xml-output=test-results.xml
+    container:
+        image: capablehub/tch-ubuntu-24-builder:latest
+
+    steps:
+      - name: setup
+        run: |
+          sudo apt-get update && sudo apt-get install -y ccache googletest mold python3-psutil
+
+      - name: checkout
+        uses: actions/checkout@v5
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.21
+        with:
+          max-size: 10G
+
+      - name: configure
+        run: |
+          cmake -S llvm -B build \
+              -Wno-dev \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+              -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+              -DLLVM_ENABLE_PROJECTS="clang;lld" \
+              -DLLVM_TARGETS_TO_BUILD="AArch64;Mips;RISCV;X86" \
+              -DLLVM_ENABLE_ASSERTIONS=ON \
+              -DLLVM_USE_LINKER=mold \
+              -DLLVM_INCLUDE_EXAMPLES=OFF \
+              -DLLVM_ENABLE_RTTI=ON \
+              -DLLVM_ENABLE_EH=ON  \
+              -DLLVM_LIT_ARGS="${LLVM_LIT_ARGS}" \
+              -DCLANG_DEFAULT_RTLIB="compiler-rt"
+
+      - name: build
+        run: |
+          ninja -C build
+
+      - name: test
+        run: |
+          ninja -C build check-all
+
+      - name: publish
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: (!cancelled())
+        with:
+          files: build/test-results.xml
