@@ -983,7 +983,7 @@ void elf::addGotEntry(Symbol &sym) {
   // Otherwise, the value is either a link-time constant or the load base
   // plus a constant. For CHERI it always requires run-time initialisation,
   // with the exception of undef weak symbols.
-  if ((config->isCheriAbi && sym.isUndefWeak() && !config->isStatic) ||
+  if ((config->isCheriAbi && sym.isUndefWeak()) ||
       (!config->isCheriAbi && (!config->isPic || isAbsolute(sym))))
     in.got->addConstant({expr, type, off, 0, &sym});
   else
