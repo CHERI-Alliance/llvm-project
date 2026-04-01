@@ -2218,6 +2218,9 @@ def PseudoCJump : Pseudo<(outs GPCR:$rd),
                          (ins pseudo_cap_jump_symbol:$target), []> {
   let AsmString = "jump\t$target, $rd";
 }
+let Predicates = [HasZCheriPurecapOrCheri, IsCapMode, IsPureCapABI] in
+def : InstAlias<"cjump $target, $rd",
+                (PseudoCJump GPCR:$rd, pseudo_cap_jump_symbol:$target), 0>;
 
 defm : CheriLdPat<sextloadi8, CLB>, Requires<[HasZCheriPurecapOrCheri, IsCapMode]>;
 defm : CheriLdPat<extloadi8, CLB>, Requires<[HasZCheriPurecapOrCheri, IsCapMode]>;
