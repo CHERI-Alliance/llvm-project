@@ -44,13 +44,12 @@ define dso_local void @hoist_csetbounds(i32 signext %cond, ptr addrspace(200) %f
 ; CHECK-NEXT:    cgetpccincoffset $c19, $1
 ; CHECK-NEXT:    cincoffset $c20, $c3, 4
 ; CHECK-NEXT:    b .LBB0_2
-; CHECK-NEXT:    addiu $16, $zero, -1
+; CHECK-NEXT:    addiu $16, $zero, 0
 ; CHECK-NEXT:  .LBB0_1: # %for.inc
 ; CHECK-NEXT:    # in Loop: Header=BB0_2 Depth=1
-; CHECK-NEXT:    addiu $16, $16, 1
 ; CHECK-NEXT:    sltiu $1, $16, 99
 ; CHECK-NEXT:    beqz $1, .LBB0_4
-; CHECK-NEXT:    nop
+; CHECK-NEXT:    addiu $16, $16, 1
 ; CHECK-NEXT:  .LBB0_2: # %for.body
 ; CHECK-NEXT:    # =>This Inner Loop Header: Depth=1
 ; CHECK-NEXT:    cbez $c18, .LBB0_1

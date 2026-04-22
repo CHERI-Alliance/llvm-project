@@ -1237,6 +1237,7 @@ public:
 
   void RateFormula(const Formula &F, SmallPtrSetImpl<const SCEV *> &Regs,
                    const DenseSet<const SCEV *> &VisitedRegs, const LSRUse &LU,
+                   bool IsCHERI,
                    SmallPtrSetImpl<const SCEV *> *LoserRegs = nullptr,
                    bool IsBaseline = false);
 
@@ -1498,9 +1499,70 @@ void Cost::RatePrimaryRegister(const Formula &F, const SCEV *Reg,
   }
 }
 
+static bool IsFormulaMonotonic(const Formula &F, LSRUse::KindType UseKind) {
+  // Because CHERI can have very tight representable bounds, we have to avoid
+  // ever taking the values out of range and then trying bring them back in. We
+  // achieve that by enforcing that a formula is monotonic, i.e. that either all
+  // of the terms are positive (or zero) or negative (or zero). What follows is
+  // a conservative approximation of that check.
+  bool SignKnown = !F.BaseOffset.isZero();
+  bool IsPositive = F.BaseOffset.isGreaterThanZero();
+
+  if (SignKnown && !F.UnfoldedOffset.isZero())
+    return IsPositive == F.BaseOffset.isGreaterThanZero();
+  if (!SignKnown) {
+    SignKnown = !F.UnfoldedOffset.isZero();
+    IsPositive = F.UnfoldedOffset.isGreaterThanZero();
+  }
+
+  if (F.Scale != 0) {
+    if (SignKnown)
+      return IsPositive == (F.Scale > 0);
+    SignKnown = F.Scale != 0;
+    IsPositive = F.Scale > 0;
+  }
+
+  if (!SignKnown) {
+    SignKnown = true;
+    IsPositive = true;
+  }
+
+  auto HasSignMismatchedAddRec = [&IsPositive](const SCEV *S) {
+    const SCEVAddRecExpr *AddRec = dyn_cast<SCEVAddRecExpr>(S);
+    if (!AddRec)
+      return false;
+    auto *StartCst = dyn_cast<SCEVConstant>(AddRec->getStart());
+    auto *StepCst = dyn_cast<SCEVConstant>(AddRec->getOperand(1));
+    if (StartCst && !StartCst->getAPInt().isZero() &&
+        IsPositive != StartCst->getAPInt().isStrictlyPositive())
+      return true;
+    if (StepCst && IsPositive != StepCst->getAPInt().isStrictlyPositive())
+      return true;
+    if (StartCst && StepCst && !StartCst->getAPInt().isZero())
+      return StartCst->getAPInt().isStrictlyPositive() !=
+             StepCst->getAPInt().isStrictlyPositive();
+    return false;
+  };
+
+  for (const auto &BaseReg : F.BaseRegs) {
+    if (BaseReg == F.ScaledReg)
+      continue;
+    if (SCEVExprContains(BaseReg, HasSignMismatchedAddRec))
+      return false;
+  }
+
+  if (F.ScaledReg) {
+    IsPositive ^= F.Scale < 0;
+    if (SCEVExprContains(F.ScaledReg, HasSignMismatchedAddRec))
+      return false;
+  }
+
+  return true;
+}
+
 void Cost::RateFormula(const Formula &F, SmallPtrSetImpl<const SCEV *> &Regs,
                        const DenseSet<const SCEV *> &VisitedRegs,
-                       const LSRUse &LU,
+                       const LSRUse &LU, bool IsCHERI,
                        SmallPtrSetImpl<const SCEV *> *LoserRegs,
                        bool IsBaseline) {
   if (isLoser())
@@ -1510,12 +1572,12 @@ void Cost::RateFormula(const Formula &F, SmallPtrSetImpl<const SCEV *> &Regs,
   unsigned PrevAddRecCost = C.AddRecCost;
   unsigned PrevNumRegs = C.NumRegs;
   unsigned PrevNumBaseAdds = C.NumBaseAdds;
+  if (IsCHERI && !IsBaseline && !IsFormulaMonotonic(F, LU.Kind)) {
+    Lose();
+    return;
+  }
   if (const SCEV *ScaledReg = F.ScaledReg) {
     if (VisitedRegs.count(ScaledReg)) {
-      Lose();
-      return;
-    }
-    if (!IsBaseline && !TTI->isLegalBaseRegForLSR(ScaledReg, F.Scale)) {
       Lose();
       return;
     }
@@ -1524,10 +1586,6 @@ void Cost::RateFormula(const Formula &F, SmallPtrSetImpl<const SCEV *> &Regs,
       return;
   }
   for (const SCEV *BaseReg : F.BaseRegs) {
-    if (!IsBaseline && !TTI->isLegalBaseRegForLSR(BaseReg, 1)) {
-      Lose();
-      return;
-    }
     if (VisitedRegs.count(BaseReg)) {
       Lose();
       return;
@@ -2200,6 +2258,8 @@ class LSRInstance {
   /// Induction variables that were generated and inserted by the SCEV Expander.
   SmallVector<llvm::WeakVH, 2> ScalarEvolutionIVs;
 
+  bool IsCHERI = false;
+
   void OptimizeShadowIV();
   bool FindIVUserForCond(ICmpInst *Cond, IVStrideUse *&CondUse);
   ICmpInst *OptimizeMax(ICmpInst *Cond, IVStrideUse* &CondUse);
@@ -2298,7 +2358,7 @@ class LSRInstance {
 public:
   LSRInstance(Loop *L, IVUsers &IU, ScalarEvolution &SE, DominatorTree &DT,
               LoopInfo &LI, const TargetTransformInfo &TTI, AssumptionCache &AC,
-              TargetLibraryInfo &TLI, MemorySSAUpdater *MSSAU);
+              TargetLibraryInfo &TLI, MemorySSAUpdater *MSSAU, bool IsCHERI);
 
   bool getChanged() const { return Changed; }
   const SmallVectorImpl<WeakVH> &getScalarEvolutionIVs() const {
@@ -3352,7 +3412,7 @@ void LSRInstance::CollectChains() {
 void LSRInstance::FinalizeChain(IVChain &Chain) {
   assert(!Chain.Incs.empty() && "empty IV chains are not allowed");
   LLVM_DEBUG(dbgs() << "Final Chain: " << *Chain.Incs[0].UserInst << "\n");
-  
+
   for (const IVInc &Inc : Chain) {
     LLVM_DEBUG(dbgs() << "        Inc: " << *Inc.UserInst << "\n");
     auto UseI = find(Inc.UserInst->operands(), Inc.IVOperand);
@@ -3636,7 +3696,8 @@ void LSRInstance::CollectFixupsAndInitialFormulae() {
     if (!VisitedLSRUse.count(LUIdx) && !LF.isUseFullyOutsideLoop(L)) {
       Formula F;
       F.initialMatch(S, L, SE);
-      BaselineCost.RateFormula(F, Regs, VisitedRegs, LU, nullptr, true);
+      BaselineCost.RateFormula(F, Regs, VisitedRegs, LU, IsCHERI, nullptr,
+                               true);
       VisitedLSRUse.insert(LUIdx);
     }
 
@@ -4786,7 +4847,7 @@ void LSRInstance::FilterOutUndesirableDedicatedRegisters() {
       // the corresponding bad register from the Regs set.
       Cost CostF(L, SE, TTI, AMK);
       Regs.clear();
-      CostF.RateFormula(F, Regs, VisitedRegs, LU, &LoserRegs);
+      CostF.RateFormula(F, Regs, VisitedRegs, LU, IsCHERI, &LoserRegs);
       if (CostF.isLoser()) {
         // During initial formula generation, undesirable formulae are generated
         // by uses within other loops that have some non-trivial address mode or
@@ -4819,7 +4880,7 @@ void LSRInstance::FilterOutUndesirableDedicatedRegisters() {
 
         Cost CostBest(L, SE, TTI, AMK);
         Regs.clear();
-        CostBest.RateFormula(Best, Regs, VisitedRegs, LU);
+        CostBest.RateFormula(Best, Regs, VisitedRegs, LU, IsCHERI);
         if (CostF.isLess(CostBest))
           std::swap(F, Best);
         LLVM_DEBUG(dbgs() << "  Filtering out formula "; F.print(dbgs());
@@ -5077,9 +5138,9 @@ void LSRInstance::NarrowSearchSpaceByFilterFormulaWithSameScaledReg() {
       Cost CostFA(L, SE, TTI, AMK);
       Cost CostFB(L, SE, TTI, AMK);
       Regs.clear();
-      CostFA.RateFormula(FA, Regs, VisitedRegs, LU);
+      CostFA.RateFormula(FA, Regs, VisitedRegs, LU, IsCHERI);
       Regs.clear();
-      CostFB.RateFormula(FB, Regs, VisitedRegs, LU);
+      CostFB.RateFormula(FB, Regs, VisitedRegs, LU, IsCHERI);
       return CostFA.isLess(CostFB);
     };
 
@@ -5484,7 +5545,7 @@ void LSRInstance::SolveRecurse(SmallVectorImpl<const Formula *> &Solution,
     // the current best, prune the search at that point.
     NewCost = CurCost;
     NewRegs = CurRegs;
-    NewCost.RateFormula(F, NewRegs, VisitedRegs, LU);
+    NewCost.RateFormula(F, NewRegs, VisitedRegs, LU, IsCHERI);
     if (NewCost.isLess(SolutionCost)) {
       Workspace.push_back(&F);
       if (Workspace.size() != Uses.size()) {
@@ -6158,13 +6219,14 @@ void LSRInstance::ImplementSolution(
 LSRInstance::LSRInstance(Loop *L, IVUsers &IU, ScalarEvolution &SE,
                          DominatorTree &DT, LoopInfo &LI,
                          const TargetTransformInfo &TTI, AssumptionCache &AC,
-                         TargetLibraryInfo &TLI, MemorySSAUpdater *MSSAU)
+                         TargetLibraryInfo &TLI, MemorySSAUpdater *MSSAU,
+                         bool IsCHERI)
     : IU(IU), SE(SE), DT(DT), LI(LI), AC(AC), TLI(TLI), TTI(TTI), L(L),
       MSSAU(MSSAU), AMK(PreferredAddresingMode.getNumOccurrences() > 0
                             ? PreferredAddresingMode
                             : TTI.getPreferredAddressingMode(L, &SE)),
       Rewriter(SE, L->getHeader()->getDataLayout(), "lsr", false),
-      BaselineCost(L, SE, TTI, AMK) {
+      BaselineCost(L, SE, TTI, AMK), IsCHERI(IsCHERI) {
   // If LoopSimplify form is not available, stay out of trouble.
   if (!L->isLoopSimplifyForm())
     return;
@@ -6660,7 +6722,7 @@ struct SCEVDbgValueBuilder {
       if (Op.getOp() != dwarf::DW_OP_LLVM_arg) {
         Op.appendToVector(DestExpr);
         continue;
-      } 
+      }
 
       DestExpr.push_back(dwarf::DW_OP_LLVM_arg);
       // `DW_OP_LLVM_arg n` represents the nth LocationOp in this SCEV,
@@ -7266,9 +7328,14 @@ static bool ReduceLoopStrength(Loop *L, IVUsers &IU, ScalarEvolution &SE,
   if (MSSA)
     MSSAU = std::make_unique<MemorySSAUpdater>(MSSA);
 
+  const DataLayout &DL = L->getHeader()->getDataLayout();
+  // TODO: Missing a nice isCheriPureCap interface.
+  bool IsCHERI = DL.hasCheriCapabilities() &&
+                 DL.isFatPointer(DL.getDefaultGlobalsAddressSpace());
+
   // Run the main LSR transformation.
   const LSRInstance &Reducer =
-      LSRInstance(L, IU, SE, DT, LI, TTI, AC, TLI, MSSAU.get());
+      LSRInstance(L, IU, SE, DT, LI, TTI, AC, TLI, MSSAU.get(), IsCHERI);
   Changed |= Reducer.getChanged();
 
   // Remove any extra phis created by processing inner loops.

@@ -20,8 +20,7 @@ define dso_local i32 @strlen(ptr addrspace(200) noundef readonly %str) local_unn
 ; CHECK-PURECAP-RV32-NEXT:    [[INCDEC_PTR]] = getelementptr inbounds nuw i8, ptr addrspace(200) [[S_0]], i32 1
 ; CHECK-PURECAP-RV32-NEXT:    br i1 [[TOBOOL_NOT]], label %[[FOR_END:.*]], label %[[FOR_COND]]
 ; CHECK-PURECAP-RV32:       [[FOR_END]]:
-; CHECK-PURECAP-RV32-NEXT:    [[SCEVGEP:%.*]] = getelementptr i8, ptr addrspace(200) [[INCDEC_PTR]], i32 -1
-; CHECK-PURECAP-RV32-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.cheri.cap.diff.i32(ptr addrspace(200) nonnull [[SCEVGEP]], ptr addrspace(200) [[STR]])
+; CHECK-PURECAP-RV32-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.cheri.cap.diff.i32(ptr addrspace(200) nonnull [[S_0]], ptr addrspace(200) [[STR]])
 ; CHECK-PURECAP-RV32-NEXT:    ret i32 [[TMP1]]
 ;
 entry:

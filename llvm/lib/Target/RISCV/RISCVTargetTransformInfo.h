@@ -363,8 +363,6 @@ public:
     llvm_unreachable("unknown register class");
   }
 
-  bool isLegalBaseRegForLSR(const SCEV *S, int64_t scale) const override;
-
   unsigned getRegisterClassForType(bool Vector, Type *Ty = nullptr) const {
     if (Vector)
       return RISCVRegisterClass::VRRC;
@@ -401,6 +399,8 @@ public:
   }
 
   std::optional<unsigned> getMinPageSize() const { return 4096; }
+
+  bool shouldDropLSRSolutionIfLessProfitable() const;
 };
 
 } // end namespace llvm

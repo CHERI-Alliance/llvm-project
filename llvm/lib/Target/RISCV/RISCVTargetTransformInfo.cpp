@@ -1931,65 +1931,6 @@ unsigned RISCVTTIImpl::getMaximumVF(unsigned ElemWidth, unsigned Opcode) const {
   return std::max<unsigned>(1U, RegWidth.getFixedValue() / ElemWidth);
 }
 
-bool RISCVTTIImpl::isLegalBaseRegForLSR(const SCEV *S, int64_t scale) const {
-  if (isCheriPureCapABI(ST->getTargetABI())) {
-    if (scale < 0)
-      return false;
-
-    // Disallow any SCEV where the base offset is negative.
-    // This is needed because CHERI can't represent pointers before the
-    // beginning of an array.
-    if (const auto *Cst = dyn_cast<SCEVConstant>(S)) {
-      return !Cst->getValue()->isNegative();
-    }
-
-    if (const auto *AddRec = dyn_cast<SCEVAddRecExpr>(S)) {
-      // We know that this iteration is safe if both the base increment and the
-      // step are always in the same direction.
-      auto *StartCst = dyn_cast<SCEVConstant>(AddRec->getStart());
-      auto *StepCst = dyn_cast<SCEVConstant>(AddRec->getOperand(1));
-      if (StartCst && StepCst)
-        return StartCst->getValue()->isNegative() ==
-               StepCst->getValue()->isNegative();
-      return isLegalBaseRegForLSR(AddRec->getStart(), 1);
-    }
-
-    if (const auto *A = dyn_cast<SCEVAddExpr>(S)) {
-      bool AllNonCst = true;
-      for (const auto *Op : A->operands()) {
-        const auto *OpCst = dyn_cast<SCEVConstant>(Op);
-        if (OpCst && OpCst->getValue()->isNegative())
-          return false;
-        else if (!isLegalBaseRegForLSR(Op, 1))
-          return false;
-        AllNonCst &= (OpCst == nullptr);
-      }
-      // noncst + noncst must be treated conservatively, as one of them
-      // could be negative.
-      if (AllNonCst)
-        return false;
-    } else if (const auto *M = dyn_cast<SCEVMulExpr>(S)) {
-      bool AllNonCst = true;
-      for (const auto *Op : M->operands()) {
-        const auto *OpCst = dyn_cast<SCEVConstant>(Op);
-        if (OpCst && OpCst->getValue()->isNegative())
-          return false;
-        else if (!isLegalBaseRegForLSR(Op, 1))
-          return false;
-        AllNonCst &= (OpCst == nullptr);
-      }
-      // noncst + noncst must be treated conservatively, as one of them
-      // could be negative.
-      if (AllNonCst)
-        return false;
-    }
-
-    return true;
-  }
-
-  return BasicTTIImplBase::isLegalBaseRegForLSR(S, scale);
-}
-
 bool RISCVTTIImpl::isLSRCostLess(const TargetTransformInfo::LSRCost &C1,
                                  const TargetTransformInfo::LSRCost &C2) {
   // RISC-V specific here are "instruction number 1st priority".
@@ -2027,4 +1968,8 @@ bool RISCVTTIImpl::areInlineCompatible(const Function *Caller,
   // Inline a callee if its target-features are a subset of the callers
   // target-features.
   return (CallerBits & CalleeBits) == CalleeBits;
+}
+
+bool RISCVTTIImpl::shouldDropLSRSolutionIfLessProfitable() const {
+  return isCheriPureCapABI(getST()->getTargetABI());
 }

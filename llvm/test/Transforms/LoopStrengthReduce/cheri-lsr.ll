@@ -14,23 +14,22 @@ define dso_local void @f(i32 noundef %y_offset) local_unnamed_addr addrspace(200
 ; RV32-PURECAP-CHECK-NEXT:  [[ENTRY:.*]]:
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_COND:.*]]
 ; RV32-PURECAP-CHECK:       [[FOR_COND]]:
-; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV:%.*]] = phi i32 [ [[LSR_IV_NEXT:%.*]], %[[FOR_INC:.*]] ], [ [[Y_OFFSET]], %[[ENTRY]] ]
-; RV32-PURECAP-CHECK-NEXT:    [[Y_0:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_INC]] ]
+; RV32-PURECAP-CHECK-NEXT:    [[Y_0:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_INC:.*]] ]
 ; RV32-PURECAP-CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[Y_0]], 10
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[CLEANUP:.*]], label %[[FOR_BODY:.*]]
 ; RV32-PURECAP-CHECK:       [[FOR_BODY]]:
+; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV:%.*]] = add nsw i32 [[Y_0]], [[Y_OFFSET]]
 ; RV32-PURECAP-CHECK-NEXT:    [[CMP1:%.*]] = icmp slt i32 [[LSR_IV]], 0
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[CMP1]], label %[[FOR_INC]], label %[[IF_END:.*]]
 ; RV32-PURECAP-CHECK:       [[IF_END]]:
 ; RV32-PURECAP-CHECK-NEXT:    [[CMP3:%.*]] = icmp ugt i32 [[LSR_IV]], 9
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[CMP3]], label %[[CLEANUP]], label %[[IF_END5:.*]]
 ; RV32-PURECAP-CHECK:       [[IF_END5]]:
-; RV32-PURECAP-CHECK-NEXT:    [[SCEVGEP:%.*]] = getelementptr i8, ptr addrspace(200) @buf, i32 [[LSR_IV]]
+; RV32-PURECAP-CHECK-NEXT:    [[SCEVGEP:%.*]] = getelementptr inbounds nuw [10 x i8], ptr addrspace(200) @buf, i32 0, i32 [[LSR_IV]]
 ; RV32-PURECAP-CHECK-NEXT:    store i8 1, ptr addrspace(200) [[SCEVGEP]], align 1
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_INC]]
 ; RV32-PURECAP-CHECK:       [[FOR_INC]]:
 ; RV32-PURECAP-CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[Y_0]], 1
-; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV_NEXT]] = add i32 [[LSR_IV]], 1
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_COND]]
 ; RV32-PURECAP-CHECK:       [[CLEANUP]]:
 ; RV32-PURECAP-CHECK-NEXT:    ret void

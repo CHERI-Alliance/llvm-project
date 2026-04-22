@@ -50,13 +50,15 @@ define void @hoist_alloca_uncond(i32 signext %cond) local_unnamed_addr addrspace
 ; CHECK-LABEL: hoist_alloca_uncond:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    cincoffset $c11, $c11, -640
-; CHECK-NEXT:    csd $16, $zero, 632($c11) # 8-byte Folded Spill
+; CHECK-NEXT:    csd $17, $zero, 632($c11) # 8-byte Folded Spill
+; CHECK-NEXT:    csd $16, $zero, 624($c11) # 8-byte Folded Spill
 ; CHECK-NEXT:    csc $c18, $zero, 608($c11) # 16-byte Folded Spill
 ; CHECK-NEXT:    csc $c17, $zero, 592($c11) # 16-byte Folded Spill
 ; CHECK-NEXT:    lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
 ; CHECK-NEXT:    daddiu $1, $1, %pcrel_lo(_CHERI_CAPABILITY_TABLE_-4)
 ; CHECK-NEXT:    cgetpccincoffset $c18, $1
-; CHECK-NEXT:    addiu $16, $zero, 100
+; CHECK-NEXT:    addiu $16, $zero, 0
+; CHECK-NEXT:    addiu $17, $zero, 100
 ; CHECK-NEXT:  .LBB0_1: # %for.body
 ; CHECK-NEXT:    # =>This Inner Loop Header: Depth=1
 ; CHECK-NEXT:    clcbi $c12, %capcall20(call)($c18)
@@ -65,13 +67,14 @@ define void @hoist_alloca_uncond(i32 signext %cond) local_unnamed_addr addrspace
 ; CHECK-NEXT:    cincoffset $c4, $c11, 12
 ; CHECK-NEXT:    cjalr $c12, $c17
 ; CHECK-NEXT:    csetbounds $c4, $c4, 88
-; CHECK-NEXT:    addiu $16, $16, -1
-; CHECK-NEXT:    bnez $16, .LBB0_1
+; CHECK-NEXT:    addiu $16, $16, 1
+; CHECK-NEXT:    bne $16, $17, .LBB0_1
 ; CHECK-NEXT:    nop
 ; CHECK-NEXT:  # %bb.2: # %for.cond.cleanup
 ; CHECK-NEXT:    clc $c17, $zero, 592($c11) # 16-byte Folded Reload
 ; CHECK-NEXT:    clc $c18, $zero, 608($c11) # 16-byte Folded Reload
-; CHECK-NEXT:    cld $16, $zero, 632($c11) # 8-byte Folded Reload
+; CHECK-NEXT:    cld $16, $zero, 624($c11) # 8-byte Folded Reload
+; CHECK-NEXT:    cld $17, $zero, 632($c11) # 8-byte Folded Reload
 ; CHECK-NEXT:    cjr $c17
 ; CHECK-NEXT:    cincoffset $c11, $c11, 640
 entry:
@@ -97,21 +100,23 @@ declare void @call(i32 addrspace(200)*, i32 addrspace(200)*) local_unnamed_addr 
 define void @hoist_alloca_cond(i32 signext %cond) local_unnamed_addr addrspace(200) nounwind {
 ; CHECK-LABEL: hoist_alloca_cond:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    cincoffset $c11, $c11, -640
-; CHECK-NEXT:    csd $17, $zero, 632($c11) # 8-byte Folded Spill
-; CHECK-NEXT:    csd $16, $zero, 624($c11) # 8-byte Folded Spill
+; CHECK-NEXT:    cincoffset $c11, $c11, -656
+; CHECK-NEXT:    csd $18, $zero, 648($c11) # 8-byte Folded Spill
+; CHECK-NEXT:    csd $17, $zero, 640($c11) # 8-byte Folded Spill
+; CHECK-NEXT:    csd $16, $zero, 632($c11) # 8-byte Folded Spill
 ; CHECK-NEXT:    csc $c18, $zero, 608($c11) # 16-byte Folded Spill
 ; CHECK-NEXT:    csc $c17, $zero, 592($c11) # 16-byte Folded Spill
 ; CHECK-NEXT:    move $16, $4
 ; CHECK-NEXT:    lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
 ; CHECK-NEXT:    daddiu $1, $1, %pcrel_lo(_CHERI_CAPABILITY_TABLE_-4)
 ; CHECK-NEXT:    cgetpccincoffset $c18, $1
+; CHECK-NEXT:    addiu $17, $zero, 0
 ; CHECK-NEXT:    b .LBB1_2
-; CHECK-NEXT:    addiu $17, $zero, 100
+; CHECK-NEXT:    addiu $18, $zero, 100
 ; CHECK-NEXT:  .LBB1_1: # %for.inc
 ; CHECK-NEXT:    # in Loop: Header=BB1_2 Depth=1
-; CHECK-NEXT:    addiu $17, $17, -1
-; CHECK-NEXT:    beqz $17, .LBB1_4
+; CHECK-NEXT:    addiu $17, $17, 1
+; CHECK-NEXT:    beq $17, $18, .LBB1_4
 ; CHECK-NEXT:    nop
 ; CHECK-NEXT:  .LBB1_2: # %for.body
 ; CHECK-NEXT:    # =>This Inner Loop Header: Depth=1
@@ -130,10 +135,11 @@ define void @hoist_alloca_cond(i32 signext %cond) local_unnamed_addr addrspace(2
 ; CHECK-NEXT:  .LBB1_4: # %for.cond.cleanup
 ; CHECK-NEXT:    clc $c17, $zero, 592($c11) # 16-byte Folded Reload
 ; CHECK-NEXT:    clc $c18, $zero, 608($c11) # 16-byte Folded Reload
-; CHECK-NEXT:    cld $16, $zero, 624($c11) # 8-byte Folded Reload
-; CHECK-NEXT:    cld $17, $zero, 632($c11) # 8-byte Folded Reload
+; CHECK-NEXT:    cld $16, $zero, 632($c11) # 8-byte Folded Reload
+; CHECK-NEXT:    cld $17, $zero, 640($c11) # 8-byte Folded Reload
+; CHECK-NEXT:    cld $18, $zero, 648($c11) # 8-byte Folded Reload
 ; CHECK-NEXT:    cjr $c17
-; CHECK-NEXT:    cincoffset $c11, $c11, 640
+; CHECK-NEXT:    cincoffset $c11, $c11, 656
 entry:
   %buf1 = alloca [123 x i32], align 4, addrspace(200)
   %buf2 = alloca [22 x i32], align 4, addrspace(200)

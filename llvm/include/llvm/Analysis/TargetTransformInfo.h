@@ -775,8 +775,6 @@ public:
   AddressingModeKind getPreferredAddressingMode(const Loop *L,
                                                 ScalarEvolution *SE) const;
 
-  bool isLegalBaseRegForLSR(const SCEV *, int64_t scale) const;
-
   /// Return true if the target supports masked store.
   bool isLegalMaskedStore(Type *DataType, Align Alignment) const;
   /// Return true if the target supports masked load.
@@ -1901,8 +1899,7 @@ public:
                           LoopInfo *LI, DominatorTree *DT, AssumptionCache *AC,
                           TargetLibraryInfo *LibInfo) = 0;
   virtual AddressingModeKind
-    getPreferredAddressingMode(const Loop *L, ScalarEvolution *SE) const = 0;
-  virtual bool isLegalBaseRegForLSR(const SCEV *, int64_t scale) const = 0;
+  getPreferredAddressingMode(const Loop *L, ScalarEvolution *SE) const = 0;
   virtual bool isLegalMaskedStore(Type *DataType, Align Alignment) = 0;
   virtual bool isLegalMaskedLoad(Type *DataType, Align Alignment) = 0;
   virtual bool isLegalNTStore(Type *DataType, Align Alignment) = 0;
@@ -2392,9 +2389,6 @@ public:
     getPreferredAddressingMode(const Loop *L,
                                ScalarEvolution *SE) const override {
     return Impl.getPreferredAddressingMode(L, SE);
-  }
-  bool isLegalBaseRegForLSR(const SCEV *S, int64_t scale) const override {
-    return Impl.isLegalBaseRegForLSR(S, scale);
   }
   bool isLegalMaskedStore(Type *DataType, Align Alignment) override {
     return Impl.isLegalMaskedStore(DataType, Alignment);

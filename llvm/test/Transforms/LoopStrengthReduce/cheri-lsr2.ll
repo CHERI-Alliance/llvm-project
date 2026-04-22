@@ -14,8 +14,7 @@ define dso_local void @f(i32 noundef %y_offset) local_unnamed_addr addrspace(200
 ; RV32-PURECAP-CHECK-NEXT:  [[ENTRY:.*]]:
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_COND:.*]]
 ; RV32-PURECAP-CHECK:       [[FOR_COND]]:
-; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV:%.*]] = phi ptr addrspace(200) [ [[SCEVGEP:%.*]], %[[CLEANUP:.*]] ], [ @buf, %[[ENTRY]] ]
-; RV32-PURECAP-CHECK-NEXT:    [[X_0:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC13:%.*]], %[[CLEANUP]] ]
+; RV32-PURECAP-CHECK-NEXT:    [[X_0:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC13:%.*]], %[[CLEANUP:.*]] ]
 ; RV32-PURECAP-CHECK-NEXT:    [[EXITCOND24_NOT:%.*]] = icmp eq i32 [[X_0]], 10
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[EXITCOND24_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_COND1_PREHEADER:.*]]
 ; RV32-PURECAP-CHECK:       [[FOR_COND1_PREHEADER]]:
@@ -23,27 +22,25 @@ define dso_local void @f(i32 noundef %y_offset) local_unnamed_addr addrspace(200
 ; RV32-PURECAP-CHECK:       [[FOR_COND_CLEANUP]]:
 ; RV32-PURECAP-CHECK-NEXT:    ret void
 ; RV32-PURECAP-CHECK:       [[FOR_COND1]]:
-; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV1:%.*]] = phi i32 [ [[Y_OFFSET]], %[[FOR_COND1_PREHEADER]] ], [ [[LSR_IV_NEXT:%.*]], %[[FOR_INC:.*]] ]
-; RV32-PURECAP-CHECK-NEXT:    [[Y_0:%.*]] = phi i32 [ [[INC:%.*]], %[[FOR_INC]] ], [ 0, %[[FOR_COND1_PREHEADER]] ]
+; RV32-PURECAP-CHECK-NEXT:    [[Y_0:%.*]] = phi i32 [ [[INC:%.*]], %[[FOR_INC:.*]] ], [ 0, %[[FOR_COND1_PREHEADER]] ]
 ; RV32-PURECAP-CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[Y_0]], 10
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[CLEANUP]], label %[[FOR_BODY4:.*]]
 ; RV32-PURECAP-CHECK:       [[FOR_BODY4]]:
+; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV1:%.*]] = add nsw i32 [[Y_0]], [[Y_OFFSET]]
 ; RV32-PURECAP-CHECK-NEXT:    [[CMP5:%.*]] = icmp slt i32 [[LSR_IV1]], 0
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[CMP5]], label %[[FOR_INC]], label %[[IF_END:.*]]
 ; RV32-PURECAP-CHECK:       [[IF_END]]:
 ; RV32-PURECAP-CHECK-NEXT:    [[CMP7:%.*]] = icmp ugt i32 [[LSR_IV1]], 9
 ; RV32-PURECAP-CHECK-NEXT:    br i1 [[CMP7]], label %[[CLEANUP]], label %[[IF_END9:.*]]
 ; RV32-PURECAP-CHECK:       [[IF_END9]]:
-; RV32-PURECAP-CHECK-NEXT:    [[SCEVGEP2:%.*]] = getelementptr i8, ptr addrspace(200) [[LSR_IV]], i32 [[LSR_IV1]]
+; RV32-PURECAP-CHECK-NEXT:    [[SCEVGEP2:%.*]] = getelementptr inbounds nuw [10 x [10 x i8]], ptr addrspace(200) @buf, i32 0, i32 [[X_0]], i32 [[LSR_IV1]]
 ; RV32-PURECAP-CHECK-NEXT:    store i8 1, ptr addrspace(200) [[SCEVGEP2]], align 1
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_INC]]
 ; RV32-PURECAP-CHECK:       [[FOR_INC]]:
 ; RV32-PURECAP-CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[Y_0]], 1
-; RV32-PURECAP-CHECK-NEXT:    [[LSR_IV_NEXT]] = add i32 [[LSR_IV1]], 1
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_COND1]]
 ; RV32-PURECAP-CHECK:       [[CLEANUP]]:
 ; RV32-PURECAP-CHECK-NEXT:    [[INC13]] = add nuw nsw i32 [[X_0]], 1
-; RV32-PURECAP-CHECK-NEXT:    [[SCEVGEP]] = getelementptr i8, ptr addrspace(200) [[LSR_IV]], i32 10
 ; RV32-PURECAP-CHECK-NEXT:    br label %[[FOR_COND]]
 ;
 entry:
