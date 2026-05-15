@@ -9,9 +9,9 @@ define dso_local _ADDRTYPE_ @pccGetAddr() local_unnamed_addr {
 ; CHECK-NEXT:    .option capmode
 ; CHECK-NEXT:    modesw.cap
 ; CHECK-NEXT:    auipc ca0, 0
-; CHECK-NEXT:    mv a0, a0
 ; CHECK-NEXT:    .option nocapmode
 ; CHECK-NEXT:    modesw.int
+; CHECK-NEXT:    mv a0, a0
 ; CHECK-NEXT:    ret
   %1 = tail call ptr addrspace(200) @llvm.cheri.pcc.get()
   %2 = tail call _ADDRTYPE_ @llvm.cheri.cap.address.get._ADDRTYPE_(ptr addrspace(200) %1)
