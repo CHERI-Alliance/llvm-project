@@ -49,21 +49,28 @@ class ZCheri_rr<bits<7> funct7, bits<3> funct3, string opcodestr,
 let Predicates = [HasZCheriPurecap] in {
 def GCTAG  : ZCheri_r<0x0, "gctag" >,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"ytagr", "gctag">;
 def GCPERM : ZCheri_r<0x1, "gcperm">,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"ypermr", "gcperm">;
 def GCHI   : ZCheri_r<0x4, "gchi"  >,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"yhir", "gchi">;
 def GCBASE : ZCheri_r<0x5, "gcbase">,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"ybaser", "gcbase">;
 def GCLEN  : ZCheri_r<0x6, "gclen" >,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"ylenr", "gclen">;
 def GCTYPE : ZCheri_r<0x2, "gctype">,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"ytyper", "gctype">;
 } // Predicates = [HasZCheriPurecap]
 
 let Predicates = [HasZCheriHybrid] in {
 def GCMODE : ZCheri_r<0x3, "gcmode">,
                  Sched<[WriteCHERIInspect, ReadCHERIInspect]>;
+def : MnemonicAlias<"ymoder", "gcmode">;
 } // Predicates = [HasZCheriHybrid]
 
 //===----------------------------------------------------------------------===//
@@ -73,27 +80,34 @@ def GCMODE : ZCheri_r<0x3, "gcmode">,
 let Predicates = [HasZCheriPurecap] in {
 def SCADDR        : ZCheri_rr<0x6, 0x1, "scaddr">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+def : MnemonicAlias<"yaddrw", "scaddr">;
 def ACPERM        : ZCheri_rr<0x6, 0x2, "acperm">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 def SCHI          : ZCheri_rr<0x6, 0x3, "schi">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+def : MnemonicAlias<"yhiw", "schi">;
 let isReMaterializable = 1, isAsCheapAsAMove = 1 in {
 def CADD          : CheriRVInstR<0x6, 0x0, OPC_OP, "cadd", GPCR, GPCR, GPRNoX0>,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 def CADDI         : CheriRVInstrI<0x2, OPC_OP_IMM_32, "caddi", 1>,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 }
+def : MnemonicAlias<"yaddi", "caddi">;
 let defsCanBeSealed = 1 in {
 def SENTRY        : ZCheri_r<0x8, "sentry", GPCR>,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 def CBLD          : ZCheri_rr<0x6, 0x5, "cbld", GPCR, GPCRNoC0, GPCR>,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 } // defsCanBeSealed = 1
+def : MnemonicAlias<"ysentry", "sentry">;
+def : MnemonicAlias<"ybld", "cbld">;
 
 def SCBNDS        : ZCheri_rr<0x7, 0x0, "scbnds">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+def : MnemonicAlias<"ybndsw", "scbnds">;
 def SCBNDSR       : ZCheri_rr<0x7, 0x1, "scbndsr">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+def : MnemonicAlias<"ybndsrw", "scbndsr">;
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 def SCBNDSI
     : RVInstCheriSetBoundsImmFmt<0x1, 0x5, OPC_OP_IMM, (outs GPCR:$rd),
@@ -101,18 +115,27 @@ def SCBNDSI
                                  "scbndsi", "$rd, $rs1, $imm"
                                 >,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+def : MnemonicAlias<"ybndswi", "scbndsi">;
 
 def : InstAlias<"scbnds $cd, $cs1, $imm",
                 (SCBNDSI GPCR:$cd, GPCR:$cs1, csetbnd_imm:$imm), 0>;
+def : InstAlias<"ybndsw $cd, $cs1, $imm",
+                (SCBNDSI GPCR:$cd, GPCR:$cs1, csetbnd_imm:$imm), 0>;
 def : InstAlias<"add $cd, $cs1, $imm",
+                (CADDI GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
+def : InstAlias<"yadd $cd, $cs1, $imm",
                 (CADDI GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
 def : InstAlias<"add $cd, $cs1, $rs2",
                 (CADD GPCR:$cd, GPCR:$cs1, GPRNoX0:$rs2), 0>;
+def : InstAlias<"yadd $cd, $cs1, $rs2",
+                (CADD GPCR:$cd, GPCR:$cs1, GPRNoX0:$rs2), 0>;
+
 } // HasZCheriPurecap
 
 let Predicates = [HasZCheriHybrid] in {
 def SCMODE        : ZCheri_rr<0x6, 0x7, "scmode">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+def : MnemonicAlias<"ymodew", "scmode">;
 }
 
 //===----------------------------------------------------------------------===//
@@ -121,7 +144,9 @@ def SCMODE        : ZCheri_rr<0x6, 0x7, "scmode">,
 
 let Predicates = [HasZCheriHybrid] in {
 def MODESW_CAP : CheriModeSwitchInstr<0x9, OPC_OP, "modesw.cap">;
+def : MnemonicAlias<"ymodeswy", "modesw.cap">;
 def MODESW_INT : CheriModeSwitchInstr<0xA, OPC_OP, "modesw.int">;
+def : MnemonicAlias<"ymodeswi", "modesw.int">;
 } // HasZCheriHybrid
 
 //===----------------------------------------------------------------------===//
@@ -135,6 +160,7 @@ def CMV       : Cheri_SrcDst<0x6, 0x0, 0x0, OPC_OP, "cmv", GPCR>,
                     Sched<[WriteCHERIMove, ReadCHERIMove]>;
 def : InstAlias<"mv $cd, $cs1",
                 (CMV GPCR:$cd, GPCR:$cs1), 0>;
+def : MnemonicAlias<"ymv", "cmv">;
 } // HasZCheriPurecap
 
 
@@ -145,6 +171,7 @@ def : InstAlias<"mv $cd, $cs1",
 let Predicates = [HasZCheriPurecap] in {
 def CRAM_ : ZCheri_r<0x7, "cram", GPR, GPR>,
                 Sched<[WriteCHERIComputeMask, ReadCHERIComputeMask]>;
+def : MnemonicAlias<"yamask", "cram">;
 
 } // HasZCheriPurecap
 
@@ -155,8 +182,10 @@ def CRAM_ : ZCheri_r<0x7, "cram", GPR, GPR>,
 let Predicates = [HasZCheriPurecap] in {
 def SCSS : ZCheri_rr<0x6, 0x6, "scss", GPR, GPCRNoC0, GPCR>,
                Sched<[WriteCHERITest, ReadCHERITest]>;
+def : MnemonicAlias<"yss", "scss">;
 def SCEQ : ZCheri_rr<0x6, 0x4, "sceq", GPR, GPCR, GPCR>,
                Sched<[WriteCHERITest, ReadCHERITest]>;
+def : MnemonicAlias<"yeq", "sceq">;
 }
 
 //===----------------------------------------------------------------------===//
@@ -271,6 +300,19 @@ def : InstAlias<"sc $rs2, (${rs1})",
 }
 }
 
+let Predicates = [HasZCheriPurecap] in {
+def : MnemonicAlias<"ly", "lc">;
+def : MnemonicAlias<"sy", "sc">;
+}
+
+// Atomic instruction aliases multiclass for hybrid mode.
+multiclass ZCheriAtomicInstAliases<string asm, string opnds, string inst, dag args> {
+  def : InstAlias<asm # opnds, !con((!cast<Instruction>(inst)), args), 0>;
+  def : InstAlias<asm # ".aq" # opnds, !con((!cast<Instruction>(inst # "_AQ")), args), 0>;
+  def : InstAlias<asm # ".rl" # opnds, !con((!cast<Instruction>(inst # "_RL")), args), 0>;
+  def : InstAlias<asm # ".aqrl" # opnds, !con((!cast<Instruction>(inst # "_AQ_RL")), args), 0>;
+}
+
 let Predicates = [HasZCheriPurecap, HasStdExtA, NotCapMode] in {
 let DecoderNamespace = "ZCheriOnly_" in {
   defm LR_C      : LR_C_r_aq_rl<"", 0b100, "lr.c">,
@@ -279,6 +321,16 @@ let DecoderNamespace = "ZCheriOnly_" in {
   defm AMOSWAP_C : AMO_C_rr_aq_rl<"", 0b00001, 0b100, "amoswap.c", GPCR>,
                        Sched<[WriteCHERIAtomicC, ReadCHERIAtomicC]>;
 }
+
+// We cannot use MnemonicAlias for lr.y/sc.y/amoswap.y in hybrid mode because
+// the underlying instructions (LR_C/SC_C/AMOSWAP_C) do not generate zero-offset
+// InstAliases (unlike purecap mode which generates clr.c/csc.c/camoswap.c).
+// MnemonicAlias mapping sc.y -> sc.c would attempt to match the base Instruction
+// which strictly requires an explicit leading 0 offset (sc.c a1, ca2, 0(a0)).
+// Therefore, hybrid mode requires explicit InstAliases to support (a0) without 0.
+defm : ZCheriAtomicInstAliases<"lr.y", " $rd, $rs1", "LR_C", (? GPCR:$rd, GPRMemZeroOffset:$rs1)>;
+defm : ZCheriAtomicInstAliases<"sc.y", " $rd, $rs2, $rs1", "SC_C", (? GPR:$rd, GPRMemZeroOffset:$rs1, GPCR:$rs2)>;
+defm : ZCheriAtomicInstAliases<"amoswap.y", " $rd, $rs2, $rs1", "AMOSWAP_C", (? GPCR:$rd, GPRMemZeroOffset:$rs1, GPCR:$rs2)>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -322,6 +374,12 @@ let Predicates = [HasZCheriPurecap, HasStdExtA, IsCapMode] in {
 defm CLR_C       : CLR_C_r_aq_rl<"", 0b100, "lr.c", "ZCheriCapModeOnly_">;
 defm CSC_C       : CAMO_C_rr_aq_rl<"", 0b00011, 0b100, "sc.c", GPR, "ZCheriCapModeOnly_">;
 defm CAMOSWAP_C  : CAMO_C_rr_aq_rl<"", 0b00001, 0b100, "amoswap.c", GPCR, "ZCheriCapModeOnly_">;
+
+foreach s = ["", ".aq", ".rl", ".aqrl"] in {
+  def : MnemonicAlias<"lr.y" # s, "clr.c" # s>;
+  def : MnemonicAlias<"sc.y" # s, "csc.c" # s>;
+  def : MnemonicAlias<"amoswap.y" # s, "camoswap.c" # s>;
+}
 }
 
 
