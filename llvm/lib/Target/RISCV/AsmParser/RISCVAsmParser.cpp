@@ -83,6 +83,9 @@ class RISCVAsmParser : public MCTargetAsmParser {
   SmallVector<ParserOptionsSet, 4> ParserOptionsStack;
   ParserOptionsSet ParserOptions;
 
+  llvm::StringRef CurrentMnemonic;
+  const OperandVector *CurrentOperands = nullptr;
+
   SMLoc getLoc() const { return getParser().getTok().getLoc(); }
   bool isRV64() const { return getSTI().hasFeature(RISCV::Feature64Bit); }
   bool isRVE() const { return getSTI().hasFeature(RISCV::FeatureStdExtE); }
@@ -99,6 +102,7 @@ class RISCVAsmParser : public MCTargetAsmParser {
 
   unsigned validateTargetOperandClass(MCParsedAsmOperand &Op,
                                       unsigned Kind) override;
+  bool allowGPRToGPCRCoercion(const MCParsedAsmOperand &Op) const;
 
   bool generateImmOutOfRangeError(OperandVector &Operands, uint64_t ErrorInfo,
                                   int64_t Lower, int64_t Upper,
@@ -1554,6 +1558,52 @@ static MCRegister convertVRToVRMx(const MCRegisterInfo &RI, MCRegister Reg,
                                 &RISCVMCRegisterClasses[RegClassID]);
 }
 
+bool RISCVAsmParser::allowGPRToGPCRCoercion(
+    const MCParsedAsmOperand &AsmOp) const {
+  if (!getSTI().hasFeature(RISCV::FeatureCheri))
+    return false;
+
+  // We should coerce registers for all RVY mnemonics. Since none of the other
+  // instructions start with y, this can be a simple prefix check.
+  if (CurrentMnemonic.starts_with("y"))
+    return true;
+
+  // Do not coerce the explicit mode load/store instruction
+  if (CurrentMnemonic.ends_with(".ddc") || CurrentMnemonic.ends_with(".cap"))
+    return false;
+
+  if (getSTI().hasFeature(RISCV::FeatureCapMode)) {
+    // In purecap mode, standard memory access instructions and jumps
+    // unconditionally coerce GPRs to capability registers. ISAv9 mnemonics
+    // (which all start with 'c') do not coerce operands.
+    return !CurrentMnemonic.starts_with("c");
+  }
+  // In hybrid mode, integer memory accesses use GPR addressing. For capability
+  // memory accesses (ly/sy/lr.y/sc.y/amoswap.y), we restrict coercion to the
+  // capability data operands so base registers are not coerced. This ensures
+  // that TableGen matching for purecap overloads (such as clb, clc, csc) fails
+  // on the GPR base register without mutating it to a capability register. This
+  // allows TableGen to successfully backtrack to standard integer memory
+  // addressing overloads (such as LB, LC_64, SC_64).
+  bool IsFirstOperand = CurrentOperands && CurrentOperands->size() > 1 &&
+                        (*CurrentOperands)[1].get() == &AsmOp;
+  bool IsSecondOperand = CurrentOperands && CurrentOperands->size() > 2 &&
+                         (*CurrentOperands)[2].get() == &AsmOp;
+  bool IsCapLoadStore = CurrentMnemonic == "ly" || CurrentMnemonic == "sy";
+  bool IsAtomicLoad = CurrentMnemonic.starts_with("lr.y");
+  bool IsAtomicStoreCond = CurrentMnemonic.starts_with("sc.y");
+  bool IsAtomicSwap = CurrentMnemonic.starts_with("amoswap.y");
+
+  if (IsCapLoadStore || IsAtomicLoad)
+    return IsFirstOperand;
+  if (IsAtomicStoreCond)
+    return IsSecondOperand;
+  if (IsAtomicSwap)
+    return IsFirstOperand || IsSecondOperand;
+
+  return false;
+}
+
 unsigned RISCVAsmParser::validateTargetOperandClass(MCParsedAsmOperand &AsmOp,
                                                     unsigned Kind) {
   RISCVOperand &Op = static_cast<RISCVOperand &>(AsmOp);
@@ -1606,6 +1656,40 @@ unsigned RISCVAsmParser::validateTargetOperandClass(MCParsedAsmOperand &AsmOp,
       return Match_InvalidOperand;
     return Match_Success;
   }
+  // In RVY mode, capability registers can be referenced using unprefixed GPR
+  // register names (e.g. a0 instead of ca0). We coerce GPRs to GPCRs when
+  // matching RVY mnemonics (which all start with 'y'). Note that this hook is
+  // only called when the parsed operand fails initial register class matching,
+  // so valid capability registers are accepted immediately without coercion.
+  auto GetGPCRClass = [Kind]() -> const MCRegisterClass * {
+    switch (Kind) {
+    case MCK_GPCR:
+    case MCK_CheriZeroOffsetMemOpOperand:
+      return &RISCVMCRegisterClasses[RISCV::GPCRRegClassID];
+    case MCK_GPCRC0IsDDC:
+      return &RISCVMCRegisterClasses[RISCV::GPCRC0IsDDCRegClassID];
+    case MCK_GPCRNoC0:
+      return &RISCVMCRegisterClasses[RISCV::GPCRNoC0RegClassID];
+    case MCK_GPCRC:
+      return &RISCVMCRegisterClasses[RISCV::GPCRCRegClassID];
+    case MCK_GPCRTC:
+      return &RISCVMCRegisterClasses[RISCV::GPCRTCRegClassID];
+    case MCK_CSP:
+      return &RISCVMCRegisterClasses[RISCV::CSPRegClassID];
+    default:
+      return nullptr;
+    }
+  };
+  if (const MCRegisterClass *RC = GetGPCRClass()) {
+    bool IsRegGPR = RISCVMCRegisterClasses[RISCV::GPRRegClassID].contains(Reg);
+    if (IsRegGPR && allowGPRToGPCRCoercion(AsmOp)) {
+      MCRegister CapReg = convertGPRToGPCR(Reg);
+      if (!RC->contains(CapReg))
+        return Match_InvalidOperand;
+      Op.Reg.RegNum = CapReg;
+      return Match_Success;
+    }
+  }
   return Match_InvalidOperand;
 }
 
@@ -1629,6 +1713,8 @@ bool RISCVAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
                                              bool MatchingInlineAsm) {
   MCInst Inst;
   FeatureBitset MissingFeatures;
+  CurrentMnemonic = ((RISCVOperand &)*Operands[0]).getToken();
+  CurrentOperands = &Operands;
 
   auto Result = MatchInstructionImpl(Operands, Inst, ErrorInfo, MissingFeatures,
                                      MatchingInlineAsm);
