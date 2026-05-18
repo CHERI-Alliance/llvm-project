@@ -4983,13 +4983,13 @@ public:
   /// @p OuterExpr is the expression being bounded (i.e. __builtin_addressof() or
   /// '&') and @p E is the subexpression that should have bounds set (e.g. the
   /// argument of __builtin_addressof)
-  llvm::Value *emitAddrOf(const Expr *E, const Expr *OuterExpr);
+  LValue EmitLValueForAddrOf(const Expr *E, const Expr *OuterExpr,
+                             KnownNonNull_t IsKnownNonNull = NotKnownNonNull);
   /// Emit C++ reference binding (porentially CHERI with subobject bounds).
   LValue emitLValueForReferenceBinding(const Expr *E);
-  LValue emitLValueWithCheriSubobjectBounds(const Expr *E,
-                                            const Expr *OuterExpr, QualType Ty,
-                                            SubObjectBoundsKind Kind,
-                                            const TightenBoundsResult &TBR);
+  LValue emitLValueWithCheriSubobjectBounds(
+      const Expr *E, const Expr *OuterExpr, KnownNonNull_t IsKnownNonNull,
+      QualType Ty, SubObjectBoundsKind Kind, const TightenBoundsResult &TBR);
   Address setCHERIBoundsOnArraySubscript(Address Addr,
                                          const ArraySubscriptExpr *E);
   Address setCHERIBoundsOnArrayDecay(Address Addr, const Expr *E);
