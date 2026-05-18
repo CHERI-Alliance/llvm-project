@@ -83,6 +83,10 @@ def SCADDR        : ZCheri_rr<0x6, 0x1, "scaddr">,
 def : MnemonicAlias<"yaddrw", "scaddr">;
 def ACPERM        : ZCheri_rr<0x6, 0x2, "acperm">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 0,
+    isAsmParserOnly = 1, Size = 8 in
+def PseudoZCheriYPERMC : Pseudo<(outs GPCR:$rd), (ins GPCR:$rs1, GPR:$rs2), [],
+                                "ypermc", "$rd, $rs1, $rs2">;
 def SCHI          : ZCheri_rr<0x6, 0x3, "schi">,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 def : MnemonicAlias<"yhiw", "schi">;

@@ -14,3 +14,7 @@ yss a0, ca1, ddc
 ## Check that in hybrid mode capability base registers are rejected for capability loads.
 # CHECK: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 ly ca0, 0(ca1)
+
+## Check that ypermc rejects rd == rs1 since expansion requires a temporary register.
+# CHECK: :[[@LINE+1]]:8: error: expanding RVY compatible mnemonic requires destination and source capability registers to be different since this needs a temporary register to negate the mask
+ypermc ca0, ca0, a1

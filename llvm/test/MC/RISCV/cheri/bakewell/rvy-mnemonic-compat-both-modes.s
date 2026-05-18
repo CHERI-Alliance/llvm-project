@@ -53,3 +53,6 @@ yeq a0, ca1, ca2
 ymoder a0, ca1
 # CHECK-NEXT: scmode ca0, ca1, a2 # encoding: [0x33,0xf5,0xc5,0x0c]
 ymodew ca0, ca1, a2
+# CHECK-NEXT: xori a0, a2, -1 # encoding: [0x13,0x45,0xf6,0xff]
+# CHECK-NEXT: acperm ca0, ca1, a0 # encoding: [0x33,0xa5,0xa5,0x0c]
+ypermc ca0, ca1, a2
