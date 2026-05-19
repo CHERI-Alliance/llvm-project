@@ -88,20 +88,20 @@ jr ca1
 # CHECK-ASM: encoding: [0x67,0x80,0x00,0x00]
 ret
 
-# CHECK-ASM-AND-OBJ: jalr.mode a0, 0(a0)
-# CHECK-ASM: encoding: [0x67,0x15,0x05,0x00]
+# CHECK-ASM-AND-OBJ: jalr ca0, 0(ca0)
+# CHECK-ASM: encoding: [0x67,0x05,0x05,0x00]
 jalr a0, 0(a0)
 
-# CHECK-ASM-AND-OBJ: jalr.mode a0, 0(a0)
-# CHECK-ASM: encoding: [0x67,0x15,0x05,0x00]
+# CHECK-ASM-AND-OBJ: jalr ca0, 0(ca0)
+# CHECK-ASM: encoding: [0x67,0x05,0x05,0x00]
 jalr a0, a0
 
-# CHECK-ASM-AND-OBJ: jalr.mode ra, 0(a0)
-# CHECK-ASM: encoding: [0xe7,0x10,0x05,0x00]
+# CHECK-ASM-AND-OBJ: jalr cra, 0(ca0)
+# CHECK-ASM: encoding: [0xe7,0x00,0x05,0x00]
 jalr a0
 
-# CHECK-ASM-AND-OBJ: jalr.mode zero, 0(a0)
-# CHECK-ASM: encoding: [0x67,0x10,0x05,0x00]
+# CHECK-ASM-AND-OBJ: jalr cnull, 0(ca0)
+# CHECK-ASM: encoding: [0x67,0x00,0x05,0x00]
 jr a0
 
 # CHECK-ASM-AND-OBJ: jalr.mode zero, 0(ra)

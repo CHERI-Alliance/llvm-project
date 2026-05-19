@@ -17,18 +17,3 @@ c.sb a5, 10(ca4)
 
 # CHECK-ERROR: error: immediate must be one of [0, 2]
 c.sh a5, 10(ca4)
-
-# CHECK-ERROR: error: instruction requires the following: Integer Pointer Mode
-c.lbu a5, 1(a4)
-
-# CHECK-ERROR: error: instruction requires the following: Integer Pointer Mode
-c.lhu a5, 0(a4)
-
-# CHECK-ERROR: error: instruction requires the following: Integer Pointer Mode
-c.lh a5, 0(a4)
-
-# CHECK-ERROR: error: instruction requires the following: Integer Pointer Mode
-c.sb a5, 1(a4)
-
-# CHECK-ERROR: error: instruction requires the following: Integer Pointer Mode
-c.sh a5, 0(a4)

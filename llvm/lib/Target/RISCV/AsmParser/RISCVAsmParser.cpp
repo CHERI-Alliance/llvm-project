@@ -1560,7 +1560,7 @@ static MCRegister convertVRToVRMx(const MCRegisterInfo &RI, MCRegister Reg,
 
 bool RISCVAsmParser::allowGPRToGPCRCoercion(
     const MCParsedAsmOperand &AsmOp) const {
-  if (!getSTI().hasFeature(RISCV::FeatureCheri))
+  if (!isCheri())
     return false;
 
   // We should coerce registers for all RVY mnemonics. Since none of the other
@@ -1572,10 +1572,17 @@ bool RISCVAsmParser::allowGPRToGPCRCoercion(
   if (CurrentMnemonic.ends_with(".ddc") || CurrentMnemonic.ends_with(".cap"))
     return false;
 
+  if (getSTI().hasFeature(RISCV::FeatureStdExtZCheriPureCap)) {
+    // Do not attempt to coerce registers for the overloaded add/mv mnemonics.
+    if (CurrentMnemonic == "add" || CurrentMnemonic == "addi" ||
+        CurrentMnemonic == "mv")
+      return false;
+  }
+
   if (getSTI().hasFeature(RISCV::FeatureCapMode)) {
     // In purecap mode, standard memory access instructions and jumps
-    // unconditionally coerce GPRs to capability registers. ISAv9 mnemonics
-    // (which all start with 'c') do not coerce operands.
+    // unconditionally coerce GPRs to capability registers.
+    // ISAv9 mnemonics (which all start with 'c') do not coerce operands.
     return !CurrentMnemonic.starts_with("c");
   }
   // In hybrid mode, integer memory accesses use GPR addressing. For capability
