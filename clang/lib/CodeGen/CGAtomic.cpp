@@ -148,7 +148,7 @@ bool isAtomicStoreOp(AtomicExpr::AtomicOp Op) {
       }
       UseLibcall = !C.getTargetInfo().hasBuiltinAtomic(
           AtomicSizeInBits, C.toBits(lvalue.getAlignment()),
-          AtomicTy->isCHERICapabilityType(CGF.CGM.getContext()));
+          CGF.CGM.getContext().containsCapabilities(AtomicTy));
     }
 
     QualType getAtomicType() const { return AtomicTy; }
@@ -902,10 +902,13 @@ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E) {
       getContext().toCharUnitsFromBits(MaxInlineWidthInBits);
   DiagnosticsEngine &Diags = CGM.getDiags();
   bool Misaligned = (Ptr.getAlignment() % TInfo.Width) != 0;
-  bool IsCheriCap = AtomicTy->isCHERICapabilityType(CGM.getContext());
-  bool Oversized = (!IsCheriCap &&
+  bool HasCheriCaps = getContext().containsCapabilities(AtomicTy);
+  bool AsCheriCap =
+      HasCheriCaps && (uint64_t)getContext().toBits(TInfo.Width) ==
+                          getTarget().getCHERICapabilityWidth();
+  bool Oversized = (!HasCheriCaps &&
                     getContext().toBits(TInfo.Width) > MaxInlineWidthInBits) ||
-                   (IsCheriCap && MaxInlineWidthInBits == 0);
+                   (HasCheriCaps && (MaxInlineWidthInBits == 0 || !AsCheriCap));
   if (Misaligned) {
     Diags.Report(E->getBeginLoc(), diag::warn_atomic_op_misaligned)
         << (int)TInfo.Width.getQuantity()
@@ -1092,7 +1095,8 @@ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E) {
   bool IsLoad = isAtomicLoadOp(E->getOp());
 
   bool PowerOf2Size = (Size & (Size - 1)) == 0;
-  bool UseLibcall = !PowerOf2Size || (Size > 16);
+  bool UseLibcall =
+      !PowerOf2Size || (Size > 16) || (HasCheriCaps && !AsCheriCap);
 
   // For atomics larger than 16 bytes, emit a libcall from the frontend. This
   // avoids the overhead of dealing with excessively-large value types in IR.
@@ -1407,14 +1411,17 @@ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E) {
 
 Address AtomicInfo::castToAtomicIntPointer(Address addr) const {
   llvm::Type *ty;
-  if (AtomicTy->isCHERICapabilityType(CGF.getContext())) {
+  ASTContext &C = CGF.getContext();
+  if (C.containsCapabilities(AtomicTy)) {
     // If capability atomics are natively supported the instruction expects
     // a capability type. We also pass capabilities directly to the atomic
     // libcalls (i.e. always use optimized ones) since this is required to
     // support the RMW operations and special-casing the load/store/xchg to
     // use the generic libcalls (with mutex+memcpy) adds unncessary complexity.
-    if (!UseLibcall) {
-      // If we aren't using a libcall there is no need to cast to i8*
+    if (!UseLibcall && AtomicTy->isCHERICapabilityType(C)) {
+      // If we aren't using a libcall there is no need to cast to i8*. We may
+      // be punning an aggregate though so only reuse the type if it's actually
+      // a capability already.
       return addr.withElementType(getAtomicAddress().getElementType());
     }
     ty = CGF.CGM.Int8CheriCapTy;

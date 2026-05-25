@@ -17,8 +17,6 @@
 
 /// Verify that S1 is treated the same as a capability (i.e. uses an optimised
 /// libcall or real atomic).
-/// TODO: Currently treated the same as an aggregate of the same size that does
-/// not contain capabilities.
 
 struct S1 {
   void *p;
@@ -31,36 +29,36 @@ struct S2 {
 // MIPS-LABEL: define dso_local void @S1_load
 // MIPS-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // MIPS-NEXT:  entry:
-// MIPS-NEXT:    [[TMP0:%.*]] = load atomic i128, ptr addrspace(200) [[PTR]] monotonic, align 16
-// MIPS-NEXT:    store i128 [[TMP0]], ptr addrspace(200) [[RET]], align 16
+// MIPS-NEXT:    [[TMP0:%.*]] = load atomic ptr addrspace(200), ptr addrspace(200) [[PTR]] monotonic, align 16
+// MIPS-NEXT:    store ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[RET]], align 16
 // MIPS-NEXT:    ret void
 //
 // RV32I-LABEL: define dso_local void @S1_load
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load atomic i64, ptr addrspace(200) [[PTR]] monotonic, align 8
-// RV32I-NEXT:    store i64 [[TMP0]], ptr addrspace(200) [[RET]], align 8
+// RV32I-NEXT:    [[TMP0:%.*]] = load atomic ptr addrspace(200), ptr addrspace(200) [[PTR]] monotonic, align 8
+// RV32I-NEXT:    store ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[RET]], align 8
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S1_load
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load atomic i64, ptr addrspace(200) [[PTR]] monotonic, align 8
-// RV32A-NEXT:    store i64 [[TMP0]], ptr addrspace(200) [[RET]], align 8
+// RV32A-NEXT:    [[TMP0:%.*]] = load atomic ptr addrspace(200), ptr addrspace(200) [[PTR]] monotonic, align 8
+// RV32A-NEXT:    store ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[RET]], align 8
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S1_load
 // RV64I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // RV64I-NEXT:  entry:
-// RV64I-NEXT:    [[TMP0:%.*]] = load atomic i128, ptr addrspace(200) [[PTR]] monotonic, align 16
-// RV64I-NEXT:    store i128 [[TMP0]], ptr addrspace(200) [[RET]], align 16
+// RV64I-NEXT:    [[TMP0:%.*]] = load atomic ptr addrspace(200), ptr addrspace(200) [[PTR]] monotonic, align 16
+// RV64I-NEXT:    store ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[RET]], align 16
 // RV64I-NEXT:    ret void
 //
 // RV64A-LABEL: define dso_local void @S1_load
 // RV64A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // RV64A-NEXT:  entry:
-// RV64A-NEXT:    [[TMP0:%.*]] = load atomic i128, ptr addrspace(200) [[PTR]] monotonic, align 16
-// RV64A-NEXT:    store i128 [[TMP0]], ptr addrspace(200) [[RET]], align 16
+// RV64A-NEXT:    [[TMP0:%.*]] = load atomic ptr addrspace(200), ptr addrspace(200) [[PTR]] monotonic, align 16
+// RV64A-NEXT:    store ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[RET]], align 16
 // RV64A-NEXT:    ret void
 //
 void S1_load(struct S1 *ptr, struct S1 *ret) {
@@ -70,36 +68,36 @@ void S1_load(struct S1 *ptr, struct S1 *ret) {
 // MIPS-LABEL: define dso_local void @S1_store
 // MIPS-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // MIPS-NEXT:  entry:
-// MIPS-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 16
-// MIPS-NEXT:    store atomic i128 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 16
+// MIPS-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 16
+// MIPS-NEXT:    store atomic ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 16
 // MIPS-NEXT:    ret void
 //
 // RV32I-LABEL: define dso_local void @S1_store
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[VAL]], align 8
-// RV32I-NEXT:    store atomic i64 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 8
+// RV32I-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 8
+// RV32I-NEXT:    store atomic ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 8
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S1_store
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[VAL]], align 8
-// RV32A-NEXT:    store atomic i64 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 8
+// RV32A-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 8
+// RV32A-NEXT:    store atomic ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 8
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S1_store
 // RV64I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV64I-NEXT:  entry:
-// RV64I-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 16
-// RV64I-NEXT:    store atomic i128 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 16
+// RV64I-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 16
+// RV64I-NEXT:    store atomic ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 16
 // RV64I-NEXT:    ret void
 //
 // RV64A-LABEL: define dso_local void @S1_store
 // RV64A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV64A-NEXT:  entry:
-// RV64A-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 16
-// RV64A-NEXT:    store atomic i128 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 16
+// RV64A-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 16
+// RV64A-NEXT:    store atomic ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 16
 // RV64A-NEXT:    ret void
 //
 void S1_store(struct S1 *ptr, struct S1 *val) {
@@ -109,41 +107,41 @@ void S1_store(struct S1 *ptr, struct S1 *val) {
 // MIPS-LABEL: define dso_local void @S1_exchange
 // MIPS-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // MIPS-NEXT:  entry:
-// MIPS-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 16
-// MIPS-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i128 [[TMP0]] monotonic, align 16
-// MIPS-NEXT:    store i128 [[TMP1]], ptr addrspace(200) [[RET]], align 16
+// MIPS-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 16
+// MIPS-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]] monotonic, align 16
+// MIPS-NEXT:    store ptr addrspace(200) [[TMP1]], ptr addrspace(200) [[RET]], align 16
 // MIPS-NEXT:    ret void
 //
 // RV32I-LABEL: define dso_local void @S1_exchange
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[VAL]], align 8
-// RV32I-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i64 [[TMP0]] monotonic, align 8
-// RV32I-NEXT:    store i64 [[TMP1]], ptr addrspace(200) [[RET]], align 8
+// RV32I-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 8
+// RV32I-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]] monotonic, align 8
+// RV32I-NEXT:    store ptr addrspace(200) [[TMP1]], ptr addrspace(200) [[RET]], align 8
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S1_exchange
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[VAL]], align 8
-// RV32A-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i64 [[TMP0]] monotonic, align 8
-// RV32A-NEXT:    store i64 [[TMP1]], ptr addrspace(200) [[RET]], align 8
+// RV32A-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 8
+// RV32A-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]] monotonic, align 8
+// RV32A-NEXT:    store ptr addrspace(200) [[TMP1]], ptr addrspace(200) [[RET]], align 8
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S1_exchange
 // RV64I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV64I-NEXT:  entry:
-// RV64I-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 16
-// RV64I-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i128 [[TMP0]] monotonic, align 16
-// RV64I-NEXT:    store i128 [[TMP1]], ptr addrspace(200) [[RET]], align 16
+// RV64I-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 16
+// RV64I-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]] monotonic, align 16
+// RV64I-NEXT:    store ptr addrspace(200) [[TMP1]], ptr addrspace(200) [[RET]], align 16
 // RV64I-NEXT:    ret void
 //
 // RV64A-LABEL: define dso_local void @S1_exchange
 // RV64A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV64A-NEXT:  entry:
-// RV64A-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 16
-// RV64A-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i128 [[TMP0]] monotonic, align 16
-// RV64A-NEXT:    store i128 [[TMP1]], ptr addrspace(200) [[RET]], align 16
+// RV64A-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[VAL]], align 16
+// RV64A-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]] monotonic, align 16
+// RV64A-NEXT:    store ptr addrspace(200) [[TMP1]], ptr addrspace(200) [[RET]], align 16
 // RV64A-NEXT:    ret void
 //
 void S1_exchange(struct S1 *ptr, struct S1 *val, struct S1 *ret) {
@@ -153,14 +151,14 @@ void S1_exchange(struct S1 *ptr, struct S1 *val, struct S1 *ret) {
 // MIPS-LABEL: define dso_local void @S1_compare_exchange
 // MIPS-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // MIPS-NEXT:  entry:
-// MIPS-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[EXPECTED]], align 16
-// MIPS-NEXT:    [[TMP1:%.*]] = load i128, ptr addrspace(200) [[DESIRED]], align 16
-// MIPS-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i128 [[TMP0]], i128 [[TMP1]] monotonic monotonic, align 16
-// MIPS-NEXT:    [[TMP3:%.*]] = extractvalue { i128, i1 } [[TMP2]], 0
-// MIPS-NEXT:    [[TMP4:%.*]] = extractvalue { i128, i1 } [[TMP2]], 1
+// MIPS-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[EXPECTED]], align 16
+// MIPS-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[DESIRED]], align 16
+// MIPS-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[TMP1]] monotonic monotonic, align 16
+// MIPS-NEXT:    [[TMP3:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 0
+// MIPS-NEXT:    [[TMP4:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 1
 // MIPS-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
 // MIPS:       cmpxchg.store_expected:
-// MIPS-NEXT:    store i128 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 16
+// MIPS-NEXT:    store ptr addrspace(200) [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 16
 // MIPS-NEXT:    br label [[CMPXCHG_CONTINUE]]
 // MIPS:       cmpxchg.continue:
 // MIPS-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
@@ -170,14 +168,14 @@ void S1_exchange(struct S1 *ptr, struct S1 *val, struct S1 *ret) {
 // RV32I-LABEL: define dso_local void @S1_compare_exchange
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[EXPECTED]], align 8
-// RV32I-NEXT:    [[TMP1:%.*]] = load i64, ptr addrspace(200) [[DESIRED]], align 8
-// RV32I-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i64 [[TMP0]], i64 [[TMP1]] monotonic monotonic, align 8
-// RV32I-NEXT:    [[TMP3:%.*]] = extractvalue { i64, i1 } [[TMP2]], 0
-// RV32I-NEXT:    [[TMP4:%.*]] = extractvalue { i64, i1 } [[TMP2]], 1
+// RV32I-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[EXPECTED]], align 8
+// RV32I-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[DESIRED]], align 8
+// RV32I-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[TMP1]] monotonic monotonic, align 8
+// RV32I-NEXT:    [[TMP3:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 0
+// RV32I-NEXT:    [[TMP4:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 1
 // RV32I-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
 // RV32I:       cmpxchg.store_expected:
-// RV32I-NEXT:    store i64 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 8
+// RV32I-NEXT:    store ptr addrspace(200) [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 8
 // RV32I-NEXT:    br label [[CMPXCHG_CONTINUE]]
 // RV32I:       cmpxchg.continue:
 // RV32I-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
@@ -187,14 +185,14 @@ void S1_exchange(struct S1 *ptr, struct S1 *val, struct S1 *ret) {
 // RV32A-LABEL: define dso_local void @S1_compare_exchange
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[EXPECTED]], align 8
-// RV32A-NEXT:    [[TMP1:%.*]] = load i64, ptr addrspace(200) [[DESIRED]], align 8
-// RV32A-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i64 [[TMP0]], i64 [[TMP1]] monotonic monotonic, align 8
-// RV32A-NEXT:    [[TMP3:%.*]] = extractvalue { i64, i1 } [[TMP2]], 0
-// RV32A-NEXT:    [[TMP4:%.*]] = extractvalue { i64, i1 } [[TMP2]], 1
+// RV32A-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[EXPECTED]], align 8
+// RV32A-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[DESIRED]], align 8
+// RV32A-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[TMP1]] monotonic monotonic, align 8
+// RV32A-NEXT:    [[TMP3:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 0
+// RV32A-NEXT:    [[TMP4:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 1
 // RV32A-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
 // RV32A:       cmpxchg.store_expected:
-// RV32A-NEXT:    store i64 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 8
+// RV32A-NEXT:    store ptr addrspace(200) [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 8
 // RV32A-NEXT:    br label [[CMPXCHG_CONTINUE]]
 // RV32A:       cmpxchg.continue:
 // RV32A-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
@@ -204,14 +202,14 @@ void S1_exchange(struct S1 *ptr, struct S1 *val, struct S1 *ret) {
 // RV64I-LABEL: define dso_local void @S1_compare_exchange
 // RV64I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV64I-NEXT:  entry:
-// RV64I-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[EXPECTED]], align 16
-// RV64I-NEXT:    [[TMP1:%.*]] = load i128, ptr addrspace(200) [[DESIRED]], align 16
-// RV64I-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i128 [[TMP0]], i128 [[TMP1]] monotonic monotonic, align 16
-// RV64I-NEXT:    [[TMP3:%.*]] = extractvalue { i128, i1 } [[TMP2]], 0
-// RV64I-NEXT:    [[TMP4:%.*]] = extractvalue { i128, i1 } [[TMP2]], 1
+// RV64I-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[EXPECTED]], align 16
+// RV64I-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[DESIRED]], align 16
+// RV64I-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[TMP1]] monotonic monotonic, align 16
+// RV64I-NEXT:    [[TMP3:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 0
+// RV64I-NEXT:    [[TMP4:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 1
 // RV64I-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
 // RV64I:       cmpxchg.store_expected:
-// RV64I-NEXT:    store i128 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 16
+// RV64I-NEXT:    store ptr addrspace(200) [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 16
 // RV64I-NEXT:    br label [[CMPXCHG_CONTINUE]]
 // RV64I:       cmpxchg.continue:
 // RV64I-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
@@ -221,14 +219,14 @@ void S1_exchange(struct S1 *ptr, struct S1 *val, struct S1 *ret) {
 // RV64A-LABEL: define dso_local void @S1_compare_exchange
 // RV64A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV64A-NEXT:  entry:
-// RV64A-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[EXPECTED]], align 16
-// RV64A-NEXT:    [[TMP1:%.*]] = load i128, ptr addrspace(200) [[DESIRED]], align 16
-// RV64A-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i128 [[TMP0]], i128 [[TMP1]] monotonic monotonic, align 16
-// RV64A-NEXT:    [[TMP3:%.*]] = extractvalue { i128, i1 } [[TMP2]], 0
-// RV64A-NEXT:    [[TMP4:%.*]] = extractvalue { i128, i1 } [[TMP2]], 1
+// RV64A-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[EXPECTED]], align 16
+// RV64A-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[DESIRED]], align 16
+// RV64A-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[TMP1]] monotonic monotonic, align 16
+// RV64A-NEXT:    [[TMP3:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 0
+// RV64A-NEXT:    [[TMP4:%.*]] = extractvalue { ptr addrspace(200), i1 } [[TMP2]], 1
 // RV64A-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
 // RV64A:       cmpxchg.store_expected:
-// RV64A-NEXT:    store i128 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 16
+// RV64A-NEXT:    store ptr addrspace(200) [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 16
 // RV64A-NEXT:    br label [[CMPXCHG_CONTINUE]]
 // RV64A:       cmpxchg.continue:
 // RV64A-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
@@ -248,15 +246,13 @@ void S1_compare_exchange(struct S1 *ptr, struct S1 *expected, struct S1 *desired
 // RV32I-LABEL: define dso_local void @S2_load
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load atomic i128, ptr addrspace(200) [[PTR]] monotonic, align 8
-// RV32I-NEXT:    store i128 [[TMP0]], ptr addrspace(200) [[RET]], align 8
+// RV32I-NEXT:    call void @__atomic_load(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[RET]], i32 noundef 0)
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S2_load
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load atomic i128, ptr addrspace(200) [[PTR]] monotonic, align 8
-// RV32A-NEXT:    store i128 [[TMP0]], ptr addrspace(200) [[RET]], align 8
+// RV32A-NEXT:    call void @__atomic_load(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[RET]], i32 noundef 0)
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S2_load
@@ -284,15 +280,13 @@ void S2_load(struct S2 *ptr, struct S2 *ret) {
 // RV32I-LABEL: define dso_local void @S2_store
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 8
-// RV32I-NEXT:    store atomic i128 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 8
+// RV32I-NEXT:    call void @__atomic_store(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[VAL]], i32 noundef 0)
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S2_store
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 8
-// RV32A-NEXT:    store atomic i128 [[TMP0]], ptr addrspace(200) [[PTR]] monotonic, align 8
+// RV32A-NEXT:    call void @__atomic_store(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[VAL]], i32 noundef 0)
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S2_store
@@ -320,17 +314,13 @@ void S2_store(struct S2 *ptr, struct S2 *val) {
 // RV32I-LABEL: define dso_local void @S2_exchange
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 8
-// RV32I-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i128 [[TMP0]] monotonic, align 8
-// RV32I-NEXT:    store i128 [[TMP1]], ptr addrspace(200) [[RET]], align 8
+// RV32I-NEXT:    call void @__atomic_exchange(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[VAL]], ptr addrspace(200) noundef [[RET]], i32 noundef 0)
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S2_exchange
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[VAL:%.*]], ptr addrspace(200) noundef [[RET:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[VAL]], align 8
-// RV32A-NEXT:    [[TMP1:%.*]] = atomicrmw xchg ptr addrspace(200) [[PTR]], i128 [[TMP0]] monotonic, align 8
-// RV32A-NEXT:    store i128 [[TMP1]], ptr addrspace(200) [[RET]], align 8
+// RV32A-NEXT:    call void @__atomic_exchange(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[VAL]], ptr addrspace(200) noundef [[RET]], i32 noundef 0)
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S2_exchange
@@ -358,35 +348,13 @@ void S2_exchange(struct S2 *ptr, struct S2 *val, struct S2 *ret) {
 // RV32I-LABEL: define dso_local void @S2_compare_exchange
 // RV32I-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32I-NEXT:  entry:
-// RV32I-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[EXPECTED]], align 8
-// RV32I-NEXT:    [[TMP1:%.*]] = load i128, ptr addrspace(200) [[DESIRED]], align 8
-// RV32I-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i128 [[TMP0]], i128 [[TMP1]] monotonic monotonic, align 8
-// RV32I-NEXT:    [[TMP3:%.*]] = extractvalue { i128, i1 } [[TMP2]], 0
-// RV32I-NEXT:    [[TMP4:%.*]] = extractvalue { i128, i1 } [[TMP2]], 1
-// RV32I-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
-// RV32I:       cmpxchg.store_expected:
-// RV32I-NEXT:    store i128 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 8
-// RV32I-NEXT:    br label [[CMPXCHG_CONTINUE]]
-// RV32I:       cmpxchg.continue:
-// RV32I-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
-// RV32I-NEXT:    [[LOADEDV:%.*]] = trunc i8 [[STOREDV]] to i1
+// RV32I-NEXT:    [[CALL:%.*]] = call zeroext i1 @__atomic_compare_exchange(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[EXPECTED]], ptr addrspace(200) noundef [[DESIRED]], i32 noundef 0, i32 noundef 0)
 // RV32I-NEXT:    ret void
 //
 // RV32A-LABEL: define dso_local void @S2_compare_exchange
 // RV32A-SAME: (ptr addrspace(200) noundef [[PTR:%.*]], ptr addrspace(200) noundef [[EXPECTED:%.*]], ptr addrspace(200) noundef [[DESIRED:%.*]]) addrspace(200) #[[ATTR0]] {
 // RV32A-NEXT:  entry:
-// RV32A-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[EXPECTED]], align 8
-// RV32A-NEXT:    [[TMP1:%.*]] = load i128, ptr addrspace(200) [[DESIRED]], align 8
-// RV32A-NEXT:    [[TMP2:%.*]] = cmpxchg weak ptr addrspace(200) [[PTR]], i128 [[TMP0]], i128 [[TMP1]] monotonic monotonic, align 8
-// RV32A-NEXT:    [[TMP3:%.*]] = extractvalue { i128, i1 } [[TMP2]], 0
-// RV32A-NEXT:    [[TMP4:%.*]] = extractvalue { i128, i1 } [[TMP2]], 1
-// RV32A-NEXT:    br i1 [[TMP4]], label [[CMPXCHG_CONTINUE:%.*]], label [[CMPXCHG_STORE_EXPECTED:%.*]]
-// RV32A:       cmpxchg.store_expected:
-// RV32A-NEXT:    store i128 [[TMP3]], ptr addrspace(200) [[EXPECTED]], align 8
-// RV32A-NEXT:    br label [[CMPXCHG_CONTINUE]]
-// RV32A:       cmpxchg.continue:
-// RV32A-NEXT:    [[STOREDV:%.*]] = zext i1 [[TMP4]] to i8
-// RV32A-NEXT:    [[LOADEDV:%.*]] = trunc i8 [[STOREDV]] to i1
+// RV32A-NEXT:    [[CALL:%.*]] = call zeroext i1 @__atomic_compare_exchange(i32 noundef 16, ptr addrspace(200) noundef [[PTR]], ptr addrspace(200) noundef [[EXPECTED]], ptr addrspace(200) noundef [[DESIRED]], i32 noundef 0, i32 noundef 0)
 // RV32A-NEXT:    ret void
 //
 // RV64I-LABEL: define dso_local void @S2_compare_exchange
