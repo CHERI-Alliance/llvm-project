@@ -32,9 +32,9 @@ lw x1, 0(c2)
 
 ## FIXME: this error message is not great (since try to match jalr.mode here), but there is no easy fix for that.
 ## Check that in hybrid mode jumps reject capability registers.
-# CHECK-HYBRID: :[[@LINE+1]]:1: error: instruction requires the following: 'zcherihybrid' (Backwards compatiblity for 'zcheripurecap' with RISCV)
+# CHECK-HYBRID: :[[@LINE+1]]:1: error: instruction requires the following: 'Zcherihybrid' (Backwards compatiblity for 'Zcheripurecap' with RISCV)
 jr c1
-# CHECK-HYBRID: :[[@LINE+1]]:1: error: instruction requires the following: 'zcherihybrid' (Backwards compatiblity for 'zcheripurecap' with RISCV)
+# CHECK-HYBRID: :[[@LINE+1]]:1: error: instruction requires the following: 'Zcherihybrid' (Backwards compatiblity for 'Zcheripurecap' with RISCV)
 jalr c1, c2
 # CHECK-HYBRID: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 jal c1, 20
