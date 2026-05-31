@@ -185,6 +185,8 @@ void reportUndefinedSymbols(Ctx &);
 void postScanRelocations(Ctx &ctx);
 void addGotEntry(Ctx &ctx, Symbol &sym);
 
+bool isAbsolute(const Symbol &sym, bool ignoreWeak = false);
+
 void hexagonTLSSymbolUpdate(Ctx &ctx);
 bool hexagonNeedsTLSSymbol(ArrayRef<OutputSection *> outputSections);
 

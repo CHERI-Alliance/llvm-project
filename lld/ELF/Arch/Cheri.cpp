@@ -911,7 +911,7 @@ uint64_t MipsCheriCapTableSection::assignIndices(uint64_t startIndex,
         it.second.usedInCallExpr ? *ctx.in.relaPlt : *ctx.mainPart->relaDyn;
     if (targetSym->isPreemptible)
       dynRelSec.addSymbolReloc(elfCapabilityReloc, *this, off, *targetSym);
-    else if (targetSym->isUndefWeak())
+    else if (isAbsolute(*targetSym))
       addConstant({R_ABS_CAP, elfCapabilityReloc, off, 0, targetSym});
     else
       ctx.mainPart->capRelocs->addReloc(*this, off, *targetSym, 0, R_ABS_CAP,

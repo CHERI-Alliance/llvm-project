@@ -179,8 +179,8 @@ static RelType getMipsPairType(RelType type, bool isLocal) {
 
 // True if non-preemptable symbol always has the same value regardless of where
 // the DSO is loaded.
-static bool isAbsolute(const Symbol &sym) {
-  if (sym.isUndefWeak())
+bool elf::isAbsolute(const Symbol &sym, bool ignoreWeak) {
+  if (sym.isUndefined() && (ignoreWeak || sym.isWeak()))
     return true;
   if (const auto *dr = dyn_cast<Defined>(&sym))
     return dr->section == nullptr; // Absolute symbol.
@@ -960,10 +960,9 @@ void elf::addGotEntry(Ctx &ctx, Symbol &sym) {
       ctx.arg.isCheriAbi ? *ctx.target->symbolicCapRel : ctx.target->symbolicRel;
 
   // Otherwise, the value is either a link-time constant or the load base
-  // plus a constant. For CHERI it always requires run-time initialisation,
-  // with the exception of undef weak symbols.
-  if ((ctx.arg.isCheriAbi && sym.isUndefWeak()) ||
-      (!ctx.arg.isCheriAbi && (!ctx.arg.isPic || isAbsolute(sym))))
+  // plus a constant. For CHERI even position-dependent objects require
+  // run-time initialisation,
+  if ((!ctx.arg.isCheriAbi && !ctx.arg.isPic) || isAbsolute(sym))
     ctx.in.got->addConstant({expr, type, off, 0, &sym});
   else
     addRelativeReloc(ctx, *ctx.in.got, off, sym, 0, expr, type);
@@ -1078,10 +1077,10 @@ bool RelocationScanner::isStaticLinkTimeConstant(RelExpr e, RelType type,
   // Cheri capability relocations are never static link time constants since
   // even if we know the exact value of the capability we can't write it since
   // there is no way to store the tag bit
-  // The exception is for non-preemptible undef weak symbols, which are
-  // NULL-derived constants.
+  // The exception is for non-preemptible absolute (including undef weak)
+  // symbols, which are NULL-derived constants.
   if (e == R_ABS_CAP)
-    return !sym.isPreemptible && sym.isUndefWeak();
+    return !sym.isPreemptible && isAbsolute(sym);
 
   // These never do, except if the entire file is position dependent or if
   // only the low bits are used.
