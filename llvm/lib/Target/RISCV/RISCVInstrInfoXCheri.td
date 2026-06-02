@@ -62,7 +62,7 @@ def CheriZeroOffsetMemOpOperand : AsmOperandClass {
   let ParserMethod = "parseZeroOffsetMemOp";
 }
 
-def GPCRMemZeroOffset : RegisterOperand<GPCR> {
+def GPCRMemZeroOffset : MemOperand<GPCR> {
   let ParserMatchClass = CheriZeroOffsetMemOpOperand;
   let PrintMethod = "printZeroOffsetMemOp";
 }
