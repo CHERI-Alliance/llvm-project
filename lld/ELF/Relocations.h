@@ -186,6 +186,7 @@ void postScanRelocations(Ctx &ctx);
 void addGotEntry(Ctx &ctx, Symbol &sym);
 
 bool isAbsolute(const Symbol &sym, bool ignoreWeak = false);
+bool isDirectPcExpr(RelExpr expr);
 
 void hexagonTLSSymbolUpdate(Ctx &ctx);
 bool hexagonNeedsTLSSymbol(ArrayRef<OutputSection *> outputSections);
