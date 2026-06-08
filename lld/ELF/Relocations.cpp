@@ -230,7 +230,8 @@ static bool isRelExpr(RelExpr expr) {
 // Sym rather than to some synthetic section (e.g. GOT or PLT). Used to
 // determine what must be within PCC's bounds on CHERI.
 bool elf::isDirectPcExpr(RelExpr expr) {
-  return oneof<R_PC, RE_AARCH64_PAGE_PC>(expr);
+  return oneof<R_PC, RE_AARCH64_PAGE_PC, RE_ARM_PCA, RE_LOONGARCH_PAGE_PC>(
+      expr);
 }
 
 static RelExpr toPlt(RelExpr expr) {
