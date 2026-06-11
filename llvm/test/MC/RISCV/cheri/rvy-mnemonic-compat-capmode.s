@@ -48,10 +48,10 @@ jr x1
 jalr x1, x1
 # CHECK-NEXT: jal cra, 20 # encoding: [0xef,0x00,0x40,0x01]
 jal x1, 20
-# CHECK-NEXT: auipcc cra, 10 # encoding: [0x97,0xa0,0x00,0x00]
+# CHECK-NEXT: auipc cra, 10 # encoding: [0x97,0xa0,0x00,0x00]
 auipc x1, 10
 ## We also allow zcheri 0.9.3 syntax using a c register
-# CHECK-NEXT: auipcc cra, 10 # encoding: [0x97,0xa0,0x00,0x00]
+# CHECK-NEXT: auipc cra, 10 # encoding: [0x97,0xa0,0x00,0x00]
 auipc c1, 10
 
 ## Check that ABI register names work as expected

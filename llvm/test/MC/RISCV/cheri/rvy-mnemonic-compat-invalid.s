@@ -14,15 +14,15 @@ yss x1, ddc, x3
 yss x1, x2, ddc
 
 ## Check that in integer mode jumps reject capability registers.
-# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Mode
+# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 jr c1
-# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Mode
+# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 jalr c1, c2
-# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Mode
+# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 jal c1, 20
 
 ## Normal loads should reject C base registers.
-# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Mode
+# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 lw x1, 0(c2)
 
 ## Check that XCheri mnemonics do not coerce arguments.

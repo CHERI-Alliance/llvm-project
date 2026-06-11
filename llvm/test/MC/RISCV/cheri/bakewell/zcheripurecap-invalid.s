@@ -22,7 +22,6 @@ cclear      1, 0x42          # CHECK: <stdin>:[[#@LINE]]:1:  error: instruction 
 fpclear     1, 0x42          # CHECK: <stdin>:[[#@LINE]]:1:  error: instruction requires the following: CHERI Extension
 crrl        a0, a0           # CHECK: <stdin>:[[#@LINE]]:1:  error: instruction requires the following: CHERI Extension
 cloadtags   a0, (ca0)        # CHECK: <stdin>:[[#@LINE]]:1:  error: instruction requires the following: CHERI Extension
-jalr        a0, 42(a0)       # CHECK: <stdin>:[[#@LINE]]:1:  error: instruction requires the following: Integer Pointer Mode
 jalr.mode   ca0, 0(ca0)      # CHECK: <stdin>:[[#@LINE]]:1:  error: instruction requires the following: 'Zcherihybrid' (Backwards compatiblity for 'Zcheripurecap' with RISCV), Integer Pointer Mode
 # With scbndsi we sadly don't get the warning for smaller values as the asm
 # parser will try and parse CSetBounds and will succeed - warning instead about

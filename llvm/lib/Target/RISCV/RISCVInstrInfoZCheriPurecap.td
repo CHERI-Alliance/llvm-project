@@ -181,10 +181,9 @@ let isCall = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
 } // isCall, hasSideEffects, mayLoad, mayStore
 
 let Predicates = [IsCapMode, HasZCheriPurecap] in {
-  def : InstAlias<"jalr $rd, ${imm12}(${rs1})", (JALR_MODE_CAP GPR:$rd, GPR:$rs1, immzero:$imm12), 2>;
-  def : InstAlias<"jalr $rd, $rs1"            , (JALR_MODE_CAP GPR:$rd, GPR:$rs1, 0             ), 2>;
-  def : InstAlias<"jalr $rs1"                 , (JALR_MODE_CAP X1     , GPR:$rs1, 0             ), 2>;
-  def : InstAlias<"jr $rs1"                   , (JALR_MODE_CAP X0     , GPR:$rs1, 0             ), 2>;
+  def : InstAlias<"jalr.mode $rd, $rs1"            , (JALR_MODE_CAP GPR:$rd, GPR:$rs1, 0             ), 2>;
+  def : InstAlias<"jalr.mode $rs1"                 , (JALR_MODE_CAP X1     , GPR:$rs1, 0             ), 2>;
+  def : InstAlias<"jr.mode $rs1"                   , (JALR_MODE_CAP X0     , GPR:$rs1, 0             ), 2>;
   def : InstAlias<"ret.mode"                  , (JALR_MODE_CAP X0     , X1      , 0             ), 2>;
 } // Predicates = [IsCapMode, HasZCheriPurecap]
 
