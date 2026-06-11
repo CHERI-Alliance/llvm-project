@@ -602,7 +602,7 @@ class CCLoadB_ri<bits<6> funct6, string OpcodeStr>
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in
 class CCStoreB_rri<bits<6> funct6, string OpcodeStr>
     : RVInst16CSB<funct6, 0b00, (outs),
-                  (ins GPRC:$rs2, GPCRC:$rs1, uimm2:$imm),
+                  (ins GPRC:$rs2, GPCRCMem:$rs1, uimm2:$imm),
                   OpcodeStr, "$rs2, ${imm}(${rs1})"> {
   bits<2> imm;
 
@@ -612,7 +612,7 @@ class CCStoreB_rri<bits<6> funct6, string OpcodeStr>
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in
 class CCLoadH_ri<bits<6> funct6, bit funct1, string OpcodeStr>
     : RVInst16CLH<funct6, funct1, 0b00, (outs GPRC:$rd),
-                  (ins GPCRC:$rs1, uimm2_lsb0:$imm),
+                  (ins GPCRCMem:$rs1, uimm2_lsb0:$imm),
                   OpcodeStr, "$rd, ${imm}(${rs1})"> {
   bits<2> imm;
 
@@ -622,7 +622,7 @@ class CCLoadH_ri<bits<6> funct6, bit funct1, string OpcodeStr>
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in
 class CCStoreH_rri<bits<6> funct6, bit funct1, string OpcodeStr>
     : RVInst16CSH<funct6, funct1, 0b00, (outs),
-                  (ins GPRC:$rs2, GPCRC:$rs1, uimm2_lsb0:$imm),
+                  (ins GPRC:$rs2, GPCRCMem:$rs1, uimm2_lsb0:$imm),
                   OpcodeStr, "$rs2, ${imm}(${rs1})"> {
   bits<2> imm;
 
@@ -652,14 +652,14 @@ def C_CSH : CCStoreH_rri<0b100011, 0b0, "c.sh">,
 let Predicates = [HasStdExtZcb, HasZCheriPurecap, IsCapMode] in {
 def : CompressPat<(CLBU GPRC:$rd, GPCRCMem:$rs1, uimm2:$imm),
                   (C_CLBU GPRC:$rd, GPCRCMem:$rs1, uimm2:$imm)>;
-def : CompressPat<(LHU GPRC:$rd, GPRCMem:$rs1, uimm2_lsb0:$imm),
-                  (C_LHU GPRC:$rd, GPRCMem:$rs1, uimm2_lsb0:$imm)>;
-def : CompressPat<(LH GPRC:$rd, GPRCMem:$rs1, uimm2_lsb0:$imm),
-                  (C_LH GPRC:$rd, GPRCMem:$rs1, uimm2_lsb0:$imm)>;
-def : CompressPat<(SB GPRC:$rs2, GPRCMem:$rs1, uimm2:$imm),
-                  (C_SB GPRC:$rs2, GPRCMem:$rs1, uimm2:$imm)>;
-def : CompressPat<(SH GPRC:$rs2, GPRCMem:$rs1, uimm2_lsb0:$imm),
-                  (C_SH GPRC:$rs2, GPRCMem:$rs1, uimm2_lsb0:$imm)>;
+def : CompressPat<(CLHU GPRC:$rd, GPCRCMem:$rs1, uimm2_lsb0:$imm),
+                  (C_CLHU GPRC:$rd, GPCRCMem:$rs1, uimm2_lsb0:$imm)>;
+def : CompressPat<(CLH GPRC:$rd, GPCRCMem:$rs1, uimm2_lsb0:$imm),
+                  (C_CLH GPRC:$rd, GPCRCMem:$rs1, uimm2_lsb0:$imm)>;
+def : CompressPat<(CSB GPRC:$rs2, GPCRCMem:$rs1, uimm2:$imm),
+                  (C_CSB GPRC:$rs2, GPCRCMem:$rs1, uimm2:$imm)>;
+def : CompressPat<(CSH GPRC:$rs2, GPCRCMem:$rs1, uimm2_lsb0:$imm),
+                  (C_CSH GPRC:$rs2, GPCRCMem:$rs1, uimm2_lsb0:$imm)>;
 } // Predicates = [HasStdExtZcb, HasZCheriPurecap, IsCapMode]
 
 // Pseudo Instructions
