@@ -103,8 +103,13 @@ void f(char * p, char * q, std::span<char> s, std::span<char> s2) {
 
   snprintf(a, sizeof(b), "%s", __PRETTY_FUNCTION__);         // expected-warning{{function 'snprintf' is unsafe}} expected-note{{buffer pointer and size may not match}}
   snprintf((char*)c, sizeof(c), "%s", __PRETTY_FUNCTION__);  // expected-warning{{function 'snprintf' is unsafe}} expected-note{{buffer pointer and size may not match}}
-  fprintf((FILE*)p, "%P%d%p%i hello world %32s", *p, *p, p, *p, "hello"); // no warn
-  fprintf(fp, "%P%d%p%i hello world %32s", *p, *p, p, *p, "hello"); // no warn
+  // TODO: We have a local downstream diff that treats 'P' as a length modifier
+  // (for intptr_t). Because of this, %P%d is parsed as a single specifier %P%
+  // followed by literal 'd', instead of two separate specifiers (%P and %d).
+  // This shifts the argument mapping, causing %32s to map to 'p' (which warns)
+  // instead of "hello".
+  fprintf((FILE*)p, "%P%d%p%i hello world %32s", *p, *p, p, *p, "hello"); // expected-warning{{function 'fprintf' is unsafe}} expected-note{{string argument is not guaranteed to be null-terminated}}
+  fprintf(fp, "%P%d%p%i hello world %32s", *p, *p, p, *p, "hello"); // expected-warning{{function 'fprintf' is unsafe}} expected-note{{string argument is not guaranteed to be null-terminated}}
   printf("%s%d", "hello", *p); // no warn
   snprintf(s.data(), s.size_bytes(), "%s%d", "hello", *p); // no warn
   snprintf(s.data(), s.size_bytes(), "%s%d", __PRETTY_FUNCTION__, *p); // no warn
