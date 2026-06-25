@@ -1185,16 +1185,14 @@ void RelocationScanner::processAux(RelExpr expr, RelType type, uint64_t offset,
   if (ctx.arg.isCheriAbi && sym.isDefined() && (sec->flags & SHF_EXECINSTR) &&
       isDirectPcExpr(expr)) {
     OutputSection *osec = sym.getOutputSection();
-    if (osec == nullptr)
-      llvm_unreachable(
-          "PCC-accessed symbol defined in unsupported section type");
     // TODO: Make this an error in future? Would need special relocation to
     // allow bypassing for specific use cases (e.g. kernel startup code).
-    if ((osec->flags & SHF_WRITE) &&
-        !isRelroSection(ctx, osec, /*ignoreZRelro=*/true)) {
+    if (osec == nullptr ||
+        ((osec->flags & SHF_WRITE) &&
+         !isRelroSection(ctx, osec, /*ignoreZRelro=*/true))) {
       auto diag = Warn(ctx);
       diag << "relocation " << type << " against symbol '" << &sym
-           << "' in non-PCC section";
+           << "' not in a PCC section";
       printLocation(diag, *sec, sym, offset);
     } else
       osec->cheriPcc.store(true, std::memory_order_relaxed);
