@@ -54,10 +54,8 @@ define i1 @test_sext_w(i64 %x, i32 %y) nounwind {
 ;
 ; RV64ZB-PURECAP-LABEL: test_sext_w:
 ; RV64ZB-PURECAP:       # %bb.0:
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -256
-; RV64ZB-PURECAP-NEXT:    sc cra, 240(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc cgp, 224(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc ctp, 208(csp) # 16-byte Folded Spill
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -224
+; RV64ZB-PURECAP-NEXT:    sc cra, 208(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs0, 192(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs1, 176(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs2, 160(csp) # 16-byte Folded Spill
@@ -83,9 +81,7 @@ define i1 @test_sext_w(i64 %x, i32 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lw a0, 0(csp) # 8-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    slti a0, a0, 0
 ; RV64ZB-PURECAP-NEXT:  .LBB0_3: # %falsebb
-; RV64ZB-PURECAP-NEXT:    lc cra, 240(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc cgp, 224(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc ctp, 208(csp) # 16-byte Folded Reload
+; RV64ZB-PURECAP-NEXT:    lc cra, 208(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs0, 192(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs1, 176(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs2, 160(csp) # 16-byte Folded Reload
@@ -98,7 +94,7 @@ define i1 @test_sext_w(i64 %x, i32 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lc cs9, 48(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs10, 32(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs11, 16(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 256
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 224
 ; RV64ZB-PURECAP-NEXT:    ret
   tail call void asm sideeffect "", "~{x1},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x19},~{x20},~{x21},~{x22},~{x23},~{x24},~{x25},~{x26},~{x27},~{x28},~{x29},~{x30},~{x31}"()
   %a = icmp eq i64 %x, 0
@@ -204,10 +200,8 @@ define i64 @test_sext_b(i64 %x, i8 %y) nounwind {
 ;
 ; RV64ZB-PURECAP-LABEL: test_sext_b:
 ; RV64ZB-PURECAP:       # %bb.0:
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -256
-; RV64ZB-PURECAP-NEXT:    sc cra, 240(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc cgp, 224(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc ctp, 208(csp) # 16-byte Folded Spill
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -224
+; RV64ZB-PURECAP-NEXT:    sc cra, 208(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs0, 192(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs1, 176(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs2, 160(csp) # 16-byte Folded Spill
@@ -232,9 +226,7 @@ define i64 @test_sext_b(i64 %x, i8 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:  .LBB1_2: # %truebb
 ; RV64ZB-PURECAP-NEXT:    lb a0, 0(csp) # 8-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:  .LBB1_3: # %falsebb
-; RV64ZB-PURECAP-NEXT:    lc cra, 240(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc cgp, 224(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc ctp, 208(csp) # 16-byte Folded Reload
+; RV64ZB-PURECAP-NEXT:    lc cra, 208(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs0, 192(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs1, 176(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs2, 160(csp) # 16-byte Folded Reload
@@ -247,7 +239,7 @@ define i64 @test_sext_b(i64 %x, i8 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lc cs9, 48(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs10, 32(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs11, 16(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 256
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 224
 ; RV64ZB-PURECAP-NEXT:    ret
   tail call void asm sideeffect "", "~{x1},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x19},~{x20},~{x21},~{x22},~{x23},~{x24},~{x25},~{x26},~{x27},~{x28},~{x29},~{x30},~{x31}"()
   %a = icmp eq i64 %x, 0
@@ -353,10 +345,8 @@ define i64 @test_sext_h(i64 %x, i16 %y) nounwind {
 ;
 ; RV64ZB-PURECAP-LABEL: test_sext_h:
 ; RV64ZB-PURECAP:       # %bb.0:
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -256
-; RV64ZB-PURECAP-NEXT:    sc cra, 240(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc cgp, 224(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc ctp, 208(csp) # 16-byte Folded Spill
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -224
+; RV64ZB-PURECAP-NEXT:    sc cra, 208(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs0, 192(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs1, 176(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs2, 160(csp) # 16-byte Folded Spill
@@ -381,9 +371,7 @@ define i64 @test_sext_h(i64 %x, i16 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:  .LBB2_2: # %truebb
 ; RV64ZB-PURECAP-NEXT:    lh a0, 0(csp) # 8-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:  .LBB2_3: # %falsebb
-; RV64ZB-PURECAP-NEXT:    lc cra, 240(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc cgp, 224(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc ctp, 208(csp) # 16-byte Folded Reload
+; RV64ZB-PURECAP-NEXT:    lc cra, 208(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs0, 192(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs1, 176(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs2, 160(csp) # 16-byte Folded Reload
@@ -396,7 +384,7 @@ define i64 @test_sext_h(i64 %x, i16 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lc cs9, 48(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs10, 32(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs11, 16(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 256
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 224
 ; RV64ZB-PURECAP-NEXT:    ret
   tail call void asm sideeffect "", "~{x1},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x19},~{x20},~{x21},~{x22},~{x23},~{x24},~{x25},~{x26},~{x27},~{x28},~{x29},~{x30},~{x31}"()
   %a = icmp eq i64 %x, 0
@@ -456,10 +444,8 @@ define i64 @test_zext_b(i64 %x, i8 %y) nounwind {
 ;
 ; RV64ZB-PURECAP-LABEL: test_zext_b:
 ; RV64ZB-PURECAP:       # %bb.0:
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -256
-; RV64ZB-PURECAP-NEXT:    sc cra, 240(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc cgp, 224(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc ctp, 208(csp) # 16-byte Folded Spill
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -224
+; RV64ZB-PURECAP-NEXT:    sc cra, 208(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs0, 192(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs1, 176(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs2, 160(csp) # 16-byte Folded Spill
@@ -484,9 +470,7 @@ define i64 @test_zext_b(i64 %x, i8 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:  .LBB3_2: # %truebb
 ; RV64ZB-PURECAP-NEXT:    lbu a0, 0(csp) # 8-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:  .LBB3_3: # %falsebb
-; RV64ZB-PURECAP-NEXT:    lc cra, 240(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc cgp, 224(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc ctp, 208(csp) # 16-byte Folded Reload
+; RV64ZB-PURECAP-NEXT:    lc cra, 208(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs0, 192(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs1, 176(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs2, 160(csp) # 16-byte Folded Reload
@@ -499,7 +483,7 @@ define i64 @test_zext_b(i64 %x, i8 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lc cs9, 48(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs10, 32(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs11, 16(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 256
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 224
 ; RV64ZB-PURECAP-NEXT:    ret
   tail call void asm sideeffect "", "~{x1},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x19},~{x20},~{x21},~{x22},~{x23},~{x24},~{x25},~{x26},~{x27},~{x28},~{x29},~{x30},~{x31}"()
   %a = icmp eq i64 %x, 0
@@ -605,10 +589,8 @@ define i64 @test_zext_h(i64 %x, i16 %y) nounwind {
 ;
 ; RV64ZB-PURECAP-LABEL: test_zext_h:
 ; RV64ZB-PURECAP:       # %bb.0:
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -256
-; RV64ZB-PURECAP-NEXT:    sc cra, 240(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc cgp, 224(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc ctp, 208(csp) # 16-byte Folded Spill
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -224
+; RV64ZB-PURECAP-NEXT:    sc cra, 208(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs0, 192(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs1, 176(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs2, 160(csp) # 16-byte Folded Spill
@@ -633,9 +615,7 @@ define i64 @test_zext_h(i64 %x, i16 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:  .LBB4_2: # %truebb
 ; RV64ZB-PURECAP-NEXT:    lhu a0, 0(csp) # 8-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:  .LBB4_3: # %falsebb
-; RV64ZB-PURECAP-NEXT:    lc cra, 240(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc cgp, 224(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc ctp, 208(csp) # 16-byte Folded Reload
+; RV64ZB-PURECAP-NEXT:    lc cra, 208(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs0, 192(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs1, 176(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs2, 160(csp) # 16-byte Folded Reload
@@ -648,7 +628,7 @@ define i64 @test_zext_h(i64 %x, i16 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lc cs9, 48(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs10, 32(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs11, 16(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 256
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 224
 ; RV64ZB-PURECAP-NEXT:    ret
   tail call void asm sideeffect "", "~{x1},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x19},~{x20},~{x21},~{x22},~{x23},~{x24},~{x25},~{x26},~{x27},~{x28},~{x29},~{x30},~{x31}"()
   %a = icmp eq i64 %x, 0
@@ -754,10 +734,8 @@ define i64 @test_zext_w(i64 %x, i32 %y) nounwind {
 ;
 ; RV64ZB-PURECAP-LABEL: test_zext_w:
 ; RV64ZB-PURECAP:       # %bb.0:
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -256
-; RV64ZB-PURECAP-NEXT:    sc cra, 240(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc cgp, 224(csp) # 16-byte Folded Spill
-; RV64ZB-PURECAP-NEXT:    sc ctp, 208(csp) # 16-byte Folded Spill
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, -224
+; RV64ZB-PURECAP-NEXT:    sc cra, 208(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs0, 192(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs1, 176(csp) # 16-byte Folded Spill
 ; RV64ZB-PURECAP-NEXT:    sc cs2, 160(csp) # 16-byte Folded Spill
@@ -782,9 +760,7 @@ define i64 @test_zext_w(i64 %x, i32 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:  .LBB5_2: # %truebb
 ; RV64ZB-PURECAP-NEXT:    lwu a0, 0(csp) # 8-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:  .LBB5_3: # %falsebb
-; RV64ZB-PURECAP-NEXT:    lc cra, 240(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc cgp, 224(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    lc ctp, 208(csp) # 16-byte Folded Reload
+; RV64ZB-PURECAP-NEXT:    lc cra, 208(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs0, 192(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs1, 176(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs2, 160(csp) # 16-byte Folded Reload
@@ -797,7 +773,7 @@ define i64 @test_zext_w(i64 %x, i32 %y) nounwind {
 ; RV64ZB-PURECAP-NEXT:    lc cs9, 48(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs10, 32(csp) # 16-byte Folded Reload
 ; RV64ZB-PURECAP-NEXT:    lc cs11, 16(csp) # 16-byte Folded Reload
-; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 256
+; RV64ZB-PURECAP-NEXT:    cincoffset csp, csp, 224
 ; RV64ZB-PURECAP-NEXT:    ret
   tail call void asm sideeffect "", "~{x1},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x19},~{x20},~{x21},~{x22},~{x23},~{x24},~{x25},~{x26},~{x27},~{x28},~{x29},~{x30},~{x31}"()
   %a = icmp eq i64 %x, 0

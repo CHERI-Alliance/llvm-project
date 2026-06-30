@@ -27,8 +27,8 @@ def CSR_ILP32D_LP64D
                        F8_D, F9_D, (sequence "F%u_D", 18, 27))>;
 
 def CSR_IL32PC64_L64PC128
-    : CalleeSavedRegs<(add X1, X3, X4, X8, X9, (sequence "X%u", 18, 27),
-                           C1, C3, C4, C8, C9, (sequence "C%u", 18, 27))>;
+    : CalleeSavedRegs<(add X1, X8, X9, (sequence "X%u", 18, 27),
+                           C1, C8, C9, (sequence "C%u", 18, 27))>;
 
 def CSR_IL32PC64F_L64PC128F
     : CalleeSavedRegs<(add CSR_IL32PC64_L64PC128,
@@ -69,13 +69,13 @@ def CSR_XLEN_F64_Interrupt: CalleeSavedRegs<(add CSR_Interrupt,
 // Same as CSR_Interrupt, but including all capability registers that are used,
 // both Caller and Callee saved registers.
 def CSR_XLEN_CLEN_Interrupt : CalleeSavedRegs<(add X1,
-    (sequence "X%u", 3, 9),
+    (sequence "X%u", 5, 9),
     (sequence "X%u", 10, 11),
     (sequence "X%u", 12, 17),
     (sequence "X%u", 18, 27),
     (sequence "X%u", 28, 31),
     C1,
-    (sequence "C%u", 3, 9),
+    (sequence "C%u", 5, 9),
     (sequence "C%u", 10, 11),
     (sequence "C%u", 12, 17),
     (sequence "C%u", 18, 27),
@@ -83,13 +83,13 @@ def CSR_XLEN_CLEN_Interrupt : CalleeSavedRegs<(add X1,
 
 // Same as CSR_XLEN_CLEN_Interrupt, but including all 32-bit FP registers.
 def CSR_XLEN_CLEN_F32_Interrupt: CalleeSavedRegs<(add X1,
-    (sequence "X%u", 3, 9),
+    (sequence "X%u", 5, 9),
     (sequence "X%u", 10, 11),
     (sequence "X%u", 12, 17),
     (sequence "X%u", 18, 27),
     (sequence "X%u", 28, 31),
     C1,
-    (sequence "C%u", 3, 9),
+    (sequence "C%u", 5, 9),
     (sequence "C%u", 10, 11),
     (sequence "C%u", 12, 17),
     (sequence "C%u", 18, 27),
@@ -103,13 +103,13 @@ def CSR_XLEN_CLEN_F32_Interrupt: CalleeSavedRegs<(add X1,
 
 // Same as CSR_XLEN_CLEN_Interrupt, but including all 64-bit FP registers.
 def CSR_XLEN_CLEN_F64_Interrupt: CalleeSavedRegs<(add X1,
-    (sequence "X%u", 3, 9),
+    (sequence "X%u", 5, 9),
     (sequence "X%u", 10, 11),
     (sequence "X%u", 12, 17),
     (sequence "X%u", 18, 27),
     (sequence "X%u", 28, 31),
     C1,
-    (sequence "C%u", 3, 9),
+    (sequence "C%u", 5, 9),
     (sequence "C%u", 10, 11),
     (sequence "C%u", 12, 17),
     (sequence "C%u", 18, 27),

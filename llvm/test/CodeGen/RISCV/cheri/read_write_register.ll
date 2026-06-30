@@ -27,14 +27,9 @@ declare i64 @llvm.read_register.i64(metadata) #1
 
 ; Function Attrs: nounwind
 define void @set_tp(i64 %value) local_unnamed_addr #2 {
-; FIXME: this is wrong, but is a bug upstream and not in CHERI clang (https://godbolt.org/z/WTYh5q)
 ; CHECK-L64PC128-LABEL: set_tp:
 ; CHECK-L64PC128:       # %bb.0: # %entry
-; CHECK-L64PC128-NEXT:    cincoffset csp, csp, -16
-; CHECK-L64PC128-NEXT:    sc ctp, 0(csp) # 16-byte Folded Spill
 ; CHECK-L64PC128-NEXT:    mv tp, a0
-; CHECK-L64PC128-NEXT:    lc ctp, 0(csp) # 16-byte Folded Reload
-; CHECK-L64PC128-NEXT:    cincoffset csp, csp, 16
 ; CHECK-L64PC128-NEXT:    ret
 ;
 ; CHECK-LP64-LABEL: set_tp:
@@ -70,14 +65,9 @@ declare ptr addrspace(200) @llvm.read_register.p200(metadata) #1
 
 ; Function Attrs: nounwind
 define void @set_ctp(ptr addrspace(200) %value) local_unnamed_addr #2 {
-; FIXME: this is wrong, but is a bug upstream and not in CHERI clang (https://godbolt.org/z/WTYh5q)
 ; CHECK-L64PC128-LABEL: set_ctp:
 ; CHECK-L64PC128:       # %bb.0: # %entry
-; CHECK-L64PC128-NEXT:    cincoffset csp, csp, -16
-; CHECK-L64PC128-NEXT:    sc ctp, 0(csp) # 16-byte Folded Spill
 ; CHECK-L64PC128-NEXT:    cmove ctp, ca0
-; CHECK-L64PC128-NEXT:    lc ctp, 0(csp) # 16-byte Folded Reload
-; CHECK-L64PC128-NEXT:    cincoffset csp, csp, 16
 ; CHECK-L64PC128-NEXT:    ret
 ;
 ; CHECK-LP64-LABEL: set_ctp:
@@ -146,14 +136,9 @@ declare i64 @llvm.cheri.cap.address.get.i64(ptr addrspace(200)) #4
 
 ; Function Attrs: nounwind
 define void @set_gp_addr(i64 %value) local_unnamed_addr #2 {
-; FIXME: this is wrong, but is a bug upstream and not in CHERI clang (https://godbolt.org/z/WTYh5q)
 ; CHECK-L64PC128-LABEL: set_gp_addr:
 ; CHECK-L64PC128:       # %bb.0: # %entry
-; CHECK-L64PC128-NEXT:    cincoffset csp, csp, -16
-; CHECK-L64PC128-NEXT:    sc cgp, 0(csp) # 16-byte Folded Spill
 ; CHECK-L64PC128-NEXT:    cincoffset cgp, cnull, a0
-; CHECK-L64PC128-NEXT:    lc cgp, 0(csp) # 16-byte Folded Reload
-; CHECK-L64PC128-NEXT:    cincoffset csp, csp, 16
 ; CHECK-L64PC128-NEXT:    ret
 ;
 ; CHECK-LP64-LABEL: set_gp_addr:
