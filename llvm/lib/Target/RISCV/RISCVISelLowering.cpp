@@ -20417,32 +20417,12 @@ static MachineBasicBlock *emitFROUND(MachineInstr &MI, MachineBasicBlock *MBB,
   return DoneMBB;
 }
 
-static MachineBasicBlock *emitPCCGetIntMode(MachineInstr &MI,
-                                            MachineBasicBlock *MBB,
-                                            const RISCVSubtarget &Subtarget) {
-  DebugLoc DL = MI.getDebugLoc();
-  const RISCVInstrInfo &TII = *Subtarget.getInstrInfo();
-  Register DstReg = MI.getOperand(0).getReg();
-
-  // modesw.cap
-  // auipc $dst, 0
-  // modesw.int
-  BuildMI(*MBB, MI, DL, TII.get(RISCV::MODESW_CAP));
-  BuildMI(*MBB, MI, DL, TII.get(RISCV::AUIPCC), DstReg).addImm(0);
-  BuildMI(*MBB, MI, DL, TII.get(RISCV::MODESW_INT));
-
-  MI.eraseFromParent();
-  return MBB;
-}
-
 MachineBasicBlock *
 RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
                                                  MachineBasicBlock *BB) const {
   switch (MI.getOpcode()) {
   default:
     llvm_unreachable("Unexpected instr type to insert");
-  case RISCV::CheriPccGetIntMode:
-    return emitPCCGetIntMode(MI, BB, Subtarget);
   case RISCV::ReadCounterWide:
     assert(!Subtarget.is64Bit() &&
            "ReadCounterWide is only to be used on riscv32");

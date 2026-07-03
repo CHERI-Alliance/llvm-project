@@ -70,6 +70,9 @@ private:
                              MachineBasicBlock::iterator MBBI,
                              MachineBasicBlock::iterator &NextMBBI);
   bool expandCGetAddr(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
+  bool expandCheriPccGet(MachineBasicBlock &MBB,
+                         MachineBasicBlock::iterator MBBI,
+                         MachineBasicBlock::iterator &NextMBBI);
   bool expandCCOp(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                   MachineBasicBlock::iterator &NextMBBI);
   bool expandVMSET_VMCLR(MachineBasicBlock &MBB,
@@ -144,6 +147,8 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     return expandCapLoadTLSIEAddress(MBB, MBBI, NextMBBI);
   case RISCV::PseudoCLC_TLS_GD:
     return expandCapLoadTLSGDCap(MBB, MBBI, NextMBBI);
+  case RISCV::PseudoCheriPccGet:
+    return expandCheriPccGet(MBB, MBBI, NextMBBI);
   case RISCV::PseudoMV_FPR16INX:
     return expandMV_FPR16INX(MBB, MBBI);
   case RISCV::PseudoMV_FPR32INX:
@@ -310,6 +315,25 @@ bool RISCVExpandPseudo::expandCGetAddr(MachineBasicBlock &MBB,
       .addImm(0);
   MBBI->eraseFromParent(); // The pseudo instruction is gone now.
   return true;
+}
+
+bool RISCVExpandPseudo::expandCheriPccGet(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+    MachineBasicBlock::iterator &NextMBBI) {
+  const auto &STI = MBB.getParent()->getSubtarget<RISCVSubtarget>();
+
+  if (STI.hasStdExtZCheriHybrid() && !STI.isCapMode()) {
+    Register DstReg = MBBI->getOperand(0).getReg();
+    DebugLoc DL = MBBI->getDebugLoc();
+
+    BuildMI(MBB, MBBI, DL, TII->get(RISCV::MODESW_CAP));
+    BuildMI(MBB, MBBI, DL, TII->get(RISCV::AUIPCC), DstReg).addImm(0);
+    BuildMI(MBB, MBBI, DL, TII->get(RISCV::MODESW_INT));
+    MBBI->eraseFromParent();
+    return true;
+  }
+
+  return false;
 }
 
 bool RISCVExpandPseudo::expandCCOp(MachineBasicBlock &MBB,
