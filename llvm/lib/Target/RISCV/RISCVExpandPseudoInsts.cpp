@@ -70,7 +70,7 @@ private:
                              MachineBasicBlock::iterator MBBI,
                              MachineBasicBlock::iterator &NextMBBI);
   bool expandCGetAddr(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
-  bool expandCheriPccGet(MachineBasicBlock &MBB,
+  bool expandCheriPccGetIntMode(MachineBasicBlock &MBB,
                          MachineBasicBlock::iterator MBBI,
                          MachineBasicBlock::iterator &NextMBBI);
   bool expandCCOp(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
@@ -147,8 +147,8 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     return expandCapLoadTLSIEAddress(MBB, MBBI, NextMBBI);
   case RISCV::PseudoCLC_TLS_GD:
     return expandCapLoadTLSGDCap(MBB, MBBI, NextMBBI);
-  case RISCV::PseudoCheriPccGet:
-    return expandCheriPccGet(MBB, MBBI, NextMBBI);
+  case RISCV::PseudoCheriPccGetIntMode:
+    return expandCheriPccGetIntMode(MBB, MBBI, NextMBBI);
   case RISCV::PseudoMV_FPR16INX:
     return expandMV_FPR16INX(MBB, MBBI);
   case RISCV::PseudoMV_FPR32INX:
@@ -317,7 +317,7 @@ bool RISCVExpandPseudo::expandCGetAddr(MachineBasicBlock &MBB,
   return true;
 }
 
-bool RISCVExpandPseudo::expandCheriPccGet(
+bool RISCVExpandPseudo::expandCheriPccGetIntMode(
     MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
     MachineBasicBlock::iterator &NextMBBI) {
   const auto &STI = MBB.getParent()->getSubtarget<RISCVSubtarget>();

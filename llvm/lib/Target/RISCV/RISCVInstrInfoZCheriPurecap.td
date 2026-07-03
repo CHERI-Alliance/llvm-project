@@ -467,9 +467,9 @@ def : Pat<(int_cheri_ddc_get), (CHERI_CSRRC CSR_DDC.Encoding, (XLenVT X0))>;
 
 // Pseudo instruction to handle getting pcc when in integer mode
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, Size = 12 in
-def PseudoCheriPccGet : Pseudo<(outs GPCR:$rd), (ins), []>;
+def PseudoCheriPccGetIntMode : Pseudo<(outs GPCR:$rd), (ins), []>;
 let Predicates = [HasZCheriHybrid, NotCapMode] in
-def : Pat<(int_cheri_pcc_get), (PseudoCheriPccGet)>;
+def : Pat<(int_cheri_pcc_get), (PseudoCheriPccGetIntMode)>;
 
 /// Capability loads
 
