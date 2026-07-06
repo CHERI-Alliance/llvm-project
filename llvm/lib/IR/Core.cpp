@@ -492,7 +492,18 @@ void LLVMAppendModuleInlineAsm(LLVMModuleRef M, const char *Asm, size_t Len) {
 }
 
 const char *LLVMGetModuleInlineAsm(LLVMModuleRef M, size_t *Len) {
-  auto &Str = unwrap(M)->getModuleInlineAsm();
+  Module *Mod = unwrap(M);
+  ArrayRef<Module::GlobalAsmFragment> Frags = Mod->getModuleInlineAsm();
+  if (Frags.empty()) {
+    *Len = 0;
+    return nullptr;
+  }
+
+  if (Frags.size() != 1)
+    report_fatal_error("LLVMGetModuleInlineAsm is not supported if there is "
+                       "more than one module inline assembly fragment", false);
+
+  auto &Str = Frags.begin()->Asm;
   *Len = Str.length();
   return Str.c_str();
 }

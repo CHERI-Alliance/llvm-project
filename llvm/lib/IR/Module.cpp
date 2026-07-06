@@ -915,3 +915,23 @@ VersionTuple Module::getDarwinTargetVariantSDKVersion() const {
 void Module::setDarwinTargetVariantSDKVersion(VersionTuple Version) {
   addSDKVersionMD(Version, *this, "darwin.target_variant.SDK Version");
 }
+
+bool Module::GlobalAsmProperties::set(StringRef Name, std::string Value) {
+  if (Name == "target_features")
+    TargetFeatures = std::move(Value);
+  else if (Name == "target_cpu")
+    TargetCPU = std::move(Value);
+  else
+    return false;
+  return true;
+}
+
+SmallVector<std::pair<StringRef, StringRef>>
+Module::GlobalAsmProperties::getAsStrings() const {
+  SmallVector<std::pair<StringRef, StringRef>> Props;
+  if (!TargetFeatures.empty())
+    Props.emplace_back("target_features", TargetFeatures);
+  if (!TargetCPU.empty())
+    Props.emplace_back("target_cpu", TargetCPU);
+  return Props;
+}
