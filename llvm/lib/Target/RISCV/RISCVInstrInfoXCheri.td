@@ -1463,6 +1463,8 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 0,
 def PseudoCLLC : Pseudo<(outs GPCR:$dst), (ins bare_symbol:$src), [],
                         "llc", "$dst, $src">;
 def : InstAlias<"cllc $dst, $src", (PseudoCLLC GPCR:$dst, bare_symbol:$src), 0>;
+def : InstAlias<"lly $dst, $src",
+                (PseudoCLLC YGPR:$dst, bare_symbol:$src), 0>;
 
 def : Pat<(riscv_cllc tglobaladdr:$in), (PseudoCLLC tglobaladdr:$in)>;
 def : Pat<(riscv_cllc tblockaddress:$in), (PseudoCLLC tblockaddress:$in)>;
@@ -1474,6 +1476,8 @@ let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 0,
 def PseudoCLGC : Pseudo<(outs GPCR:$dst), (ins bare_symbol:$src), [],
                         "lgc", "$dst, $src">;
 def : InstAlias<"clgc $dst, $src", (PseudoCLGC GPCR:$dst, bare_symbol:$src), 0>;
+def : InstAlias<"lgy $dst, $src",
+                (PseudoCLGC YGPR:$dst, bare_symbol:$src), 0>;
 
 def : Pat<(riscv_clgc tglobaladdr:$in), (PseudoCLGC tglobaladdr:$in)>;
 
