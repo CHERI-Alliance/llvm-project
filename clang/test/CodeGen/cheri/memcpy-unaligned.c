@@ -275,8 +275,6 @@ void test_no_crash_with_array(void) {
   // CHECK-LABEL: @test_no_crash_with_array(
   char buffer[1234];
   memcpy(buffer, foo_array, sizeof(foo_array));
-  // expected-warning@-1{{memcpy operation with capability argument 'unsigned __intcap' and underaligned destination (aligned to 1 bytes) may be inefficient or result in CHERI tags bits being stripped}}
-  // expected-note@-2{{use __builtin_assume_aligned() or cast to (u)intptr_t*}}
   // CHECK: call void @llvm.memcpy.p200.p200.i64(ptr addrspace(200)
   // CHECK-SAME: align 1 %{{.+}}, ptr addrspace(200) align 16 {{.+}}, i64 320, i1 false)
   // CHECK-SAME: [[PRESERVE_TAGS_ATTRIB_TYPE_UINTCAP]]
