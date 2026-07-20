@@ -4740,7 +4740,7 @@ void DAGTypeLegalizer::ExpandIntRes_ShiftThroughStack(SDNode *N, SDValue &Lo,
   Align StackAlign = DAG.getReducedAlign(StackSlotVT, /*UseABI=*/false);
   SDValue StackPtr =
       DAG.CreateStackTemporary(StackSlotVT.getStoreSize(), StackAlign);
-  EVT PtrTy = StackPtr.getValueType();
+  EVT PtrRangeTy = TLI.getPointerRangeTy(DAG.getDataLayout());
   SDValue Ch = DAG.getEntryNode();
 
   MachinePointerInfo StackPtrInfo = MachinePointerInfo::getFixedStack(
@@ -4794,12 +4794,12 @@ void DAGTypeLegalizer::ExpandIntRes_ShiftThroughStack(SDNode *N, SDValue &Lo,
     AdjStackPtr = StackPtr;
   } else {
     AdjStackPtr = DAG.getMemBasePlusOffset(
-        StackPtr, DAG.getConstant(VTByteWidth, dl, PtrTy), dl);
+        StackPtr, DAG.getConstant(VTByteWidth, dl, PtrRangeTy), dl);
     ByteOffset = DAG.getNegative(ByteOffset, dl, ShAmtVT);
   }
 
   // Get the pointer somewhere into the stack slot from which we need to load.
-  ByteOffset = DAG.getSExtOrTrunc(ByteOffset, dl, PtrTy);
+  ByteOffset = DAG.getSExtOrTrunc(ByteOffset, dl, PtrRangeTy);
   AdjStackPtr = DAG.getMemBasePlusOffset(AdjStackPtr, ByteOffset, dl);
 
   // And load it! While the load is not legal, legalizing it is obvious.
