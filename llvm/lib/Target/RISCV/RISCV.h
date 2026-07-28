@@ -25,9 +25,6 @@ class RISCVRegisterBankInfo;
 class RISCVSubtarget;
 class RISCVTargetMachine;
 
-FunctionPass *createRISCVCheriCommonLoadAddressPass();
-void initializeRISCVCheriCommonLoadAddressPass(PassRegistry &);
-
 FunctionPass *createRISCVCodeGenPreparePass();
 void initializeRISCVCodeGenPreparePass(PassRegistry &);
 

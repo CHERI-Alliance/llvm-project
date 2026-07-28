@@ -8129,8 +8129,7 @@ static SDValue getLargeExternalSymbol(ExternalSymbolSDNode *N, const SDLoc &DL,
 template <class NodeTy>
 SDValue RISCVTargetLowering::getAddr(NodeTy *N, EVT Ty, SelectionDAG &DAG,
                                      bool IsLocal, bool CanDeriveFromPcc,
-                                     bool IsExternWeak,
-                                     bool HasExactDefinition) const {
+                                     bool IsExternWeak) const {
   SDLoc DL(N);
 
   if (RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI())) {
@@ -8147,38 +8146,6 @@ SDValue RISCVTargetLowering::getAddr(NodeTy *N, EVT Ty, SelectionDAG &DAG,
       // for read-only constants (e.g. floating-point constant-pools).
       return DAG.getNode(RISCVISD::CLLC, DL, Ty, Addr);
     }
-
-    // We may have the opportunity to optimize to PC-relative addressing.
-    if (IsLocal || (!isPositionIndependent() && HasExactDefinition)) {
-      // If we are loading an address for read-only uses, and this address never
-      // "escapes" (e.g. stored somewhere, passed to another function), we can use
-      // PC-relative addressing. We have a pass later on to turn these back into
-      // GOT addressing if that would allow them to be deduplicated.
-      bool AddressEscapes = false;
-      SmallVector<SDNode *, 8> Worklist;
-      SDNode *CurrNode = N;
-      do {
-        for (auto UI = CurrNode->use_begin(), E = CurrNode->use_end();
-             UI != E; UI = std::next(UI)) {
-          // A load ends the chain; it's a purely local use of the address.
-          if (UI->getUser()->getOpcode() == ISD::LOAD)
-            continue;
-          Worklist.push_back(UI->getUser());
-        }
-
-        if (Worklist.empty())
-          break;
-        CurrNode = Worklist.pop_back_val();
-        if (CurrNode->getOpcode() == ISD::PTRADD)
-          continue;
-        // Escapes?
-        AddressEscapes = true;
-      } while (!AddressEscapes);
-
-      if (!AddressEscapes)
-        return DAG.getNode(RISCVISD::CLLC, DL, Ty, Addr);
-    }
-
     // Generate a sequence to load a capability from the GOT. This generates
     // the pattern (PseudoCLGC sym), which expands to
     // (clc (auipc %got_pcrel_hi(sym)) %pcrel_lo(auipc)).
@@ -8275,14 +8242,14 @@ SDValue RISCVTargetLowering::lowerGlobalAddress(SDValue Op,
   // External variables always have to be loaded from the GOT to get bounds and
   // to allow for them to be provided by another DSO without requiring copy
   // relocations.
-  //
-  // Read-only accesses in the same DSO *can* use pc-relative addressing, but it
-  // does mean we get a capability bounded to the $pcc bounds and therefore we
-  // cannot use this addressing if the reference escapes to another function.
+  // Read-only accesses in the same DSO *could* theoretically use pc-relative
+  // addressing, but that would mean we get a capability bounded to the $pcc
+  // bounds and therefore would not be checked when we pass the reference to
+  // another function. Therefore, we always load from the GOT for all global
+  // variables.
   const GlobalValue *GV = N->getGlobal();
   return getAddr(N, Ty, DAG, GV->isDSOLocal(), /*CanDeriveFromPcc=*/false,
-                 GV->hasExternalWeakLinkage(),
-                 !GV->isDeclaration() && GV->isDefinitionExact());
+                 GV->hasExternalWeakLinkage());
 }
 
 SDValue RISCVTargetLowering::lowerBlockAddress(SDValue Op,
