@@ -373,6 +373,8 @@ static void replaceWithDefined(Ctx &ctx, Symbol &sym, SectionBase &sec,
 // debug. What's a solution? Instead of exporting a variable V from a DSO,
 // define an accessor getV().
 template <class ELFT> static void addCopyRelSymbol(Ctx &ctx, SharedSymbol &ss) {
+  assert(!ctx.arg.isCheriAbi && "CHERI does not permit copy relocations");
+
   // Copy relocation against zero-sized symbol doesn't make sense.
   uint64_t symSize = ss.getSize(ctx);
   if (symSize == 0 || ss.alignment == 0)
@@ -1282,7 +1284,7 @@ void RelocationScanner::processAux(RelExpr expr, RelType type, uint64_t offset,
       return;
     }
 
-    if (sym.isObject()) {
+    if (sym.isObject() && !ctx.arg.isCheriAbi) {
       // Produce a copy relocation.
       if (auto *ss = dyn_cast<SharedSymbol>(&sym)) {
         if (!ctx.arg.zCopyreloc) {
