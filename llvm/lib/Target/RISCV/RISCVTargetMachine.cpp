@@ -638,10 +638,6 @@ void RISCVPassConfig::addPreRegAlloc() {
     if (EnableVLOptimizer)
       addPass(createRISCVVLOptimizerPass());
   }
-  if (TM->getOptLevel() != CodeGenOptLevel::None) {
-    addPass(createRISCVCheriCommonLoadAddressPass());
-    addPass(&MachineCSELegacyID);
-  }
 
   addPass(createRISCVInsertReadWriteCSRPass());
   addPass(createRISCVInsertWriteVXRMPass());

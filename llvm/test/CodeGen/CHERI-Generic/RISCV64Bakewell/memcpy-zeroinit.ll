@@ -20,8 +20,8 @@ define void @_thr_umutex_init_volatile(%struct.umutex addrspace(200)* %mtx) loca
 ; CHECK-LABEL: _thr_umutex_init_volatile:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:  .LBB1_1: # Label of block must be emitted
-; CHECK-NEXT:    auipc ca1, %pcrel_hi(_thr_umutex_init.default_mtx)
-; CHECK-NEXT:    addi ca1, ca1, %pcrel_lo(.LBB1_1)
+; CHECK-NEXT:    auipc ca1, %got_pcrel_hi(_thr_umutex_init.default_mtx)
+; CHECK-NEXT:    lc ca1, %pcrel_lo(.LBB1_1)(ca1)
 ; CHECK-NEXT:    lc ca2, 32(ca1)
 ; CHECK-NEXT:    sc ca2, 32(ca0)
 ; CHECK-NEXT:    lc ca2, 16(ca1)
