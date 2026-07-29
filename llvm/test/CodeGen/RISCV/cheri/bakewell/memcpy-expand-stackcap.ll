@@ -12,23 +12,23 @@ define dso_local zeroext i8 @foo(i64 noundef %i) addrspace(200) {
 ; CHECK-NEXT:    .cfi_def_cfa_offset 64
 ; CHECK-NEXT:    li a1, 50
 ; CHECK-NEXT:    caddi ca2, csp, 8
+; CHECK-NEXT:    lui a3, 4
+; CHECK-NEXT:    lui a4, 300325
 ; CHECK-NEXT:    scbndsr ca1, ca2, a1
-; CHECK-NEXT:    lui a2, 4
-; CHECK-NEXT:    addiw a2, a2, 1870
-; CHECK-NEXT:    sh a2, 28(ca1)
-; CHECK-NEXT:    lui a2, 300325
-; CHECK-NEXT:    addiw a2, a2, 1107
-; CHECK-NEXT:    sw a2, 24(ca1)
 ; CHECK-NEXT:  .LBB0_1: # %entry
 ; CHECK-NEXT:    # Label of block must be emitted
 ; CHECK-NEXT:    auipc ca2, %pcrel_hi(.LCPI0_0)
 ; CHECK-NEXT:    caddi ca2, ca2, %pcrel_lo(.LBB0_1)
-; CHECK-NEXT:    ld a2, 0(ca2)
+; CHECK-NEXT:    addiw a3, a3, 1870
+; CHECK-NEXT:    sh a3, 28(ca1)
 ; CHECK-NEXT:  .LBB0_2: # %entry
 ; CHECK-NEXT:    # Label of block must be emitted
 ; CHECK-NEXT:    auipc ca3, %pcrel_hi(.LCPI0_1)
 ; CHECK-NEXT:    caddi ca3, ca3, %pcrel_lo(.LBB0_2)
+; CHECK-NEXT:    addiw a4, a4, 1107
+; CHECK-NEXT:    ld a2, 0(ca2)
 ; CHECK-NEXT:    ld a3, 0(ca3)
+; CHECK-NEXT:    sw a4, 24(ca1)
 ; CHECK-NEXT:  .LBB0_3: # %entry
 ; CHECK-NEXT:    # Label of block must be emitted
 ; CHECK-NEXT:    auipc ca4, %pcrel_hi(.LCPI0_2)
@@ -41,6 +41,7 @@ define dso_local zeroext i8 @foo(i64 noundef %i) addrspace(200) {
 ; CHECK-NEXT:    cadd ca0, ca1, a0
 ; CHECK-NEXT:    lbu a0, 0(ca0)
 ; CHECK-NEXT:    caddi csp, csp, 64
+; CHECK-NEXT:    .cfi_def_cfa_offset 0
 ; CHECK-NEXT:    ret
 entry:
   %s2 = alloca [50 x i8], align 1, addrspace(200)
