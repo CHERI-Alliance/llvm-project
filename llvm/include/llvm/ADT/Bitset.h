@@ -28,7 +28,7 @@ namespace llvm {
 /// initialization.
 template <unsigned NumBits>
 class Bitset {
-  typedef uintptr_t BitWord;
+  typedef unsigned long BitWord;
 
   enum { BITWORD_SIZE = (unsigned)sizeof(BitWord) * CHAR_BIT };
 

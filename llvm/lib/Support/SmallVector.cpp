@@ -60,7 +60,7 @@ static_assert(sizeof(SmallVector<void *, 1>) == sizeof(void *) * 3,
 #endif
 
 static_assert(sizeof(SmallVector<char, 0>) ==
-                  sizeof(void *) * 2 + sizeof(void *),
+                  sizeof(unsigned long) * 2 + sizeof(unsigned long),
               "1 byte elements have word-sized type for size and capacity");
 
 /// Report that MinSize doesn't fit into this vector's size type. Throws
