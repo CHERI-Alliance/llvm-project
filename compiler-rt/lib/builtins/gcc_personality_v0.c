@@ -221,7 +221,7 @@ COMPILER_RT_ABI _Unwind_Reason_Code __gcc_personality_v0(
 
   uintptr_t pc = (uintptr_t)_Unwind_GetIP(context) - 1;
   uintptr_t funcStart = (uintptr_t)_Unwind_GetRegionStart(context);
-  uintptr_t pcOffset = (char *)pc - (char *)funcStart;
+  ptraddr_t pcOffset = (char *)pc - (char *)funcStart;
 
   // Parse LSDA header.
   uint8_t lpStartEncoding = *lsda++;
@@ -239,9 +239,25 @@ COMPILER_RT_ABI _Unwind_Reason_Code __gcc_personality_v0(
   const uint8_t *callSiteTableEnd = callSiteTableStart + callSiteTableLength;
   const uint8_t *p = callSiteTableStart;
   while (p < callSiteTableEnd) {
+    bool hasSealedLandingPad = false;
     uintptr_t start = readEncodedPointer(&p, callSiteEncoding);
-    size_t length = readEncodedPointer(&p, callSiteEncoding);
-    size_t landingPad = readEncodedPointer(&p, callSiteEncoding);
+    ptraddr_t length = readEncodedPointer(&p, callSiteEncoding);
+    ptraddr_t landingPad = readEncodedPointer(&p, callSiteEncoding);
+    uintptr_t sealedLandingPad = 0;
+#ifdef __CHERI_PURE_CAPABILITY__
+    // In the pure-capability ABI, non-NULL landing pads are not offsets
+    // from the start of the function but rather a valid capability.
+    // A following capability is indicated by the magic value 0xc for landing_pad.
+    if (landingPad != 0)
+    {
+      if (landingPad != 0xc)
+        compilerrt_abort();
+      p = __builtin_align_up(p, __SIZEOF_POINTER__);
+      sealedLandingPad = *((const uintptr_t*)p);
+      p += sizeof(uintptr_t);
+      hasSealedLandingPad = true;
+    }
+#endif
     readULEB128(&p); // action value not used for C code
     if (landingPad == 0)
       continue; // no landing pad for this entry
@@ -253,7 +269,10 @@ COMPILER_RT_ABI _Unwind_Reason_Code __gcc_personality_v0(
       _Unwind_SetGR(context, __builtin_eh_return_data_regno(0),
                     (uintptr_t)exceptionObject);
       _Unwind_SetGR(context, __builtin_eh_return_data_regno(1), 0);
-      _Unwind_SetIP(context, (funcStart + landingPad));
+      if (hasSealedLandingPad)
+        _Unwind_SetIP(context, sealedLandingPad);
+      else
+        _Unwind_SetIP(context, (funcStart + landingPad));
       return _URC_INSTALL_CONTEXT;
     }
   }
