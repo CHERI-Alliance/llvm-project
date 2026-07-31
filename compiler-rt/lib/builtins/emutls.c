@@ -143,7 +143,7 @@ static __inline void emutls_unlock(void) { pthread_mutex_unlock(&emutls_mutex); 
 static LPCRITICAL_SECTION emutls_mutex;
 static DWORD emutls_tls_index = TLS_OUT_OF_INDEXES;
 
-typedef uintptr_t gcc_word;
+typedef ptraddr_t gcc_word;
 typedef void *gcc_pointer;
 
 static void win_error(DWORD last_err, const char *hint) {
@@ -263,7 +263,7 @@ static size_t emutls_num_object = 0; // number of allocated TLS objects
 // Free the allocated TLS data
 static void emutls_shutdown(emutls_address_array *array) {
   if (array) {
-    uintptr_t i;
+    ptraddr_t i;
     for (i = 0; i < array->size; ++i) {
       if (array->data[i])
         emutls_memalign_free(array->data[i]);
@@ -283,7 +283,7 @@ typedef struct __emutls_control {
   gcc_word size;  // size of the object in bytes
   gcc_word align; // alignment of the object in bytes
   union {
-    uintptr_t index; // data[index-1] is the object address
+    ptraddr_t index; // data[index-1] is the object address
     void *address;   // object address, when in single thread env
   } object;
   void *value; // null or non-zero initial value for the object
@@ -313,8 +313,8 @@ static __inline void *emutls_allocate_object(__emutls_control *control) {
 }
 
 // Returns control->object.index; set index if not allocated yet.
-static __inline uintptr_t emutls_get_index(__emutls_control *control) {
-  uintptr_t index = __atomic_load_n(&control->object.index, __ATOMIC_ACQUIRE);
+static __inline ptraddr_t emutls_get_index(__emutls_control *control) {
+  ptraddr_t index = __atomic_load_n(&control->object.index, __ATOMIC_ACQUIRE);
   if (!index) {
     emutls_init_once();
     emutls_lock();
@@ -330,7 +330,7 @@ static __inline uintptr_t emutls_get_index(__emutls_control *control) {
 
 // Updates newly allocated thread local emutls_address_array.
 static __inline void emutls_check_array_set_size(emutls_address_array *array,
-                                                 uintptr_t size) {
+                                                 ptraddr_t size) {
   if (array == NULL)
     abort();
   array->size = size;
@@ -339,7 +339,7 @@ static __inline void emutls_check_array_set_size(emutls_address_array *array,
 
 // Returns the new 'data' array size, number of elements,
 // which must be no smaller than the given index.
-static __inline size_t emutls_new_data_array_size(uintptr_t index) {
+static __inline size_t emutls_new_data_array_size(ptraddr_t index) {
   // Need to allocate emutls_address_array with extra slots
   // to store the header.
   // Round up the emutls_address_array size to multiple of 16.
@@ -347,7 +347,7 @@ static __inline size_t emutls_new_data_array_size(uintptr_t index) {
 #if __has_builtin(__builtin_align_down)
   return __builtin_align_up(index + header_words, 16) - header_words;
 #else
-  return ((index + header_words + 15) & ~((uintptr_t)15)) - header_words;
+  return ((index + header_words + 15) & ~((ptraddr_t)15)) - header_words;
 #endif
 }
 
@@ -360,7 +360,7 @@ static __inline size_t emutls_asize(size_t N) {
 // Returns the thread local emutls_address_array.
 // Extends its size if necessary to hold address at index.
 static __inline emutls_address_array *
-emutls_get_address_array(uintptr_t index) {
+emutls_get_address_array(ptraddr_t index) {
   emutls_address_array *array = emutls_getspecific();
   if (array == NULL) {
     size_t new_size = emutls_new_data_array_size(index);
@@ -398,7 +398,7 @@ emutls_get_address_array(uintptr_t index) {
 __attribute__((visibility("default"), weak))
 #endif
 void *__emutls_get_address(__emutls_control *control) {
-  uintptr_t index = emutls_get_index(control);
+  ptraddr_t index = emutls_get_index(control);
   emutls_address_array *array = emutls_get_address_array(index--);
   if (array->data[index] == NULL)
     array->data[index] = emutls_allocate_object(control);

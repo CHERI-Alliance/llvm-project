@@ -53,7 +53,7 @@ COMPILER_RT_ABI void __enable_execute_stack(void *addr) {
 #elif !defined(HAVE_SYSCONF)
 #error "HAVE_SYSCONF not defined! See enable_execute_stack.c"
 #else
-  const uintptr_t pageSize = sysconf(_SC_PAGESIZE);
+  const ptraddr_t pageSize = sysconf(_SC_PAGESIZE);
 #endif // __APPLE__
 
 #if __has_builtin(__builtin_align_down)
@@ -62,7 +62,7 @@ COMPILER_RT_ABI void __enable_execute_stack(void *addr) {
   unsigned char *endPage = (unsigned char *)__builtin_align_up(
       (unsigned char *)addr + TRAMPOLINE_SIZE, pageSize);
 #else
-  const uintptr_t pageAlignMask = ~(pageSize - 1);
+  const ptraddr_t pageAlignMask = ~(pageSize - 1);
   uintptr_t p = (uintptr_t)addr;
   unsigned char *startPage = (unsigned char *)(p & pageAlignMask);
   unsigned char *endPage =
