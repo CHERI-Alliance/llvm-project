@@ -1818,13 +1818,17 @@ void RelocationBaseSection::partitionRels() {
     return;
   const RelType relativeRel = ctx.target->relativeRel;
   const std::optional<RelType> relativeFuncRel = ctx.target->relativeFuncRel;
-  numRelativeRelocs = std::stable_partition(relocs.begin(), relocs.end(),
-                                            [=](auto &r) {
-                                              return r.type == relativeRel ||
-                                                     r.type == relativeFuncRel ||
-                                                     r.type == R_RISCV_CHERI_RELATIVE;
-                                            }) -
-                      relocs.begin();
+  const std::optional<RelType> relativeCapRel =
+      ctx.arg.emachine == EM_RISCV ? std::optional(R_RISCV_CHERI_RELATIVE)
+                                   : std::nullopt;
+  numRelativeRelocs =
+      std::stable_partition(relocs.begin(), relocs.end(),
+                            [=](auto &r) {
+                              return r.type == relativeRel ||
+                                     r.type == relativeFuncRel ||
+                                     r.type == relativeCapRel;
+                            }) -
+      relocs.begin();
 }
 
 void RelocationBaseSection::finalizeContents() {
