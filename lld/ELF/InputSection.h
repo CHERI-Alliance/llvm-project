@@ -272,12 +272,13 @@ public:
   // This vector contains such "cooked" relocations.
   SmallVector<Relocation, 0> relocations;
 
-  void addReloc(const Relocation &r) {
+  void addReloc(const Relocation &r, RelExpr *expr) {
     if (r.expr == R_ABS_CAP)
-      addRelocCap(getCtx(), r);
+      addRelocCap(getCtx(), r, expr);
     else
       relocations.push_back(r);
   }
+  void addReloc(const Relocation &r) { addReloc(r, nullptr); }
   MutableArrayRef<Relocation> relocs() { return relocations; }
   ArrayRef<Relocation> relocs() const { return relocations; }
 
@@ -315,7 +316,7 @@ protected:
   void decompress() const;
 
 private:
-  void addRelocCap(Ctx &, const Relocation &r);
+  void addRelocCap(Ctx &, const Relocation &r, RelExpr *expr);
 };
 
 // SectionPiece represents a piece of splittable section contents.

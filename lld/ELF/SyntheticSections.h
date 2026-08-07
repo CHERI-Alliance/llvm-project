@@ -544,8 +544,12 @@ public:
                 RelType addendRelType, bool writeZero = false) {
     // Write the addends to the relocated address if required. We skip
     // it if the written value would be zero, unless forced.
-    if (ctx.arg.writeAddends && (expr != R_ADDEND || addend != 0 || writeZero))
-      sec.addReloc({expr, addendRelType, offsetInSec, addend, &sym});
+    // Capability addends are always written out and transform expr to the
+    // remainder of the addend.
+    if ((ctx.arg.writeAddends &&
+         (expr != R_ADDEND || addend != 0 || writeZero)) ||
+        expr == R_ABS_CAP)
+      sec.addReloc({expr, addendRelType, offsetInSec, addend, &sym}, &expr);
     addReloc<shard>({dynType, &sec, offsetInSec, kind, sym, addend, expr});
   }
   bool isNeeded() const override {

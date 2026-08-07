@@ -1082,10 +1082,19 @@ uint64_t InputSectionBase::getRelocTargetVA(Ctx &ctx, const Relocation &r,
   }
 }
 
-void InputSectionBase::addRelocCap(Ctx &ctx, const Relocation &r) {
+void InputSectionBase::addRelocCap(Ctx &ctx, const Relocation &r,
+                                   RelExpr *expr) {
   assert(r.expr == R_ABS_CAP);
+  assert(expr == nullptr || *expr == r.expr);
 
   RelExpr exprLo = R_ABS_CAP_ADDR, exprHi = R_ABS_CAP_META;
+  if (expr != nullptr) {
+    assert(ctx.arg.emachine == EM_RISCV &&
+           "can only encode capability addends for RISC-V");
+    exprLo = RE_CHERI_CAPFRAG_ADDR;
+    exprHi = RE_CHERI_CAPFRAG_META;
+    *expr = R_ADDEND;
+  }
   if (!ctx.arg.isLE)
     std::swap(exprLo, exprHi);
 

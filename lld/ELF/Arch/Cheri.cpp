@@ -968,13 +968,6 @@ void MipsCheriCapTableMappingSection::writeTo(uint8_t *buf) {
   memcpy(buf, entries.data(), entries.size() * sizeof(CaptableMappingEntry));
 }
 
-static void writeCatableRelocationFragments(Ctx &ctx, InputSectionBase *sec, 
-                                            Symbol *sym, uint64_t offset) {
-  sec->addReloc({RE_CHERI_CAPFRAG_ADDR, ctx.target->symbolicRel, offset, 0, sym});
-  sec->addReloc({RE_CHERI_CAPFRAG_META, ctx.target->symbolicRel,
-                 offset + ctx.arg.wordsize, 0, sym});
-}
-
 template <typename ELFT>
 static void getMipsCheriAbiVariant(std::optional<unsigned> &abi,
                                    SyntheticSection &sec) {
@@ -1053,12 +1046,11 @@ void addRelativeCapabilityRelocation(
     assert(!sym->isPreemptible && "Must not be a preemptible symbol");
     if (ctx.arg.emachine != EM_RISCV)
       error("Relative Relocs method not implemented yet!");
-    RelocationBaseSection &oSec =
+    RelocationBaseSection &relaDyn =
         sym->includeInDynsym(ctx) ? *ctx.mainPart->relaDyn : *ctx.in.relaDyn;
-    oSec.addReloc(DynamicReloc::AddendOnlyWithTargetVA, R_RISCV_CHERI_RELATIVE,
-                  isec, offsetInSec, *sym, addend, expr,
-                  ctx.target->symbolicRel);
-    writeCatableRelocationFragments(ctx, &isec, sym, offsetInSec);
+    relaDyn.addReloc(DynamicReloc::AddendOnlyWithTargetVA,
+                     R_RISCV_CHERI_RELATIVE, isec, offsetInSec, *sym, addend,
+                     expr, type);
     return;
   }
   ctx.in.capRelocs->addCapReloc(isCode, {&isec, offsetInSec}, {symOrSec, 0u},
