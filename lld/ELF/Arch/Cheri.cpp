@@ -1046,11 +1046,9 @@ void addRelativeCapabilityRelocation(
     assert(!sym->isPreemptible && "Must not be a preemptible symbol");
     if (ctx.arg.emachine != EM_RISCV)
       error("Relative Relocs method not implemented yet!");
-    RelocationBaseSection &relaDyn =
-        sym->includeInDynsym(ctx) ? *ctx.mainPart->relaDyn : *ctx.in.relaDyn;
-    relaDyn.addReloc(DynamicReloc::AddendOnlyWithTargetVA,
-                     R_RISCV_CHERI_RELATIVE, isec, offsetInSec, *sym, addend,
-                     expr, type);
+    ctx.mainPart->relaDyn->addReloc(DynamicReloc::AddendOnlyWithTargetVA,
+                                    R_RISCV_CHERI_RELATIVE, isec, offsetInSec,
+                                    *sym, addend, expr, type);
     return;
   }
   ctx.in.capRelocs->addCapReloc(isCode, {&isec, offsetInSec}, {symOrSec, 0u},

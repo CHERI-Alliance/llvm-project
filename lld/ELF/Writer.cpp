@@ -898,10 +898,10 @@ template <class ELFT> void Writer<ELFT>::setReservedSymbolSections() {
   }
 
   // __rela_dyn_{start,end} symbols if needed.
-  if (ctx.sym.relaDynStart && ctx.in.relaDyn->isNeeded()) {
-    ctx.sym.relaDynStart->section = ctx.in.relaDyn.get();
-    ctx.sym.relaDynEnd->section = ctx.in.relaDyn.get();
-    ctx.sym.relaDynEnd->value = ctx.in.relaDyn->getSize();
+  if (ctx.sym.relaDynStart && ctx.mainPart->relaDyn->isNeeded()) {
+    ctx.sym.relaDynStart->section = ctx.mainPart->relaDyn.get();
+    ctx.sym.relaDynEnd->section = ctx.mainPart->relaDyn.get();
+    ctx.sym.relaDynEnd->value = ctx.mainPart->relaDyn->getSize();
     ctx.sym.relaDynEnd->isSectionStartSymbol = false;
   }
 
@@ -2174,7 +2174,6 @@ template <class ELFT> void Writer<ELFT>::finalizeSections() {
     finalizeSynthetic(ctx, ctx.in.iplt.get());
     finalizeSynthetic(ctx, ctx.in.ppc32Got2.get());
     finalizeSynthetic(ctx, ctx.in.partIndex.get());
-    finalizeSynthetic(ctx, ctx.in.relaDyn.get());
 
     // Dynamic section must be the last one in this list and dynamic
     // symbol table section (dynSymTab) must be the first one.
