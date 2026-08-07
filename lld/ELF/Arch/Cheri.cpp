@@ -1055,8 +1055,9 @@ void addRelativeCapabilityRelocation(
       error("Relative Relocs method not implemented yet!");
     RelocationBaseSection &oSec =
         sym->includeInDynsym(ctx) ? *ctx.mainPart->relaDyn : *ctx.in.relaDyn;
-    oSec.addReloc(DynamicReloc::AgainstSymbol, R_RISCV_CHERI_RELATIVE, isec,
-                  offsetInSec, *sym, addend, expr, ctx.target->symbolicRel);
+    oSec.addReloc(DynamicReloc::AddendOnlyWithTargetVA, R_RISCV_CHERI_RELATIVE,
+                  isec, offsetInSec, *sym, addend, expr,
+                  ctx.target->symbolicRel);
     writeCatableRelocationFragments(ctx, &isec, sym, offsetInSec);
     return;
   }
