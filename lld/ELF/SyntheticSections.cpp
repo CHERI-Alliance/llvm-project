@@ -1390,13 +1390,7 @@ static uint64_t addRelaSz(Ctx &ctx, const RelocationBaseSection &relaDyn) {
 // output section. When this occurs we cannot just use the OutputSection
 // Size. Moreover the [DT_JMPREL, DT_JMPREL + DT_PLTRELSZ) is permitted to
 // overlap with the [DT_RELA, DT_RELA + DT_RELASZ).
-static uint64_t addPltRelSz(Ctx &ctx) {
-  size_t size = ctx.in.relaPlt->getSize();
-  if (ctx.in.relaDyn->getParent() == ctx.in.relaPlt->getParent() &&
-      (ctx.in.relaDyn->name == ctx.in.relaPlt->name))
-    size += ctx.in.relaDyn->getSize();
-  return size;
-}
+static uint64_t addPltRelSz(Ctx &ctx) { return ctx.in.relaPlt->getSize(); }
 
 // Add remaining entries to complete .dynamic contents.
 template <class ELFT>
@@ -1518,7 +1512,7 @@ DynamicSection<ELFT>::computeContents() {
     addInt(DT_AARCH64_AUTH_RELRSZ, part.relrAuthDyn->getParent()->size);
     addInt(DT_AARCH64_AUTH_RELRENT, sizeof(Elf_Relr));
   }
-  if (isMain && (ctx.in.relaPlt->isNeeded() || ctx.in.relaDyn->isNeeded())) {
+  if (isMain && ctx.in.relaPlt->isNeeded()) {
     addInSec(DT_JMPREL, *ctx.in.relaPlt);
     entries.emplace_back(DT_PLTRELSZ, addPltRelSz(ctx));
     switch (ctx.arg.emachine) {
