@@ -88,7 +88,7 @@ public:
 
 private:
   template <class ELFT> void writeToImpl(uint8_t *);
-  bool addEntry(Ctx &ctx, CheriCapRelocLocation loc, CheriCapReloc relocation) {
+  bool addEntry(CheriCapRelocLocation loc, CheriCapReloc relocation) {
     auto it = relocsMap.insert(std::make_pair(loc, relocation));
     // assert(it.first->second == Relocation);
     if (!(it.first->second == relocation)) {

@@ -284,7 +284,7 @@ void CheriCapRelocsSection::addCapReloc(bool isCode, CheriCapRelocLocation loc,
     return;
   }
 
-  addEntry(ctx, loc, {isCode, target, capabilityOffset});
+  addEntry(loc, {isCode, target, capabilityOffset});
 }
 
 static uint64_t getTargetSize(Ctx &ctx, const CheriCapRelocLocation &location,
