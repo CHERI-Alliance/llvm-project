@@ -17,7 +17,6 @@
 #include "llvm/Support/RISCVAttributes.h"
 #include "llvm/Support/TimeProfiler.h"
 #include "llvm/TargetParser/RISCVISAInfo.h"
-#include "Cheri.h"
 
 using namespace llvm;
 using namespace llvm::object;
