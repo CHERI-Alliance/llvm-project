@@ -62,7 +62,7 @@ static void insertCall(Function &CurFn, StringRef Func,
       RetAddr->setDebugLoc(DL);
 
       FunctionCallee Fn = M.getOrInsertFunction(
-          Func, FunctionType::get(Type::getVoidTy(C), PointerType::getUnqual(C),
+          Func, FunctionType::get(Type::getVoidTy(C), ProgASPtr,
                                   false));
       CallInst *Call = CallInst::Create(Fn, RetAddr, "", InsertionPt);
       Call->setDebugLoc(DL);
