@@ -99,11 +99,13 @@ set(LIBUNWIND_HAS_GCC_LIB OFF)
 set(LIBUNWIND_HAS_GCC_S_LIB OFF)
 add_subdirectory(${LLVM_LIBGCC_LIBUNWIND_PATH} ${LLVM_LIBGCC_LIBUNWIND_BINARY_DIR})
 
+separate_arguments(cmake_c_flags_list NATIVE_COMMAND ${CMAKE_C_FLAGS})
 add_custom_target(gcc_s.ver
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/gcc_s.ver.in
-  COMMAND ${CMAKE_C_COMPILER} -E
+  COMMAND ${CMAKE_C_COMPILER} ${cmake_c_flags_list} -E
     -xc ${CMAKE_CURRENT_SOURCE_DIR}/gcc_s.ver.in
     -o ${CMAKE_CURRENT_BINARY_DIR}/gcc_s.ver
+  COMMAND_EXPAND_LISTS
 )
 
 add_dependencies(unwind_shared gcc_s.ver)
