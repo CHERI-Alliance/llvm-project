@@ -1665,6 +1665,15 @@ bool UnwindCursor<A, R>::getInfoFromFdeCie(
     const typename CFI_Parser<A>::CIE_Info &cieInfo, pc_t pc,
     uintptr_t dso_base) {
   typename CFI_Parser<A>::PrologInfo prolog;
+
+#ifdef _LIBUNWIND_CHECK_LINUX_SIGRETURN
+  if (cieInfo.isSignalFrame)
+    {
+      _isSignalFrame = true;
+      if (setInfoForSigReturn())
+        return true;
+    }
+#endif
   if (CFI_Parser<A>::parseFDEInstructions(_addressSpace, fdeInfo, cieInfo,
                                           pc.address(), R::getArch(),
                                           &prolog)) {
@@ -2785,7 +2794,7 @@ int UnwindCursor<A, R>::stepThroughSigReturn(Registers_arm64 &) {
   //     - 8 bytes of padding because sigcontext has 16-byte alignment
   //     - sigcontext/mcontext_t
   // [1] https://github.com/torvalds/linux/blob/master/arch/arm64/kernel/signal.c
-  const pint_t kOffsetSpToSigcontext = (128 + 8 + 8 + 24 + 128 + 8); // 304
+  const addr_t kOffsetSpToSigcontext = (128 + 8 + 8 + 24 + 128 + 8); // 304
 
   // Offsets from sigcontext to each register.
   const pint_t kOffsetGprs = 8; // offset to "__u64 regs[31]" field
@@ -2869,18 +2878,21 @@ int UnwindCursor<A, R>::stepThroughSigReturn() {
 template <typename A, typename R>
 bool UnwindCursor<A, R>::setInfoForSigReturn(Registers_riscv &) {
   const pint_t pc = static_cast<pint_t>(getReg(UNW_REG_IP));
-  // The PC might contain an invalid address if the unwind info is bad, so
-  // directly accessing it could cause a SIGSEGV.
-  if (!isReadableAddr(pc))
-    return false;
-  const auto *instructions = reinterpret_cast<const uint32_t *>(pc);
-  // Look for the two instructions used in the sigreturn trampoline
-  // __vdso_rt_sigreturn:
-  //
-  // 0x08b00893 li a7,0x8b
-  // 0x00000073 ecall
-  if (instructions[0] != 0x08b00893 || instructions[1] != 0x00000073)
-    return false;
+  if (!_isSignalFrame)
+    {
+      // The PC might contain an invalid address if the unwind info is bad, so
+      // directly accessing it could cause a SIGSEGV.
+      if (!isReadableAddr(pc))
+        return false;
+      const auto *instructions = reinterpret_cast<const uint32_t *>(pc);
+      // Look for the two instructions used in the sigreturn trampoline
+      // __vdso_rt_sigreturn:
+      //
+      // 0x08b00893 li a7,0x8b
+      // 0x00000073 ecall
+      if (instructions[0] != 0x08b00893 || instructions[1] != 0x00000073)
+        return false;
+    }
 
   _info = {};
   _info.start_ip = pc;
@@ -2903,7 +2915,7 @@ int UnwindCursor<A, R>::stepThroughSigReturn(Registers_riscv &) {
   //     - struct sigcontext uc_mcontext
   // [1]
   // https://github.com/torvalds/linux/blob/master/arch/riscv/kernel/signal.c
-  const pint_t kOffsetSpToSigcontext = 128 + 8 + 8 + 24 + 8 + 128;
+  const addr_t kOffsetSpToSigcontext = 128 + 8 + 8 + 24 + 8 + 128;
 
   const pint_t sigctx = _registers.getSP() + kOffsetSpToSigcontext;
   _registers.setIP(_addressSpace.getP(sigctx));
@@ -3097,6 +3109,10 @@ bool UnwindCursor<A, R>::isReadableAddr(const pint_t addr) const {
   // as an argument without failure.
   if (!sigsetAddr)
     return false;
+#ifdef __CHERI_PURE_CAPABILITY__
+  if (!__builtin_cheri_tag_get(addr) || __builtin_cheri_sealed_get(addr))
+    return false;
+#endif
   const auto saveErrno = errno;
   // We MUST use a raw syscall here, as wrappers may try to access
   // sigsetAddr which may cause a SIGSEGV. A raw syscall however is
