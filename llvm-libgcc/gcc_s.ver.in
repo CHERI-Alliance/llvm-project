@@ -8,15 +8,17 @@
 #if !defined(__x86_64__)  && \
     !defined(__aarch64__) && \
     !defined(__i386__)    && \
-    !defined(ARM_GNUEABIHF)
-  #error The only platforms that are currently supported are x86_64, i386, arm-gnueabihf, and aarch64.
+    !defined(ARM_GNUEABIHF) && \
+    !defined(__riscv)
+  #error The only platforms that are currently supported are x86_64, i386, arm-gnueabihf, aarch64 and riscv.
 #endif
 
 #if defined(__x86_64__) || defined(__i386__)
   #define GLOBAL_X86
 #endif
 
-#if __SIZEOF_POINTER__ >= 8
+#if (!defined(__CHERI_PURE_CAPABILITY__) && __SIZEOF_POINTER__ >= 8) || \
+    ( defined(__CHERI_PURE_CAPABILITY__) && __SIZEOF_POINTER__ >= 16)
   #define GLOBAL_64BIT
 #else
   #define GLOBAL_32BIT
@@ -67,6 +69,9 @@ GCC_4.3.0 { __bswapdi2; __bswapsi2; __emutls_get_address;                 };
   GCC_3.4.4 { __absvti2;     __addvti3; __mulvti3;   __negvti2;    __subvti3; };
   GCC_4.2.0 { __floatuntidf; __floatuntisf;                                   };
   GCC_7.0.0 { __divmodti4;                                                    };
+#if defined(__riscv)
+  GLIBC_2.0 { __divdi3;     __moddi3;       __udivdi3; __umoddi3;       };
+#endif
 #endif
 
 #if defined(GLOBAL_X86)
@@ -78,6 +83,10 @@ GCC_4.3.0 { __bswapdi2; __bswapsi2; __emutls_get_address;                 };
 #if !defined(ARM_GNUEABIHF)
   GCC_3.0 {
     _Unwind_Find_FDE; _Unwind_GetGR; _Unwind_GetIP; _Unwind_SetGR; _Unwind_SetIP;
+#if defined(__riscv)
+    __divdf3;  __divsf3;    __divsi3;
+    __modsi3; __muldi3; __udivsi3; __umodsi3;
+#endif
   };
 
   GCC_3.3   { _Unwind_Backtrace; _Unwind_FindEnclosingFunction; };
@@ -123,7 +132,7 @@ GCC_4.3.0 { __bswapdi2; __bswapsi2; __emutls_get_address;                 };
   GCC_4.3.0 { _Unwind_Backtrace;            };
 #endif
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(__riscv)
   GCC_3.0 {
     __addtf3;     __divtf3;     __eqtf2;     __extenddftf2; __extendsftf2;
     __fixtfdi;    __fixtfsi;    __fixtfti;   __fixunstfdi;  __fixunstfsi;
@@ -137,7 +146,7 @@ GCC_4.3.0 { __bswapdi2; __bswapsi2; __emutls_get_address;                 };
   GCC_4.5.0 { __unordtf2; };
 #endif
 
-#if defined(__aarch64__) || defined(__i386__)
+#if defined(__aarch64__) || defined(__i386__) || defined(__riscv)
   GLIBC_2.0 { __deregister_frame; __register_frame; };
 #endif
 
