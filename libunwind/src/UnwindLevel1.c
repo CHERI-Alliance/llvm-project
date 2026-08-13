@@ -87,13 +87,6 @@
   } while (0)
 #endif
 
-#ifdef __CHERI_PURE_CAPABILITY__
-#define PRINT_PTR_V "%#p"
-#else
-#define PRINT_PTR_V "%p"
-#endif
-#define PRINT_PTR "%p"
-
 static _Unwind_Reason_Code
 unwind_phase1(unw_context_t *uc, unw_cursor_t *cursor, _Unwind_Exception *exception_object) {
   __unw_init_local(cursor, uc);
@@ -141,10 +134,10 @@ unwind_phase1(unw_context_t *uc, unw_cursor_t *cursor, _Unwind_Exception *except
       unw_word_t pc;
       __unw_get_reg(cursor, UNW_REG_IP, &pc);
       _LIBUNWIND_TRACE_UNWINDING(
-          "unwind_phase1(ex_obj=%p): pc=" PRINT_PTR ", start_ip=" PRINT_PTR
-          ", func=%s, lsda=" PRINT_PTR ", personality=" PRINT_PTR "",
-          (void *)exception_object, (uintptr_t)pc, (uintptr_t)frameInfo.start_ip, functionName,
-          (uintptr_t)frameInfo.lsda, (uintptr_t)frameInfo.handler);
+          "unwind_phase1(ex_obj=%p): pc=0x%" PRIxPTR ", start_ip=0x%" PRIxPTR
+          ", func=%s, lsda=0x%" PRIxPTR ", personality=0x%" PRIxPTR "",
+          (void *)exception_object, pc, frameInfo.start_ip, functionName,
+          frameInfo.lsda, frameInfo.handler);
     }
 #endif
 
@@ -188,6 +181,12 @@ unwind_phase1(unw_context_t *uc, unw_cursor_t *cursor, _Unwind_Exception *except
   }
   return _URC_NO_REASON;
 }
+#ifdef __CHERI_PURE_CAPABILITY__
+#define PRINT_PTR_V "%#p"
+#else
+#define PRINT_PTR_V "%p"
+#endif
+#define PRINT_PTR "%p"
 
 extern int __unw_step_stage2(unw_cursor_t *);
 
@@ -313,9 +312,9 @@ unwind_phase2(unw_context_t *uc, unw_cursor_t *cursor, _Unwind_Exception *except
           __unw_get_reg(cursor, UNW_REG_IP, &pc);
           __unw_get_reg(cursor, UNW_REG_SP, &sp);
           _LIBUNWIND_TRACE_UNWINDING("unwind_phase2(ex_obj=%p): re-entering "
-                                     "user code with ip=" PRINT_PTR
-                                     ", sp=" PRINT_PTR,
-                                     (void *)exception_object, (uintptr_t)pc, (uintptr_t)sp);
+                                     "user code with ip=0x%" PRIxPTR
+                                     ", sp=0x%" PRIxPTR,
+                                     (void *)exception_object, pc, sp);
         }
 
         __unw_phase2_resume(cursor, framesWalked);
@@ -372,10 +371,10 @@ unwind_phase2_forced(unw_context_t *uc, unw_cursor_t *cursor,
           (frameInfo.start_ip + (size_t)offset > frameInfo.end_ip))
         functionName = ".anonymous.";
       _LIBUNWIND_TRACE_UNWINDING(
-          "unwind_phase2_forced(ex_obj=%p): start_ip=" PRINT_PTR
-          ", func=%s, lsda=" PRINT_PTR ", personality=" PRINT_PTR,
-          (void *)exception_object, (uintptr_t)frameInfo.start_ip, functionName,
-          (uintptr_t)frameInfo.lsda, (uintptr_t)frameInfo.handler);
+          "unwind_phase2_forced(ex_obj=%p): start_ip=0x%" PRIxPTR
+          ", func=%s, lsda=0x%" PRIxPTR ", personality=0x%" PRIxPTR,
+          (void *)exception_object, frameInfo.start_ip, functionName,
+          frameInfo.lsda, frameInfo.handler);
     }
 #endif
 
@@ -539,12 +538,12 @@ _Unwind_GetLanguageSpecificData(struct _Unwind_Context *context) {
   if (__unw_get_proc_info(cursor, &frameInfo) == UNW_ESUCCESS)
     result = (uintptr_t)frameInfo.lsda;
   _LIBUNWIND_TRACE_API(
-      "_Unwind_GetLanguageSpecificData(context=%p) => " PRINT_PTR,
+      "_Unwind_GetLanguageSpecificData(context=%p) => 0x%" PRIxPTR,
       (void *)context, result);
 #if !defined(_LIBUNWIND_SUPPORT_TBTAB_UNWIND)
   if (result != 0) {
     if (*((uint8_t *)result) != 0xFF)
-      _LIBUNWIND_DEBUG_LOG("lsda at " PRINT_PTR " does not start with 0xFF",
+      _LIBUNWIND_DEBUG_LOG("lsda at 0x%" PRIxPTR " does not start with 0xFF",
                            result);
   }
 #endif
@@ -561,7 +560,7 @@ _Unwind_GetRegionStart(struct _Unwind_Context *context) {
   uintptr_t result = 0;
   if (__unw_get_proc_info(cursor, &frameInfo) == UNW_ESUCCESS)
     result = (uintptr_t)frameInfo.start_ip;
-  _LIBUNWIND_TRACE_API("_Unwind_GetRegionStart(context=%p) => " PRINT_PTR,
+  _LIBUNWIND_TRACE_API("_Unwind_GetRegionStart(context=%p) => 0x%" PRIxPTR,
                        (void *)context, result);
   return result;
 }
@@ -585,7 +584,7 @@ _Unwind_GetGR(struct _Unwind_Context *context, int index) {
   unw_cursor_t *cursor = (unw_cursor_t *)context;
   unw_word_t result;
   __unw_get_reg(cursor, index, &result);
-  _LIBUNWIND_TRACE_API("_Unwind_GetGR(context=%p, reg=%d) => " PRINT_PTR,
+  _LIBUNWIND_TRACE_API("_Unwind_GetGR(context=%p, reg=%d) => 0x%" PRIxPTR,
                        (void *)context, index, result);
   return (uintptr_t)result;
 }
@@ -593,7 +592,7 @@ _Unwind_GetGR(struct _Unwind_Context *context, int index) {
 /// Called by personality handler during phase 2 to alter register values.
 _LIBUNWIND_EXPORT void _Unwind_SetGR(struct _Unwind_Context *context, int index,
                                      uintptr_t value) {
-  _LIBUNWIND_TRACE_API("_Unwind_SetGR(context=%p, reg=%d, value=" PRINT_PTR
+  _LIBUNWIND_TRACE_API("_Unwind_SetGR(context=%p, reg=%d, value=0x%0" PRIxPTR
                        ")",
                        (void *)context, index, value);
   unw_cursor_t *cursor = (unw_cursor_t *)context;
@@ -605,7 +604,7 @@ _LIBUNWIND_EXPORT uintptr_t _Unwind_GetIP(struct _Unwind_Context *context) {
   unw_cursor_t *cursor = (unw_cursor_t *)context;
   unw_word_t result;
   __unw_get_reg(cursor, UNW_REG_IP, &result);
-  _LIBUNWIND_TRACE_API("_Unwind_GetIP(context=%p) => " PRINT_PTR,
+  _LIBUNWIND_TRACE_API("_Unwind_GetIP(context=%p) => 0x%" PRIxPTR,
                        (void *)context, result);
   return (uintptr_t)result;
 }
@@ -615,7 +614,7 @@ _LIBUNWIND_EXPORT uintptr_t _Unwind_GetIP(struct _Unwind_Context *context) {
 /// start executing in the landing pad.
 _LIBUNWIND_EXPORT void _Unwind_SetIP(struct _Unwind_Context *context,
                                      uintptr_t value) {
-  _LIBUNWIND_TRACE_API("_Unwind_SetIP(context=%p, value=" PRINT_PTR ")",
+  _LIBUNWIND_TRACE_API("_Unwind_SetIP(context=%p, value=0x%0" PRIxPTR ")",
                        (void *)context, value);
   unw_cursor_t *cursor = (unw_cursor_t *)context;
   __unw_set_reg(cursor, UNW_REG_IP, value);
