@@ -295,6 +295,12 @@ class CA_ALU<bits<6> funct6, bits<2> funct2, string OpcodeStr>
 // Instructions
 //===----------------------------------------------------------------------===//
 
+def NotHasZCheriPurecapAndCapMode
+    : Predicate<"!(Subtarget->hasZCheriPurecap() && Subtarget->hasCapMode())">,
+      AssemblerPredicate<
+        (any_of (not FeatureStdExtZCheriPureCap),(not FeatureCapMode)),
+        "NotHasZCheriPurecapAndCapMode">;
+
 let Predicates = [HasStdExtCOrZca] in {
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, Uses = [X2],
@@ -551,7 +557,8 @@ def C_JR : RVInst16CR<0b1000, 0b10, (outs), (ins GPRNoX0:$rs1),
 }
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isMoveReg = 1,
-    isAsCheapAsAMove = 1 in
+    isAsCheapAsAMove = 1,
+    Predicates = [HasStdExtCOrZca, NotHasZCheriPurecapAndCapMode] in
 def C_MV : RVInst16CR<0b1000, 0b10, (outs GPRNoX0:$rs1), (ins GPRNoX0:$rs2),
                       "c.mv", "$rs1, $rs2">,
            Sched<[WriteIALU, ReadIALU]>;
@@ -1037,12 +1044,6 @@ let Predicates = [HasStdExtCOrZca, NotCapMode] in {
 def : CompressPat<(JALR X0, GPRNoX0:$rs1, 0),
                   (C_JR GPRNoX0:$rs1)>;
 } // Predicates = [HasStdExtC, NotCapMode]
-
-def NotHasZCheriPurecapAndCapMode
-    : Predicate<"!(Subtarget->hasZCheriPurecap() && Subtarget->hasCapMode())">,
-      AssemblerPredicate<
-        (any_of (not FeatureStdExtZCheriPureCap),(not FeatureCapMode)),
-        "NotHasZCheriPurecapAndCapMode">;
 
 let Predicates = [HasStdExtCOrZca] in {
 // `c.mv` in capmode is uncompressed to a capability move so we can't compress

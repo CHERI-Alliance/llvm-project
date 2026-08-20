@@ -661,6 +661,18 @@ let Predicates = [HasStdExtZicbop, IsCapMode] in {
 }
 
 //===----------------------------------------------------------------------===//
+// Cheri Zca Instructions
+//===----------------------------------------------------------------------===//
+
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isMoveReg = 1,
+    isAsCheapAsAMove = 1,
+    Predicates = [HasStdExtCOrZca, HasZCheriPurecap, IsCapMode],
+    DecoderNamespace = "CapModeOnly_" in
+def C_CMV : RVInst16CR<0b1000, 0b10, (outs GPCRNoC0:$rs1), (ins GPCRNoC0:$rs2),
+                      "c.mv", "$rs1, $rs2">,
+           Sched<[WriteIALU, ReadIALU]>;
+
+//===----------------------------------------------------------------------===//
 // Cheri Zcb Instructions
 //===----------------------------------------------------------------------===//
 
@@ -737,6 +749,14 @@ def : CompressPat<(CSB GPRC:$rs2, GPCRCMem:$rs1, uimm2:$imm),
                   (C_CSB GPRC:$rs2, GPCRCMem:$rs1, uimm2:$imm)>;
 def : CompressPat<(CSH GPRC:$rs2, GPCRCMem:$rs1, uimm2_lsb0:$imm),
                   (C_CSH GPRC:$rs2, GPCRCMem:$rs1, uimm2_lsb0:$imm)>;
+} // Predicates = [HasStdExtZcb, HasZCheriPurecap, IsCapMode]
+
+let Predicates = [HasStdExtCOrZca, HasCheriRVC, HasZCheriPurecap,
+                  IsCapMode] in {
+def : CompressPat<(CADDI GPCRNoC0:$rs1, GPCRNoC0:$rs2, 0),
+                  (C_CMV GPCRNoC0:$rs1, GPCRNoC0:$rs2)>;
+def : CompressPat<(CMV GPCRNoC0:$rs1, GPCRNoC0:$rs2),
+                  (C_CMV GPCRNoC0:$rs1, GPCRNoC0:$rs2)>;
 } // Predicates = [HasStdExtZcb, HasZCheriPurecap, IsCapMode]
 
 // Pseudo Instructions
