@@ -1982,23 +1982,22 @@ static bool handleNonPreemptibleIfunc(Ctx &ctx, Symbol &sym, uint16_t flags) {
   if (!(flags & (NEEDS_GOT | NEEDS_PLT | HAS_DIRECT_RELOC)))
     return true;
 
-  sym.isInIplt = true;
-
-  // Create an Iplt and the associated IRELATIVE relocation pointing to the
-  // original section/value pairs. For non-GOT non-PLT relocation case below, we
-  // may alter section/value, so create a copy of the symbol to make
-  // section/value fixed.
-  auto *directSym = makeDefined(cast<Defined>(sym));
-  directSym->allocateAux(ctx);
-  auto &dyn = getIRelativeSection(ctx);
-  addPltEntry(ctx, *ctx.in.iplt, *ctx.in.igotPlt, dyn, ctx.target->iRelativeRel,
-              *directSym);
-  sym.allocateAux(ctx);
-  ctx.symAux.back().pltIdx = ctx.symAux[directSym->auxIdx].pltIdx;
+  auto addIpltEntry = [&](Symbol &irelativeSym) {
+    irelativeSym.isInIplt = true;
+    irelativeSym.allocateAux(ctx);
+    auto &dyn = getIRelativeSection(ctx);
+    addPltEntry(ctx, *ctx.in.iplt, *ctx.in.igotPlt, dyn,
+                ctx.target->iRelativeRel, irelativeSym);
+  };
 
   if (flags & HAS_DIRECT_RELOC) {
     // Change the value to the IPLT and redirect all references to it.
     auto &d = cast<Defined>(sym);
+    auto *irelativeSym = makeDefined(d);
+    addIpltEntry(*irelativeSym);
+    sym.isInIplt = true;
+    sym.allocateAux(ctx);
+    ctx.symAux.back().pltIdx = ctx.symAux[irelativeSym->auxIdx].pltIdx;
     d.section = ctx.in.iplt.get();
     d.value = d.getPltIdx(ctx) * ctx.target->ipltEntrySize;
     if (ctx.arg.isCheriAbi)
@@ -2014,9 +2013,12 @@ static bool handleNonPreemptibleIfunc(Ctx &ctx, Symbol &sym, uint16_t flags) {
              "R_AARCH64_AUTH_IRELATIVE is not supported yet");
       addGotEntry(ctx, sym);
     }
-  } else if (flags & NEEDS_GOT) {
-    // Redirect GOT accesses to point to the Igot.
-    sym.gotInIgot = true;
+  } else {
+    addIpltEntry(sym);
+    if (flags & NEEDS_GOT) {
+      // Redirect GOT accesses to point to the Igot.
+      sym.gotInIgot = true;
+    }
   }
   return true;
 }
