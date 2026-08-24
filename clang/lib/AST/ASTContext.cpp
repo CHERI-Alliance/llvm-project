@@ -13543,6 +13543,9 @@ bool ASTContext::containsCapabilities(const RecordDecl *RD) const {
         return true;
     if (Ty->isArrayType() && containsCapabilities(Ty))
       return true;
+    if (const AtomicType *AT = Ty->getAs<AtomicType>())
+      if (containsCapabilities(AT->getValueType()))
+        return true;
   }
   // In the case of C++ classes, also check base classes
   if (const CXXRecordDecl *CRD = dyn_cast<CXXRecordDecl>(RD)) {
@@ -13568,6 +13571,8 @@ bool ASTContext::containsCapabilities(QualType Ty) const {
     QualType ElTy = QualType(Ty->getBaseElementTypeUnsafe(), 0);
     return containsCapabilities(ElTy);
   }
+  if (const AtomicType *AT = Ty->getAs<AtomicType>())
+    return containsCapabilities(AT->getValueType());
   const RecordType *RT = Ty->getAs<RecordType>();
   if (!RT)
     return false;
