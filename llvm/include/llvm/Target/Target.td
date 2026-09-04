@@ -252,6 +252,8 @@ class DAGOperand {
   string DecoderMethod = "";
 }
 
+class AsmOperandClass; // Forward declaration for RegisterClass
+
 // RegisterClass - Now that all of the registers are defined, and aliases
 // between registers are defined, specify which registers belong to which
 // register classes. This also defines the default allocation order of
@@ -365,6 +367,12 @@ class RegisterClass<string namespace, list<ValueType> regTypes, int alignment,
   // classes will be resolved in the order defined by this value, with lower values
   // taking precedence over higher ones. Ties are resolved by enumeration order.
   int BaseClassOrder = ?;
+
+  // ParserMatchClass - If set, the AsmMatcher uses this AsmOperandClass (and
+  // therefore its PredicateMethod) to decide whether a parsed operand is a
+  // member of this register class, instead of the default check that only
+  // looks at which physical register was parsed.
+  AsmOperandClass ParserMatchClass = ?;
 }
 
 // The memberList in a RegisterClass is a dag of set operations. TableGen

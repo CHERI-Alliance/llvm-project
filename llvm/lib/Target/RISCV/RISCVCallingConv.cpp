@@ -123,10 +123,9 @@ static const MCPhysReg ArgVRN4M2s[] = {
     RISCV::V16M2_V18M2_V20M2_V22M2};
 static const MCPhysReg ArgVRN2M4s[] = {RISCV::V8M4_V12M4, RISCV::V12M4_V16M4,
                                        RISCV::V16M4_V20M4};
-static const MCPhysReg ArgGPCRs[] = {
-  RISCV::C10, RISCV::C11, RISCV::C12, RISCV::C13,
-  RISCV::C14, RISCV::C15, RISCV::C16, RISCV::C17
-};
+static const MCPhysReg ArgGPCRs[] = {RISCV::X10_Y, RISCV::X11_Y, RISCV::X12_Y,
+                                     RISCV::X13_Y, RISCV::X14_Y, RISCV::X15_Y,
+                                     RISCV::X16_Y, RISCV::X17_Y};
 
 ArrayRef<MCPhysReg> RISCV::getArgGPRs(const RISCVABI::ABI ABI) {
   // The GPRs used for passing arguments in the ILP32* and LP64* ABIs, except
@@ -339,9 +338,8 @@ bool llvm::CC_RISCV(unsigned ValNo, MVT ValVT, MVT LocVT,
   unsigned XLen = Subtarget.getXLen();
   MVT XLenVT = Subtarget.getXLenVT();
 
-  MVT CLenVT = Subtarget.hasStdExtZCheriPureCapOrCheri()
-	           ? Subtarget.typeForCapabilities()
-                   : MVT();
+  MVT CLenVT =
+      Subtarget.hasAnyCheriExt() ? Subtarget.typeForCapabilities() : MVT();
   bool IsPureCap = RISCVABI::isCheriPureCapABI(ABI);
   MVT PtrVT = IsPureCap ? CLenVT : XLenVT;
   bool IsPureCapVarArgs = !IsFixed && IsPureCap;
@@ -703,11 +701,11 @@ bool llvm::CC_RISCV_FastCC(unsigned ValNo, MVT ValVT, MVT LocVT,
     }
   }
   if (LocVT.isFatPointer()) {
-    // C5 and C6 might be used for save-restore libcall.
+    // X5_Y and X6_Y (c5/c6) might be used for save-restore libcall.
     static const MCPhysReg GPCRList[] = {
-        RISCV::C10, RISCV::C11, RISCV::C12, RISCV::C13, RISCV::C14,
-        RISCV::C15, RISCV::C16, RISCV::C17, RISCV::C7,  RISCV::C28,
-        RISCV::C29, RISCV::C30, RISCV::C31};
+        RISCV::X10_Y, RISCV::X11_Y, RISCV::X12_Y, RISCV::X13_Y, RISCV::X14_Y,
+        RISCV::X15_Y, RISCV::X16_Y, RISCV::X17_Y, RISCV::X7_Y,  RISCV::X28_Y,
+        RISCV::X29_Y, RISCV::X30_Y, RISCV::X31_Y};
     if (unsigned Reg = State.AllocateReg(GPCRList)) {
       State.addLoc(CCValAssign::getReg(ValNo, ValVT, Reg, LocVT, LocInfo));
       return false;

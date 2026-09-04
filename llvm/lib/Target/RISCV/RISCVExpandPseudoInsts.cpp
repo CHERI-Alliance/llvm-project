@@ -31,7 +31,7 @@ using namespace llvm;
 
 static Register convertGPRToGPCR(Register Reg) {
   assert(Reg >= RISCV::X0 && Reg <= RISCV::X31 && "Invalid register");
-  return Reg - RISCV::X0 + RISCV::C0;
+  return Reg - RISCV::X0 + RISCV::X0_Y;
 }
 
 namespace {

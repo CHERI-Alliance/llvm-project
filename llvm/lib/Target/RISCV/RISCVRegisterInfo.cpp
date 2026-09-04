@@ -56,9 +56,10 @@ static_assert(RISCV::V31 == RISCV::V0 + 31, "Register list not consecutive");
 
 RISCVRegisterInfo::RISCVRegisterInfo(const RISCVSubtarget &STI)
     : RISCVGenRegisterInfo(RISCVABI::isCheriPureCapABI(STI.getTargetABI())
-                               ? RISCV::C1 : RISCV::X1,
-                           /*DwarfFlavour*/0, /*EHFlavor*/0,
-                           /*PC*/0, STI.getHwMode()) {}
+                               ? RISCV::X1_Y
+                               : RISCV::X1,
+                           /*DwarfFlavour*/ 0, /*EHFlavor*/ 0,
+                           /*PC*/ 0, STI.getHwMode()) {}
 
 const MCPhysReg *
 RISCVRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
@@ -67,16 +68,15 @@ RISCVRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
     return CSR_NoRegs_SaveList;
   if (MF->getFunction().hasFnAttribute("interrupt")) {
     if (Subtarget.hasStdExtD())
-      return Subtarget.hasStdExtZCheriPureCapOrCheri()
-                 ? CSR_XLEN_CLEN_F64_Interrupt_SaveList
-                 : CSR_XLEN_F64_Interrupt_SaveList;
+      return Subtarget.hasAnyCheriExt() ? CSR_XLEN_CLEN_F64_Interrupt_SaveList
+                                        : CSR_XLEN_F64_Interrupt_SaveList;
     if (Subtarget.hasStdExtF()) {
-      if (Subtarget.hasStdExtZCheriPureCapOrCheri())
+      if (Subtarget.hasAnyCheriExt())
         return CSR_XLEN_CLEN_F32_Interrupt_SaveList;
       return Subtarget.hasStdExtE() ? CSR_XLEN_F32_Interrupt_RVE_SaveList
                                : CSR_XLEN_F32_Interrupt_SaveList;
     }
-    if (Subtarget.hasStdExtZCheriPureCapOrCheri())
+    if (Subtarget.hasAnyCheriExt())
       return CSR_XLEN_CLEN_Interrupt_SaveList;
     return Subtarget.hasStdExtE() ? CSR_Interrupt_RVE_SaveList
                              : CSR_Interrupt_SaveList;
@@ -145,14 +145,14 @@ BitVector RISCVRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   if (TFI->hasBP(MF))
     markSuperRegs(Reserved, RISCV::X9); // bp
 
-  markSuperRegs(Reserved, RISCV::C0); // cnull
-  markSuperRegs(Reserved, RISCV::C2); // csp
-  markSuperRegs(Reserved, RISCV::C3); // cgp
-  markSuperRegs(Reserved, RISCV::C4); // ctp
+  markSuperRegs(Reserved, RISCV::X0_Y); // cnull
+  markSuperRegs(Reserved, RISCV::X2_Y); // csp
+  markSuperRegs(Reserved, RISCV::X3_Y); // cgp
+  markSuperRegs(Reserved, RISCV::X4_Y); // ctp
   if (TFI->hasFP(MF))
-    markSuperRegs(Reserved, RISCV::C8); // cfp
+    markSuperRegs(Reserved, RISCV::X8_Y); // cfp
   if (TFI->hasBP(MF))
-    markSuperRegs(Reserved, RISCV::C9); // cbp
+    markSuperRegs(Reserved, RISCV::X9_Y); // cbp
 
   markSuperRegs(Reserved, RISCV::DDC);
 
@@ -571,7 +571,7 @@ bool RISCVRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
         MI.getOpcode() == RISCV::CADDI)
       DestReg = MI.getOperand(0).getReg();
     else if (RISCVABI::isCheriPureCapABI(MF.getSubtarget<RISCVSubtarget>().getTargetABI()))
-      DestReg = MRI.createVirtualRegister(&RISCV::GPCRRegClass);
+      DestReg = MRI.createVirtualRegister(&RISCV::YGPRRegClass);
     else
       DestReg = MRI.createVirtualRegister(&RISCV::GPRRegClass);
     adjustReg(*II->getParent(), II, DL, DestReg, FrameReg, Offset,
@@ -730,7 +730,7 @@ Register RISCVRegisterInfo::materializeFrameBaseRegister(MachineBasicBlock *MBB,
       ST.hasFeature(RISCV::FeatureStdExtZCheriPureCap);
   if (RISCVABI::isCheriPureCapABI(ST.getTargetABI())) {
     Opc = HasZCheriPurecap ? RISCV::CADDI : RISCV::CIncOffsetImm;
-    BaseReg = MFI.createVirtualRegister(&RISCV::GPCRRegClass);
+    BaseReg = MFI.createVirtualRegister(&RISCV::YGPRRegClass);
   } else {
     Opc = RISCV::ADDI;
     BaseReg = MFI.createVirtualRegister(&RISCV::GPRRegClass);

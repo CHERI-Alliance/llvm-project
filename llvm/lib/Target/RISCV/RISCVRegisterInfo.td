@@ -45,18 +45,15 @@ class RISCVReg64<RISCVReg32 subreg>
   let SubRegIndices = [sub_32];
 }
 
-// I don't think the size matters here as it's only used if there are multiple
-// sub-registers involved to calculate coverings and other relationships, but
-// we have a simple nesting here with no inference required. Since XLen is
-// based on runtime flags and SubRegIndex wants an integer literal it's awkward
-// to express this properly without introducing separate 32/64-bit registers,
-// classes etc.
-def sub_cap_addr : SubRegIndex<-1, -1>;
-class RISCVCapReg<RISCVRegWithSubRegs subreg, string n, list<string> alt = []> : Register<n> {
-  let HWEncoding{4-0} = subreg.HWEncoding{4-0};
-  let SubRegs = [subreg];
+// A subreg index for the address part of capability registers (this is just the
+// default XLEN-wide X<N> register).
+def sub_cap_addr : SubRegIndex<32> {
+  let SubRegRanges =
+      SubRegRangeByHwMode<[RV32, RV64], [SubRegRange<32>, SubRegRange<64>]>;
+}
+class RISCVCapReg<RISCVRegWithSubRegs subreg, string n, list<string> alt = []>
+    : RISCVRegWithSubRegs<subreg.HWEncoding{4 -0}, n, [subreg], alt> {
   let SubRegIndices = [sub_cap_addr];
-  let AltNames = alt;
 }
 
 class RISCVCapRegPseudo<bits<5> Enc, string n, list<string> alt = []> : Register<n> {
@@ -224,47 +221,48 @@ let RegAltNameIndices = [ABIRegAltName] in {
   }
   }
 
+  // CHERI capability registers (Y extension)
   // TODO: Review costs
   let isConstant = true in
-  def C0  : RISCVCapReg<X0, "c0", ["cnull"]>, DwarfRegNum<[0]>;
+  def X0_Y : RISCVCapReg<X0, "x0", ["zero", "null"]>, DwarfRegAlias<X0>;
   let CostPerUse = [0, 1] in {
-  def C1  : RISCVCapReg<X1, "c1", ["cra"]>, DwarfRegNum<[1]>;
-  def C2  : RISCVCapReg<X2, "c2", ["csp"]>, DwarfRegNum<[2]>;
-  def C3  : RISCVCapReg<X3, "c3", ["cgp"]>, DwarfRegNum<[3]>;
-  def C4  : RISCVCapReg<X4, "c4", ["ctp"]>, DwarfRegNum<[4]>;
-  def C5  : RISCVCapReg<X5, "c5", ["ct0"]>, DwarfRegNum<[5]>;
-  def C6  : RISCVCapReg<X6, "c6", ["ct1"]>, DwarfRegNum<[6]>;
-  def C7  : RISCVCapReg<X7, "c7", ["ct2"]>, DwarfRegNum<[7]>;
+  def X1_Y : RISCVCapReg<X1, "x1", ["ra"]>, DwarfRegAlias<X1>;
+  def X2_Y : RISCVCapReg<X2, "x2", ["sp"]>, DwarfRegAlias<X2>;
+  def X3_Y : RISCVCapReg<X3, "x3", ["gp"]>, DwarfRegAlias<X3>;
+  def X4_Y : RISCVCapReg<X4, "x4", ["tp"]>, DwarfRegAlias<X4>;
+  def X5_Y : RISCVCapReg<X5, "x5", ["t0"]>, DwarfRegAlias<X5>;
+  def X6_Y : RISCVCapReg<X6, "x6", ["t1"]>, DwarfRegAlias<X6>;
+  def X7_Y : RISCVCapReg<X7, "x7", ["t2"]>, DwarfRegAlias<X7>;
   }
-  def C8  : RISCVCapReg<X8, "c8", ["cs0", "cfp"]>, DwarfRegNum<[8]>;
-  def C9  : RISCVCapReg<X9, "c9", ["cs1"]>, DwarfRegNum<[9]>;
-  def C10 : RISCVCapReg<X10,"c10", ["ca0"]>, DwarfRegNum<[10]>;
-  def C11 : RISCVCapReg<X11,"c11", ["ca1"]>, DwarfRegNum<[11]>;
-  def C12 : RISCVCapReg<X12,"c12", ["ca2"]>, DwarfRegNum<[12]>;
-  def C13 : RISCVCapReg<X13,"c13", ["ca3"]>, DwarfRegNum<[13]>;
-  def C14 : RISCVCapReg<X14,"c14", ["ca4"]>, DwarfRegNum<[14]>;
-  def C15 : RISCVCapReg<X15,"c15", ["ca5"]>, DwarfRegNum<[15]>;
+  def X8_Y : RISCVCapReg<X8, "x8", ["s0", "fp"]>, DwarfRegAlias<X8>;
+  def X9_Y : RISCVCapReg<X9, "x9", ["s1"]>, DwarfRegAlias<X9>;
+  def X10_Y : RISCVCapReg<X10, "x10", ["a0"]>, DwarfRegAlias<X10>;
+  def X11_Y : RISCVCapReg<X11, "x11", ["a1"]>, DwarfRegAlias<X11>;
+  def X12_Y : RISCVCapReg<X12, "x12", ["a2"]>, DwarfRegAlias<X12>;
+  def X13_Y : RISCVCapReg<X13, "x13", ["a3"]>, DwarfRegAlias<X13>;
+  def X14_Y : RISCVCapReg<X14, "x14", ["a4"]>, DwarfRegAlias<X14>;
+  def X15_Y : RISCVCapReg<X15, "x15", ["a5"]>, DwarfRegAlias<X15>;
   let CostPerUse = [0, 1] in {
-  def C16 : RISCVCapReg<X16,"c16", ["ca6"]>, DwarfRegNum<[16]>;
-  def C17 : RISCVCapReg<X17,"c17", ["ca7"]>, DwarfRegNum<[17]>;
-  def C18 : RISCVCapReg<X18,"c18", ["cs2"]>, DwarfRegNum<[18]>;
-  def C19 : RISCVCapReg<X19,"c19", ["cs3"]>, DwarfRegNum<[19]>;
-  def C20 : RISCVCapReg<X20,"c20", ["cs4"]>, DwarfRegNum<[20]>;
-  def C21 : RISCVCapReg<X21,"c21", ["cs5"]>, DwarfRegNum<[21]>;
-  def C22 : RISCVCapReg<X22,"c22", ["cs6"]>, DwarfRegNum<[22]>;
-  def C23 : RISCVCapReg<X23,"c23", ["cs7"]>, DwarfRegNum<[23]>;
-  def C24 : RISCVCapReg<X24,"c24", ["cs8"]>, DwarfRegNum<[24]>;
-  def C25 : RISCVCapReg<X25,"c25", ["cs9"]>, DwarfRegNum<[25]>;
-  def C26 : RISCVCapReg<X26,"c26", ["cs10"]>, DwarfRegNum<[26]>;
-  def C27 : RISCVCapReg<X27,"c27", ["cs11"]>, DwarfRegNum<[27]>;
-  def C28 : RISCVCapReg<X28,"c28", ["ct3"]>, DwarfRegNum<[28]>;
-  def C29 : RISCVCapReg<X29,"c29", ["ct4"]>, DwarfRegNum<[29]>;
-  def C30 : RISCVCapReg<X30,"c30", ["ct5"]>, DwarfRegNum<[30]>;
-  def C31 : RISCVCapReg<X31,"c31", ["ct6"]>, DwarfRegNum<[31]>;
+  def X16_Y : RISCVCapReg<X16, "x16", ["a6"]>, DwarfRegAlias<X16>;
+  def X17_Y : RISCVCapReg<X17, "x17", ["a7"]>, DwarfRegAlias<X17>;
+  def X18_Y : RISCVCapReg<X18, "x18", ["s2"]>, DwarfRegAlias<X18>;
+  def X19_Y : RISCVCapReg<X19, "x19", ["s3"]>, DwarfRegAlias<X19>;
+  def X20_Y : RISCVCapReg<X20, "x20", ["s4"]>, DwarfRegAlias<X20>;
+  def X21_Y : RISCVCapReg<X21, "x21", ["s5"]>, DwarfRegAlias<X21>;
+  def X22_Y : RISCVCapReg<X22, "x22", ["s6"]>, DwarfRegAlias<X22>;
+  def X23_Y : RISCVCapReg<X23, "x23", ["s7"]>, DwarfRegAlias<X23>;
+  def X24_Y : RISCVCapReg<X24, "x24", ["s8"]>, DwarfRegAlias<X24>;
+  def X25_Y : RISCVCapReg<X25, "x25", ["s9"]>, DwarfRegAlias<X25>;
+  def X26_Y : RISCVCapReg<X26, "x26", ["s10"]>, DwarfRegAlias<X26>;
+  def X27_Y : RISCVCapReg<X27, "x27", ["s11"]>, DwarfRegAlias<X27>;
+  def X28_Y : RISCVCapReg<X28, "x28", ["t3"]>, DwarfRegAlias<X28>;
+  def X29_Y : RISCVCapReg<X29, "x29", ["t4"]>, DwarfRegAlias<X29>;
+  def X30_Y : RISCVCapReg<X30, "x30", ["t5"]>, DwarfRegAlias<X30>;
+  def X31_Y : RISCVCapReg<X31, "x31", ["t6"]>, DwarfRegAlias<X31>;
   }
 
-  // This is the encoding of DDC when C0 means DDC, and not the encoding of DDC
-  // as a special capability register.
+  // This is the encoding of DDC when X0_Y means DDC, and not the encoding of
+  // DDC as a special capability register.
   def DDC : RISCVCapRegPseudo<0, "ddc", ["ddc"]>;
 }
 
@@ -280,11 +278,9 @@ def XLenPairFVT : ValueTypeByHwMode<[RV32],
 def XLenRI : RegInfoByHwMode<
       [RV32,              RV64],
       [RegInfo<32,32,32>, RegInfo<64,64,64>]>;
-def CLenVT : ValueTypeByHwMode<[RV32, RV64],
-                               [c64, c128]>;
-def CLenRI : RegInfoByHwMode<
-      [RV32,              RV64],
-      [RegInfo<64,64,64>, RegInfo<128,128,128>]>;
+def YLenVT : ValueTypeByHwMode<[RV32, RV64], [c64, c128]>;
+def YLenRI : RegInfoByHwMode<[RV32, RV64], [RegInfo<64, 64, 64>,
+                                            RegInfo<128, 128, 128>]>;
 
 class RISCVRegisterClass<list<ValueType> regTypes, int align, dag regList>
     : RegisterClass<"RISCV", regTypes, align, regList> {
@@ -313,27 +309,41 @@ def GPR : GPRRegisterClass<(add (sequence "X%u", 10, 17),
                                 (sequence "X%u", 18, 27),
                                 (sequence "X%u", 0, 4))>;
 
-def GPCR : RegisterClass<"RISCV", [CLenVT], 64, (add
-    (sequence "C%u", 10, 17),
-    (sequence "C%u", 5, 7),
-    (sequence "C%u", 28, 31),
-    (sequence "C%u", 8, 9),
-    (sequence "C%u", 18, 27),
-    (sequence "C%u", 0, 4)
-  )> {
-  let RegInfos = CLenRI;
+// Upstream keeps YGPR a bare RegisterClass, but TableGen's default matching
+// then only checks class membership and would silently accept a "c"-prefixed
+// spelling too. Give the class a ParserMatchClass whose PredicateMethod
+// (isYGPR/isYGPRNoX0/...) also checks !IsV9CRegName.
+class YGPRAsmOperand<string name> : AsmOperandClass {
+  let Name = name;
+  let RenderMethod = "addRegOperands";
 }
 
-def GPCRC0IsDDC : RegisterClass<"RISCV", [CLenVT], 64, (add
-    (sequence "C%u", 10, 17),
-    (sequence "C%u", 5, 7),
-    (sequence "C%u", 28, 31),
-    (sequence "C%u", 8, 9),
-    (sequence "C%u", 18, 27),
-    (sequence "C%u", 1, 4),
+def YGPROperand : YGPRAsmOperand<"YGPR"> {
+  let DiagnosticType = "InvalidYGPR";
+}
+def YGPR : RegisterClass<"RISCV", [YLenVT], 64,
+                         (add (sequence "X%u_Y", 10, 17),
+                              (sequence "X%u_Y", 5, 7),
+                              (sequence "X%u_Y", 28, 31),
+                              (sequence "X%u_Y", 8, 9),
+                              (sequence "X%u_Y", 18, 27),
+                              (sequence "X%u_Y", 0, 4))> {
+  let RegInfos = YLenRI;
+  let ParserMatchClass = YGPROperand;
+}
+
+// This class is ISAv9-only, so it keeps the default V9CR-style matching and
+// needs no YGPR ParserMatchClass.
+def ISAv9OnlyYGPRX0IsDDC : RegisterClass<"RISCV", [YLenVT], 64, (add
+    (sequence "X%u_Y", 10, 17),
+    (sequence "X%u_Y", 5, 7),
+    (sequence "X%u_Y", 28, 31),
+    (sequence "X%u_Y", 8, 9),
+    (sequence "X%u_Y", 18, 27),
+    (sequence "X%u_Y", 1, 4),
     DDC
   )> {
-  let RegInfos = CLenRI;
+  let RegInfos = YLenRI;
 }
 
 def GPRX0 : GPRRegisterClass<(add X0)>;
@@ -342,43 +352,69 @@ def GPRX5 : GPRRegisterClass<(add X5)>;
 
 def GPRNoX0 : GPRRegisterClass<(sub GPR, X0)>;
 
-def GPCRNoC0 : RegisterClass<"RISCV", [CLenVT], 64, (sub GPCR, C0)> {
-  let RegInfos = CLenRI;
-}
-
-def YGPROperand : AsmOperandClass {
-  let Name = "YGPR";
-  let RenderMethod = "addRegOperands";
-  let DiagnosticType = "InvalidYGPR";
-}
-def YGPR : RegisterOperand<GPCR> {
-  let ParserMatchClass = YGPROperand;
-}
-
-def YGPRNoX0Operand : AsmOperandClass {
-  let Name = "YGPRNoX0";
-  let RenderMethod = "addRegOperands";
+def YGPRNoX0Operand : YGPRAsmOperand<"YGPRNoX0"> {
   let DiagnosticType = "InvalidYGPRNoX0";
 }
-def YGPRNoX0 : RegisterOperand<GPCRNoC0> {
+def YGPRNoX0 : RegisterClass<"RISCV", [YLenVT], 64, (sub YGPR, X0_Y)> {
+  let RegInfos = YLenRI;
   let ParserMatchClass = YGPRNoX0Operand;
+}
+
+// The V9CR-family operands below wrap YGPR (and its variants) to always
+// print/parse their "c"-prefixed name instead (this fork's existing
+// xcheri/zcheripurecap syntax). See RISCVInstPrinter::printV9CR for why
+// this can't just be the register's default name.
+//
+// TODO: Set DiagnosticType on all these operands.
+class V9CRRegisterOperand<RegisterClass RC> : RegisterOperand<RC, "printV9CR">;
+
+def V9CROperand : AsmOperandClass {
+  let Name = "V9CR";
+  let ParserMethod = "parseV9CR";
+  let PredicateMethod = "isV9CR";
+  let RenderMethod = "addRegOperands";
+}
+def V9CR : V9CRRegisterOperand<YGPR> {
+  let ParserMatchClass = V9CROperand;
+}
+
+def V9CRNoC0Operand : AsmOperandClass {
+  let Name = "V9CRNoC0";
+  let ParserMethod = "parseV9CR";
+  let RenderMethod = "addRegOperands";
+}
+def V9CRNoC0 : V9CRRegisterOperand<YGPRNoX0> {
+  let ParserMatchClass = V9CRNoC0Operand;
+}
+
+def V9CRC0IsDDCOperand : AsmOperandClass {
+  let Name = "V9CRC0IsDDC";
+  let ParserMethod = "parseV9CRC0IsDDC";
+  let RenderMethod = "addRegOperands";
+}
+def V9CRC0IsDDC : V9CRRegisterOperand<ISAv9OnlyYGPRX0IsDDC> {
+  let ParserMatchClass = V9CRC0IsDDCOperand;
 }
 
 def RVYCompatGPCROperand : AsmOperandClass {
   let Name = "RVYCompatGPCR";
+  let ParserMethod = "parseRVYCompatGPCR";
+  let PredicateMethod = "isRVYOrV9Reg";
   let RenderMethod = "addRegOperands";
   let DiagnosticType = "InvalidRVYCompatGPCR";
 }
-def RVYCompatGPCR : RegisterOperand<GPCR> {
+def RVYCompatGPCR : V9CRRegisterOperand<YGPR> {
   let ParserMatchClass = RVYCompatGPCROperand;
 }
 
 def RVYCompatGPCRNoC0Operand : AsmOperandClass {
   let Name = "RVYCompatGPCRNoC0";
+  let ParserMethod = "parseRVYCompatGPCR";
+  let PredicateMethod = "isRVYOrV9RegNoX0";
   let RenderMethod = "addRegOperands";
   let DiagnosticType = "InvalidRVYCompatGPCRNoC0";
 }
-def RVYCompatGPCRNoC0 : RegisterOperand<GPCRNoC0> {
+def RVYCompatGPCRNoC0 : V9CRRegisterOperand<YGPRNoX0> {
   let ParserMatchClass = RVYCompatGPCRNoC0Operand;
 }
 
@@ -397,11 +433,15 @@ def GPRJALRNonX7 : GPRRegisterClass<(sub GPRJALR, X7)>;
 def GPRC : GPRRegisterClass<(add (sequence "X%u", 10, 15),
                                  (sequence "X%u", 8, 9))>;
 
-def GPCRC : RegisterClass<"RISCV", [CLenVT], 64, (add
-    (sequence "C%u", 10, 15),
-    (sequence "C%u", 8, 9)
+def YGPRCOperand : YGPRAsmOperand<"YGPRC"> {
+  let DiagnosticType = "InvalidYGPR";
+}
+def YGPRC : RegisterClass<"RISCV", [YLenVT], 64, (add
+    (sequence "X%u_Y", 10, 15),
+    (sequence "X%u_Y", 8, 9)
   )> {
-  let RegInfos = CLenRI;
+  let RegInfos = YLenRI;
+  let ParserMatchClass = YGPRCOperand;
 }
 
 // For indirect tail calls, we can't use callee-saved registers, as they are
@@ -413,62 +453,85 @@ def GPRTC : GPRRegisterClass<(add (sequence "X%u", 6, 7),
                                   (sequence "X%u", 28, 31))>;
 def GPRTCNonX7 : GPRRegisterClass<(sub GPRTC, X7)>;
 
-def GPCRTC : RegisterClass<"RISCV", [CLenVT], 64, (add
-    (sequence "C%u", 5, 7),
-    (sequence "C%u", 10, 17),
-    (sequence "C%u", 28, 31)
+def YGPRTCOperand : YGPRAsmOperand<"YGPRTC"> {
+  let DiagnosticType = "InvalidYGPR";
+}
+def YGPRTC : RegisterClass<"RISCV", [YLenVT], 64, (add
+    (sequence "X%u_Y", 5, 7),
+    (sequence "X%u_Y", 10, 17),
+    (sequence "X%u_Y", 28, 31)
   )> {
-  let RegInfos = CLenRI;
+  let RegInfos = YLenRI;
+  let ParserMatchClass = YGPRTCOperand;
 }
 
-def YGPRCOperand : AsmOperandClass {
-  let Name = "YGPRC";
+def V9CRCOperand : AsmOperandClass {
+  let Name = "V9CRC";
+  let ParserMethod = "parseV9CR";
   let RenderMethod = "addRegOperands";
-  let DiagnosticType = "InvalidYGPRC";
 }
-def YGPRC : RegisterOperand<GPCRC> {
-  let ParserMatchClass = YGPRCOperand;
+def V9CRC : V9CRRegisterOperand<YGPRC> {
+  let ParserMatchClass = V9CRCOperand;
+}
+
+def V9CRTCOperand : AsmOperandClass {
+  let Name = "V9CRTC";
+  let ParserMethod = "parseV9CR";
+  let RenderMethod = "addRegOperands";
+}
+def V9CRTC : V9CRRegisterOperand<YGPRTC> {
+  let ParserMatchClass = V9CRTCOperand;
 }
 
 def RVYCompatGPCRCOperand : AsmOperandClass {
   let Name = "RVYCompatGPCRC";
+  let ParserMethod = "parseRVYCompatGPCR";
+  let PredicateMethod = "isRVYOrV9RegC";
   let RenderMethod = "addRegOperands";
   let DiagnosticType = "InvalidRVYCompatGPCR";
 }
-def RVYCompatGPCRC : RegisterOperand<GPCRC> {
+def RVYCompatGPCRC : V9CRRegisterOperand<YGPRC> {
   let ParserMatchClass = RVYCompatGPCRCOperand;
 }
 
 def RVYCompatGPCRTCOperand : AsmOperandClass {
   let Name = "RVYCompatGPCRTC";
+  let ParserMethod = "parseRVYCompatGPCR";
+  let PredicateMethod = "isRVYOrV9RegTC";
   let RenderMethod = "addRegOperands";
   let DiagnosticType = "InvalidRVYCompatGPCR";
 }
-def RVYCompatGPCRTC : RegisterOperand<GPCRTC> {
+def RVYCompatGPCRTC : V9CRRegisterOperand<YGPRTC> {
   let ParserMatchClass = RVYCompatGPCRTCOperand;
 }
 
 def SP : GPRRegisterClass<(add X2)>;
 
-def CSP : RegisterClass<"RISCV", [CLenVT], 64, (add C2)> {
-  let RegInfos = CLenRI;
-}
-
-def YSPOperand : AsmOperandClass {
-  let Name = "YSP";
-  let RenderMethod = "addRegOperands";
+def YSPOperand : YGPRAsmOperand<"YSP"> {
   let DiagnosticType = "InvalidYSP";
 }
-def YSP : RegisterOperand<CSP> {
+def YSP : RegisterClass<"RISCV", [YLenVT], 64, (add X2_Y)> {
+  let RegInfos = YLenRI;
   let ParserMatchClass = YSPOperand;
+}
+
+def V9CSPOperand : AsmOperandClass {
+  let Name = "V9CSP";
+  let ParserMethod = "parseV9CR";
+  let RenderMethod = "addRegOperands";
+}
+def V9CSP : V9CRRegisterOperand<YSP> {
+  let ParserMatchClass = V9CSPOperand;
 }
 
 def RVYCompatCSPOperand : AsmOperandClass {
   let Name = "RVYCompatCSP";
+  let ParserMethod = "parseRVYCompatGPCR";
+  let PredicateMethod = "isRVYOrV9SP";
   let RenderMethod = "addRegOperands";
   let DiagnosticType = "InvalidRVYCompatCSP";
 }
-def RVYCompatCSP : RegisterOperand<CSP> {
+def RVYCompatCSP : V9CRRegisterOperand<YSP> {
   let ParserMatchClass = RVYCompatCSPOperand;
 }
 

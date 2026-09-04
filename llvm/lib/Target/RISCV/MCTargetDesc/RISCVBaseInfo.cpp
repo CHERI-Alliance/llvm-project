@@ -126,18 +126,134 @@ ABI getTargetABI(StringRef ABIName) {
 // callee saved register to save the value. RV32E only has X8 and X9 as callee
 // saved registers and X8 will be used as fp. So we choose X9 as bp.
 MCRegister getBPReg(ABI TargetABI) {
-  return isCheriPureCapABI(TargetABI) ? RISCV::C9 : RISCV::X9;
+  return isCheriPureCapABI(TargetABI) ? RISCV::X9_Y : RISCV::X9;
 }
 
 // Returns the register holding shadow call stack pointer.
 MCRegister getSCSPReg(ABI TargetABI) {
-  return isCheriPureCapABI(TargetABI) ? RISCV::C3 : RISCV::X3;
+  return isCheriPureCapABI(TargetABI) ? RISCV::X3_Y : RISCV::X3;
 }
 
 // Returns the register used for bounded mem/var args
-MCRegister getCheriBoundedArgReg() { return RISCV::C31; }
+MCRegister getCheriBoundedArgReg() { return RISCV::X31_Y; }
 
 } // namespace RISCVABI
+
+namespace RISCVV9CRName {
+
+MCRegister lookup(StringRef Name) {
+  return StringSwitch<MCRegister>(Name)
+      .Cases("c0", "cnull", RISCV::X0_Y)
+      .Cases("c1", "cra", RISCV::X1_Y)
+      .Cases("c2", "csp", RISCV::X2_Y)
+      .Cases("c3", "cgp", RISCV::X3_Y)
+      .Cases("c4", "ctp", RISCV::X4_Y)
+      .Cases("c5", "ct0", RISCV::X5_Y)
+      .Cases("c6", "ct1", RISCV::X6_Y)
+      .Cases("c7", "ct2", RISCV::X7_Y)
+      .Cases("c8", "cs0", "cfp", RISCV::X8_Y)
+      .Cases("c9", "cs1", RISCV::X9_Y)
+      .Cases("c10", "ca0", RISCV::X10_Y)
+      .Cases("c11", "ca1", RISCV::X11_Y)
+      .Cases("c12", "ca2", RISCV::X12_Y)
+      .Cases("c13", "ca3", RISCV::X13_Y)
+      .Cases("c14", "ca4", RISCV::X14_Y)
+      .Cases("c15", "ca5", RISCV::X15_Y)
+      .Cases("c16", "ca6", RISCV::X16_Y)
+      .Cases("c17", "ca7", RISCV::X17_Y)
+      .Cases("c18", "cs2", RISCV::X18_Y)
+      .Cases("c19", "cs3", RISCV::X19_Y)
+      .Cases("c20", "cs4", RISCV::X20_Y)
+      .Cases("c21", "cs5", RISCV::X21_Y)
+      .Cases("c22", "cs6", RISCV::X22_Y)
+      .Cases("c23", "cs7", RISCV::X23_Y)
+      .Cases("c24", "cs8", RISCV::X24_Y)
+      .Cases("c25", "cs9", RISCV::X25_Y)
+      .Cases("c26", "cs10", RISCV::X26_Y)
+      .Cases("c27", "cs11", RISCV::X27_Y)
+      .Cases("c28", "ct3", RISCV::X28_Y)
+      .Cases("c29", "ct4", RISCV::X29_Y)
+      .Cases("c30", "ct5", RISCV::X30_Y)
+      .Cases("c31", "ct6", RISCV::X31_Y)
+      .Default(MCRegister());
+}
+
+const char *get(MCRegister Reg, bool ABI) {
+  switch (Reg.id()) {
+  default:
+    return nullptr;
+  case RISCV::X0_Y:
+    return ABI ? "cnull" : "c0";
+  case RISCV::X1_Y:
+    return ABI ? "cra" : "c1";
+  case RISCV::X2_Y:
+    return ABI ? "csp" : "c2";
+  case RISCV::X3_Y:
+    return ABI ? "cgp" : "c3";
+  case RISCV::X4_Y:
+    return ABI ? "ctp" : "c4";
+  case RISCV::X5_Y:
+    return ABI ? "ct0" : "c5";
+  case RISCV::X6_Y:
+    return ABI ? "ct1" : "c6";
+  case RISCV::X7_Y:
+    return ABI ? "ct2" : "c7";
+  case RISCV::X8_Y:
+    return ABI ? "cs0" : "c8";
+  case RISCV::X9_Y:
+    return ABI ? "cs1" : "c9";
+  case RISCV::X10_Y:
+    return ABI ? "ca0" : "c10";
+  case RISCV::X11_Y:
+    return ABI ? "ca1" : "c11";
+  case RISCV::X12_Y:
+    return ABI ? "ca2" : "c12";
+  case RISCV::X13_Y:
+    return ABI ? "ca3" : "c13";
+  case RISCV::X14_Y:
+    return ABI ? "ca4" : "c14";
+  case RISCV::X15_Y:
+    return ABI ? "ca5" : "c15";
+  case RISCV::X16_Y:
+    return ABI ? "ca6" : "c16";
+  case RISCV::X17_Y:
+    return ABI ? "ca7" : "c17";
+  case RISCV::X18_Y:
+    return ABI ? "cs2" : "c18";
+  case RISCV::X19_Y:
+    return ABI ? "cs3" : "c19";
+  case RISCV::X20_Y:
+    return ABI ? "cs4" : "c20";
+  case RISCV::X21_Y:
+    return ABI ? "cs5" : "c21";
+  case RISCV::X22_Y:
+    return ABI ? "cs6" : "c22";
+  case RISCV::X23_Y:
+    return ABI ? "cs7" : "c23";
+  case RISCV::X24_Y:
+    return ABI ? "cs8" : "c24";
+  case RISCV::X25_Y:
+    return ABI ? "cs9" : "c25";
+  case RISCV::X26_Y:
+    return ABI ? "cs10" : "c26";
+  case RISCV::X27_Y:
+    return ABI ? "cs11" : "c27";
+  case RISCV::X28_Y:
+    return ABI ? "ct3" : "c28";
+  case RISCV::X29_Y:
+    return ABI ? "ct4" : "c29";
+  case RISCV::X30_Y:
+    return ABI ? "ct5" : "c30";
+  case RISCV::X31_Y:
+    return ABI ? "ct6" : "c31";
+  // DDC is a member of ISAv9OnlyYGPRX0IsDDC alongside X1_Y..X31_Y and has no
+  // separate architectural/ABI spelling.
+  case RISCV::DDC:
+    return "ddc";
+  }
+}
+
+} // namespace RISCVV9CRName
 
 namespace RISCVFeatures {
 

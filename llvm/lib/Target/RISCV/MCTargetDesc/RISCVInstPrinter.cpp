@@ -228,6 +228,16 @@ void RISCVInstPrinter::printZeroOffsetMemOp(const MCInst *MI, unsigned OpNo,
   O << ")";
 }
 
+/// Like printZeroOffsetMemOp, but for the V9CR-family zero-offset memory
+/// operands (canonical "c"-prefixed mnemonics like lr.c/sc.c)
+void RISCVInstPrinter::printV9CRZeroOffsetMemOp(const MCInst *MI, unsigned OpNo,
+                                                const MCSubtargetInfo &STI,
+                                                raw_ostream &O) {
+  O << "(";
+  printV9CR(MI, OpNo, STI, O);
+  O << ")";
+}
+
 void RISCVInstPrinter::printVTypeI(const MCInst *MI, unsigned OpNo,
                                    const MCSubtargetInfo &STI, raw_ostream &O) {
   unsigned Imm = MI->getOperand(OpNo).getImm();
@@ -333,6 +343,17 @@ void RISCVInstPrinter::printVMaskReg(const MCInst *MI, unsigned OpNo,
 const char *RISCVInstPrinter::getRegisterName(MCRegister Reg) {
   return getRegisterName(Reg, ArchRegNames ? RISCV::NoRegAltName
                                            : RISCV::ABIRegAltName);
+}
+
+// V9CR-family operands print with a "c" prefix regardless of the register's
+// AsmName, so this can't reuse the generic getRegisterName(Reg) hook above.
+void RISCVInstPrinter::printV9CR(const MCInst *MI, unsigned OpNo,
+                                 const MCSubtargetInfo &STI, raw_ostream &O) {
+  const MCOperand &MO = MI->getOperand(OpNo);
+  assert(MO.isReg() && "printV9CR only supports register operands");
+  const char *Name = RISCVV9CRName::get(MO.getReg(), /*ABI=*/!ArchRegNames);
+  assert(Name && "printV9CR called on a non-V9CR register operand");
+  markup(O, Markup::Register) << Name;
 }
 
 void RISCVInstPrinter::printCSetBndImm(const MCInst *MI, unsigned OpNo,

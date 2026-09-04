@@ -123,7 +123,7 @@ bool RISCVCheriCommonLoadAddress::runOnMachineFunction(MachineFunction &Fn) {
   TII = static_cast<const RISCVInstrInfo *>(ST->getInstrInfo());
 
   // This is a CHERI-specific pass.
-  if (!ST->hasStdExtZCheriPureCapOrCheri())
+  if (!ST->hasAnyCheriExt())
     return false;
 
   MVT PtrVT = ST->typeForCapabilities();

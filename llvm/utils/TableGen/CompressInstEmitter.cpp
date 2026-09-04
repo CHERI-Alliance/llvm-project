@@ -131,7 +131,8 @@ class CompressInstEmitter {
   void emitCompressInstEmitter(raw_ostream &OS, EmitterType EType);
   bool validateTypes(const Record *DagOpType, const Record *InstOpType,
                      bool IsSourceInst);
-  bool validateRegister(const Record *Reg, const Record *RegClass);
+  bool validateRegister(const Record *Reg, const Record *RegClass,
+                        ArrayRef<SMLoc> Loc);
   void createDagOperandMapping(const Record *Rec,
                                StringMap<unsigned> &SourceOperands,
                                StringMap<unsigned> &DestOperands,
@@ -153,12 +154,22 @@ public:
 } // End anonymous namespace.
 
 bool CompressInstEmitter::validateRegister(const Record *Reg,
-                                           const Record *RegClass) {
+                                           const Record *RegClass,
+                                           ArrayRef<SMLoc> Loc) {
   assert(Reg->isSubClassOf("Register") && "Reg record should be a Register");
-  assert(RegClass->isSubClassOf("RegisterClass") &&
-         "RegClass record should be a RegisterClass");
+  // Handle RegisterOperand in addition to raw RegClass (needed for CHERI CJAL).
+  if (RegClass->isSubClassOf("RegisterOperand"))
+    RegClass = RegClass->getValueAsDef("RegClass");
+  if (!RegClass->isSubClassOf("RegisterClass")) {
+    PrintError(Loc, "expected RegisterClass in compress pattern but got " +
+                        RegClass->getName());
+    PrintNote(Reg->getLoc(),
+              "while checking operand for fixed register " + Reg->getName());
+    PrintFatalNote(RegClass->getLoc(), "operand type defined here");
+    return false;
+  }
   const CodeGenRegisterClass &RC = Target.getRegisterClass(RegClass);
-  const CodeGenRegister *R = Target.getRegisterByName(Reg->getName().lower());
+  const CodeGenRegister *R = Target.getRegBank().getReg(Reg);
   assert(R != nullptr && "Register not defined!!");
   return RC.contains(R);
 }
@@ -225,7 +236,8 @@ void CompressInstEmitter::addDagOperandMapping(const Record *Rec,
     if (const DefInit *DI = dyn_cast<DefInit>(Dag->getArg(I - TiedCount))) {
       if (DI->getDef()->isSubClassOf("Register")) {
         // Check if the fixed register belongs to the Register class.
-        if (!validateRegister(DI->getDef(), Inst.Operands[I].Rec))
+        if (!validateRegister(DI->getDef(), Inst.Operands[I].Rec,
+                              Rec->getLoc()))
           PrintFatalError(Rec->getLoc(),
                           "Error in Dag '" + Dag->getAsString() +
                               "'Register: '" + DI->getDef()->getName() +

@@ -581,15 +581,15 @@ class ALU_rr<bits<7> funct7, bits<3> funct3, string opcodestr,
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class C_ALUW_rr<bits<7> funct7, bits<3> funct3, string opcodestr,
               bit Commutable = 0>
-    : RVInstR<funct7, funct3, OPC_OP_32, (outs GPCR:$rd),
-              (ins GPR:$rs1, GPCR:$rs2), opcodestr, "$rd, $rs1, $rs2"> {
+    : RVInstR<funct7, funct3, OPC_OP_32, (outs V9CR:$rd),
+              (ins GPR:$rs1, V9CR:$rs2), opcodestr, "$rd, $rs1, $rs2"> {
   let isCommutable = Commutable;
 }
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class C_ALU_rr<bits<7> funct7, bits<3> funct3, string opcodestr,
              bit Commutable = 0>
-    : RVInstR<funct7, funct3, OPC_OP, (outs GPCR:$rd), (ins GPR:$rs1, GPCR:$rs2),
+    : RVInstR<funct7, funct3, OPC_OP, (outs V9CR:$rd), (ins GPR:$rs1, V9CR:$rs2),
               opcodestr, "$rd, $rs1, $rs2"> {
   let isCommutable = Commutable;
 }
@@ -1883,7 +1883,7 @@ def : LdPat<zextloadi16, LHU>, Requires<[NotCapMode]>;
 
 /// Stores
 
-class StPat<PatFrag StoreOp, RVInst Inst, RegisterClass StTy,
+class StPat<PatFrag StoreOp, RVInst Inst, DAGOperand StTy,
             ValueType vt>
     : Pat<(StoreOp (vt StTy:$rs2), (AddrRegImm (XLenVT GPR:$rs1),
                    simm12:$imm12)),
@@ -2198,6 +2198,9 @@ include "RISCVInstrInfoXMips.td"
 
 include "RISCVInstrInfoXCheri.td"
 include "RISCVInstrInfoZCheriPurecap.td"
+
+// CHERI
+include "RISCVInstrInfoY.td"
 
 //===----------------------------------------------------------------------===//
 // Global ISel

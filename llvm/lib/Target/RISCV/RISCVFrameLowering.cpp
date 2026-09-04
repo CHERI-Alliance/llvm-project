@@ -466,7 +466,7 @@ uint64_t RISCVFrameLowering::getStackSizeWithRVVPadding(
 // Returns the register used to hold the frame pointer.
 Register RISCVFrameLowering::getFPReg() const {
   if (RISCVABI::isCheriPureCapABI(STI.getTargetABI()))
-    return RISCV::C8;
+    return RISCV::X8_Y;
   else
     return RISCV::X8;
 }
@@ -474,7 +474,7 @@ Register RISCVFrameLowering::getFPReg() const {
 // Returns the register used to hold the stack pointer.
 Register RISCVFrameLowering::getSPReg() const {
   if (RISCVABI::isCheriPureCapABI(STI.getTargetABI()))
-    return RISCV::C2;
+    return RISCV::X2_Y;
   else
     return RISCV::X2;
 }
@@ -1478,8 +1478,8 @@ void RISCVFrameLowering::determineCalleeSaves(MachineFunction &MF,
   // pointer.
   if (hasFP(MF)) {
     if (RISCVABI::isCheriPureCapABI(STI.getTargetABI())) {
-      SavedRegs.set(RISCV::C1);
-      SavedRegs.set(RISCV::C8);
+      SavedRegs.set(RISCV::X1_Y);
+      SavedRegs.set(RISCV::X8_Y);
     } else {
       SavedRegs.set(RISCV::X1);
       SavedRegs.set(RISCV::X8);
@@ -1677,7 +1677,7 @@ void RISCVFrameLowering::processFunctionBeforeFrameFinalized(
   MachineFrameInfo &MFI = MF.getFrameInfo();
   const TargetRegisterClass *RC;
   if (RISCVABI::isCheriPureCapABI(STI.getTargetABI()))
-    RC = &RISCV::GPCRRegClass;
+    RC = &RISCV::YGPRRegClass;
   else
     RC = &RISCV::GPRRegClass;
   auto *RVFI = MF.getInfo<RISCVMachineFunctionInfo>();

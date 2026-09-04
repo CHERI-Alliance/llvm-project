@@ -115,9 +115,8 @@ bool RISCVExpandAtomicPseudo::expandMI(MachineBasicBlock &MBB,
   // expanded instructions for each pseudo is correct in the Size field of the
   // tablegen definition for the pseudo.
   const auto &Subtarget = MBB.getParent()->getSubtarget<RISCVSubtarget>();
-  MVT CLenVT = Subtarget.hasStdExtZCheriPureCapOrCheri()
-                   ? Subtarget.typeForCapabilities()
-                   : MVT();
+  MVT CLenVT =
+      Subtarget.hasAnyCheriExt() ? Subtarget.typeForCapabilities() : MVT();
   switch (MBBI->getOpcode()) {
   case RISCV::PseudoAtomicLoadNand32:
     return expandAtomicBinOp(MBB, MBBI, AtomicRMWInst::Nand, false, MVT::i32,

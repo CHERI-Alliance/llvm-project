@@ -182,8 +182,8 @@ public:
            hasShortForwardBranchOpt();
   }
 
-  bool hasStdExtZCheriPureCapOrCheri() const {
-    return HasStdExtZCheriPureCap || HasCheri;
+  bool hasAnyCheriExt() const {
+    return HasStdExtZCheriPureCap || HasCheri || HasStdExtY;
   }
   bool is64Bit() const { return IsRV64; }
   MVT getXLenVT() const {
@@ -247,7 +247,7 @@ public:
     return UserReservedRegister[i];
   }
   MVT typeForCapabilities() const {
-    assert(hasStdExtZCheriPureCapOrCheri() && "Cannot get capability type for non-CHERI");
+    assert(hasAnyCheriExt() && "Cannot get capability type for non-CHERI");
     return is64Bit() ? MVT::c128 : MVT::c64;
   }
 

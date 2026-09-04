@@ -311,11 +311,13 @@ enum OperandType : unsigned {
   OPERAND_UIMM7,
   OPERAND_UIMM7_LSB00,
   OPERAND_UIMM7_LSB000,
+  OPERAND_UIMM7_EQ_XLEN,
   OPERAND_UIMM8_LSB00,
   OPERAND_UIMM8,
   OPERAND_UIMM8_LSB000,
   OPERAND_UIMM8_GE32,
   OPERAND_UIMM9_LSB000,
+  OPERAND_UIMM9_YBNDSWI,
   OPERAND_UIMM10,
   OPERAND_UIMM10_LSB00_NONZERO,
   OPERAND_UIMM11,
@@ -455,6 +457,16 @@ float getFPImm(unsigned Imm);
 /// encoding, then return -1.
 int getLoadFPImm(APFloat FPImm);
 } // namespace RISCVLoadFPImm
+
+namespace RISCVV9CRName {
+/// Lookup capability register by name. Handles numeric and ABI names
+/// ("c2"/"cgp", etc.). Needed to support upstream YGPR where we no longer
+/// include "c2" as the register names (and instead use "x" names)
+MCRegister lookup(StringRef Name);
+
+/// Returns the "c"-prefixed name for a register (numeric or ABI)
+const char *get(MCRegister Reg, bool ABI);
+} // namespace RISCVV9CRName
 
 namespace RISCVSysReg {
 struct SysReg {
@@ -719,6 +731,14 @@ inline static bool getSpimm(unsigned RlistVal, unsigned &SpimmVal,
 
 void printRlist(unsigned SlistEncode, raw_ostream &OS);
 } // namespace RISCVZC
+
+namespace RISCV {
+inline bool isValidYBNDSWImm(int64_t Imm) {
+  return (Imm >= 1 && Imm <= 255) ||
+         (Imm >= 256 && Imm <= 504 && (Imm % 8) == 0) ||
+         (Imm >= 512 && Imm <= 4096 && (Imm % 16) == 0);
+}
+} // namespace RISCV
 
 } // namespace llvm
 

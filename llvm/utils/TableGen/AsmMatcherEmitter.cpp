@@ -1226,6 +1226,16 @@ ClassInfo *AsmMatcherInfo::getOperandClass(const Record *Rec, int SubOpIdx) {
   }
 
   if (Rec->isSubClassOf("RegisterClass")) {
+    // RegisterClass may have an associated ParserMatchClass. If it does,
+    // use it, else just fall back to the class-membership-only check.
+    if (const RecordVal *R = Rec->getValue("ParserMatchClass")) {
+      if (const DefInit *DI = dyn_cast<DefInit>(R->getValue())) {
+        const Record *MatchClass = DI->getDef();
+        if (ClassInfo *CI = AsmOperandClasses[MatchClass])
+          return CI;
+      }
+    }
+
     if (ClassInfo *CI = RegisterClassClasses[Rec])
       return CI;
     PrintFatalError(Rec->getLoc(), "register class has no class info!");
@@ -1342,12 +1352,22 @@ void AsmMatcherInfo::buildRegisterClasses(
       continue;
     ClassInfo *CI = RegisterSetClasses[RegisterSet(RC.getOrder().begin(),
                                                    RC.getOrder().end())];
-    if (CI->ValueName.empty()) {
-      CI->ClassName = RC.getName();
-      CI->Name = "MCK_" + RC.getName();
-      CI->ValueName = RC.getName();
-    } else
-      CI->ValueName = CI->ValueName + "," + RC.getName();
+
+    // If this class has its own ParserMatchClass, getOperandClass() will use
+    // that AsmOperandClass to match operands of this type. We must avoid adding
+    // the duplicate "MCK_<ClassName>" name in that case.
+    bool HasCustomParserMatchClass = false;
+    if (const RecordVal *R = Def->getValue("ParserMatchClass"))
+      HasCustomParserMatchClass = isa<DefInit>(R->getValue());
+
+    if (!HasCustomParserMatchClass) {
+      if (CI->ValueName.empty()) {
+        CI->ClassName = RC.getName();
+        CI->Name = "MCK_" + RC.getName();
+        CI->ValueName = RC.getName();
+      } else
+        CI->ValueName = CI->ValueName + "," + RC.getName();
+    }
 
     const Init *DiagnosticType = Def->getValueInit("DiagnosticType");
     if (const StringInit *SI = dyn_cast<StringInit>(DiagnosticType))

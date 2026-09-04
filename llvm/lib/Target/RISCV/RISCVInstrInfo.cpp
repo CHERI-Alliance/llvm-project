@@ -502,11 +502,11 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
                 getKillRegState(KillSrc) | getRenamableRegState(RenamableSrc))
         .addImm(0);
     return;
-  } else if (RISCV::GPCRRegClass.contains(DstReg)) {
+  } else if (RISCV::YGPRRegClass.contains(DstReg)) {
     // GPCR -> GPCR can use CMove
     const bool HasZCheriPureCap =
         Subtarget.hasFeature(RISCV::FeatureStdExtZCheriPureCap);
-    if (RISCV::GPCRRegClass.contains(SrcReg)) {
+    if (RISCV::YGPRRegClass.contains(SrcReg)) {
       BuildMI(MBB, MBBI, DL, get(HasZCheriPureCap ? RISCV::CMV : RISCV::CMove),
               DstReg)
           .addReg(SrcReg, getKillRegState(KillSrc))
@@ -516,7 +516,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
       // Moves of DDC can use CSpecialRW.
       BuildMI(MBB, MBBI, DL, get(RISCV::CSpecialRW), DstReg)
           .addImm(/*DDC*/ 1)
-          .addReg(RISCV::C0)
+          .addReg(RISCV::X0_Y)
           .setMIFlag(Flag);
       return;
     }
@@ -655,7 +655,7 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
       Opcode = TRI->getRegSizeInBits(RISCV::GPRRegClass) == 32 ? RISCV::CSW
                                                                : RISCV::CSD;
       IsScalableVector = false;
-    } else if (RISCV::GPCRRegClass.hasSubClassEq(RC)) {
+    } else if (RISCV::YGPRRegClass.hasSubClassEq(RC)) {
       Opcode = ST.hasStdExtZCheriPureCap()
                    ? RISCV::CSC
                    : (ST.isRV64() ? RISCV::CSC_128 : RISCV::CSC_64);
@@ -674,7 +674,7 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
       Opcode = TRI->getRegSizeInBits(RISCV::GPRRegClass) == 32 ?
                RISCV::SW : RISCV::SD;
       IsScalableVector = false;
-    } else if (RISCV::GPCRRegClass.hasSubClassEq(RC)) {
+    } else if (RISCV::YGPRRegClass.hasSubClassEq(RC)) {
       Opcode = ST.hasStdExtZCheriPureCap()
                    ? RISCV::SC
                    : (ST.isRV64() ? RISCV::SC_128 : RISCV::SC_64);
@@ -776,7 +776,7 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
       Opcode = TRI->getRegSizeInBits(RISCV::GPRRegClass) == 32 ? RISCV::CLW
                                                                : RISCV::CLD;
       IsScalableVector = false;
-    } else if (RISCV::GPCRRegClass.hasSubClassEq(RC)) {
+    } else if (RISCV::YGPRRegClass.hasSubClassEq(RC)) {
       Opcode = ST.hasStdExtZCheriPureCap()
                    ? RISCV::CLC
                    : (ST.isRV64() ? RISCV::CLC_128 : RISCV::CLC_64);
@@ -795,7 +795,7 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
       Opcode = TRI->getRegSizeInBits(RISCV::GPRRegClass) == 32 ?
                RISCV::LW : RISCV::LD;
       IsScalableVector = false;
-    } else if (RISCV::GPCRRegClass.hasSubClassEq(RC)) {
+    } else if (RISCV::YGPRRegClass.hasSubClassEq(RC)) {
       Opcode = ST.hasStdExtZCheriPureCap()
                    ? RISCV::LC
                    : (ST.isRV64() ? RISCV::LC_128 : RISCV::LC_64);
@@ -1291,7 +1291,7 @@ void RISCVInstrInfo::insertIndirectBranch(MachineBasicBlock &MBB,
   const TargetRegisterClass *RC;
   unsigned PseudoOpcode;
   if (RISCVABI::isCheriPureCapABI(ST.getTargetABI())) {
-    RC = &RISCV::GPCRRegClass;
+    RC = &RISCV::YGPRRegClass;
     PseudoOpcode = RISCV::PseudoCJump;
   } else {
     RC = &RISCV::GPRJALRRegClass;
@@ -1319,7 +1319,7 @@ void RISCVInstrInfo::insertIndirectBranch(MachineBasicBlock &MBB,
     // The case when there is no scavenged register needs special handling.
 
     // Pick s11 because it doesn't make a difference.
-    TmpGPR = RISCVABI::isCheriPureCapABI(ST.getTargetABI()) ? RISCV::C27
+    TmpGPR = RISCVABI::isCheriPureCapABI(ST.getTargetABI()) ? RISCV::X27_Y
                                                             : RISCV::X27;
 
     int FrameIndex = RVFI->getBranchRelaxationScratchFrameIndex();
@@ -1780,11 +1780,13 @@ bool RISCVInstrInfo::isAsCheapAsAMove(const MachineInstr &MI) const {
     // be attempted unless isAsCheapAsAMove returns true!
     return (MI.getOperand(2).isReg() &&
             MI.getOperand(2).getReg() == RISCV::X0) ||
-           (MI.getOperand(1).isReg() && MI.getOperand(1).getReg() == RISCV::C0);
+           (MI.getOperand(1).isReg() &&
+            MI.getOperand(1).getReg() == RISCV::X0_Y);
   case RISCV::CIncOffsetImm:
   case RISCV::CADDI:
     return (MI.getOperand(2).isImm() && MI.getOperand(2).getImm() == 0) ||
-           (MI.getOperand(1).isReg() && MI.getOperand(1).getReg() == RISCV::C0);
+           (MI.getOperand(1).isReg() &&
+            MI.getOperand(1).getReg() == RISCV::X0_Y);
   case RISCV::FSGNJ_D:
   case RISCV::FSGNJ_S:
   case RISCV::FSGNJ_H:
@@ -2744,11 +2746,17 @@ bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
         case RISCVOp::OPERAND_UIMM8_LSB000:
           Ok = isShiftedUInt<5, 3>(Imm);
           break;
+        case RISCVOp::OPERAND_UIMM7_EQ_XLEN:
+          Ok = Imm == STI.getXLen();
+          break;
         case RISCVOp::OPERAND_UIMM8_GE32:
           Ok = isUInt<8>(Imm) && Imm >= 32;
           break;
         case RISCVOp::OPERAND_UIMM9_LSB000:
           Ok = isShiftedUInt<6, 3>(Imm);
+          break;
+        case RISCVOp::OPERAND_UIMM9_YBNDSWI:
+          Ok = RISCV::isValidYBNDSWImm(Imm);
           break;
         case RISCVOp::OPERAND_SIMM10_LSB0000_NONZERO:
           Ok = isShiftedInt<6, 4>(Imm) && (Imm != 0);
@@ -3393,14 +3401,14 @@ void RISCVInstrInfo::buildOutlinedFrame(
     return;
   bool IsPurecap = RISCVABI::isCheriPureCapABI(
       MF.getSubtarget<RISCVSubtarget>().getTargetABI());
-  MBB.addLiveIn(IsPurecap ? RISCV::C5 : RISCV::X5);
+  MBB.addLiveIn(IsPurecap ? RISCV::X5_Y : RISCV::X5);
 
   // Add in a return instruction to the end of the outlined frame.
   MBB.insert(
       MBB.end(),
       BuildMI(MF, DebugLoc(), get(IsPurecap ? RISCV::CJALR : RISCV::JALR))
-          .addReg(IsPurecap ? RISCV::C0 : RISCV::X0, RegState::Define)
-          .addReg(IsPurecap ? RISCV::C5 : RISCV::X5)
+          .addReg(IsPurecap ? RISCV::X0_Y : RISCV::X0, RegState::Define)
+          .addReg(IsPurecap ? RISCV::X5_Y : RISCV::X5)
           .addImm(0));
 }
 
@@ -3421,7 +3429,7 @@ MachineBasicBlock::iterator RISCVInstrInfo::insertOutlinedCall(
   It = MBB.insert(
       It, BuildMI(MF, DebugLoc(),
                   get(IsPurecap ? RISCV::PseudoCCALLReg : RISCV::PseudoCALLReg),
-                  IsPurecap ? RISCV::C5 : RISCV::X5)
+                  IsPurecap ? RISCV::X5_Y : RISCV::X5)
               .addGlobalAddress(M.getNamedValue(MF.getName()), 0,
                                 RISCVII::MO_CALL));
   return It;

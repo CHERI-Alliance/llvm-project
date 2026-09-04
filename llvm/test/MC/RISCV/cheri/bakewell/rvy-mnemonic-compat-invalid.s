@@ -14,9 +14,9 @@ yss x1, ddc, x3
 yss x1, x2, ddc
 
 ## Check that in integer mode jumps reject capability registers.
-# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
+# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: 'Zcherihybrid' (Backwards compatiblity for 'Zcheripurecap' with RISCV)
 jr c1
-# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
+# CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: 'Zcherihybrid' (Backwards compatiblity for 'Zcheripurecap' with RISCV)
 jalr c1, c2
 # CHECK-INT: :[[@LINE+1]]:1: error: instruction requires the following: Capability Pointer Mode
 jal c1, 20

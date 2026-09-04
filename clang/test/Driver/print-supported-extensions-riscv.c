@@ -188,11 +188,13 @@
 // CHECK-NEXT:     xwchc                2.2       'Xwchc' (WCH/QingKe additional compressed opcodes)
 // CHECK-EMPTY:
 // CHECK-NEXT: Experimental extensions
+// CHECK-NEXT:     y                    0.98      'Y' ('Base Y' (CHERI))
 // CHECK-NEXT:     zicfilp              1.0       'Zicfilp' (Landing pad)
 // CHECK-NEXT:     zicfiss              1.0       'Zicfiss' (Shadow stack)
 // CHECK-NEXT:     zalasr               0.1       'Zalasr' (Load-Acquire and Store-Release Instructions)
 // CHECK-NEXT:     zvbc32e              0.7       'Zvbc32e' (Vector Carryless Multiplication with 32-bits elements)
 // CHECK-NEXT:     zvkgs                0.7       'Zvkgs' (Vector-Scalar GCM instructions for Cryptography)
+// CHECK-NEXT:     zyhybrid             0.98      'Zyhybrid' (RVY hybrid support)
 // CHECK-NEXT:     sdext                1.0       'Sdext' (External debugger)
 // CHECK-NEXT:     sdtrig               1.0       'Sdtrig' (Debugger triggers)
 // CHECK-NEXT:     smctr                1.0       'Smctr' (Control Transfer Records Machine Level)

@@ -158,10 +158,10 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
 
-  if (Subtarget.hasStdExtZCheriPureCapOrCheri()) {
+  if (Subtarget.hasAnyCheriExt()) {
     CapType = Subtarget.typeForCapabilities();
-    NullCapabilityRegister = RISCV::C0;
-    addRegisterClass(CapType, &RISCV::GPCRRegClass);
+    NullCapabilityRegister = RISCV::X0_Y;
+    addRegisterClass(CapType, &RISCV::YGPRRegClass);
     IsCheriPureCap = RISCVABI::isCheriPureCapABI(ABI);
   }
 
@@ -300,7 +300,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   computeRegisterProperties(STI.getRegisterInfo());
 
   if (RISCVABI::isCheriPureCapABI(ABI))
-    setStackPointerRegisterToSaveRestore(RISCV::C2);
+    setStackPointerRegisterToSaveRestore(RISCV::X2_Y);
   else
     setStackPointerRegisterToSaveRestore(RISCV::X2);
 
@@ -312,7 +312,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
 
   // TODO: add all necessary setOperationAction calls.
   setOperationAction(ISD::DYNAMIC_STACKALLOC, XLenVT, Custom);
-  if (Subtarget.hasStdExtZCheriPureCapOrCheri())
+  if (Subtarget.hasAnyCheriExt())
     setOperationAction(ISD::DYNAMIC_STACKALLOC, CapType, Custom);
 
   setOperationAction(ISD::BR_JT, MVT::Other, Expand);
@@ -655,7 +655,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   if (Subtarget.is64Bit())
     setOperationAction(ISD::Constant, MVT::i64, Custom);
 
-  if (Subtarget.hasStdExtZCheriPureCapOrCheri()) {
+  if (Subtarget.hasAnyCheriExt()) {
     MVT CLenVT = Subtarget.typeForCapabilities();
     setOperationAction(ISD::BR_CC, CLenVT, Expand);
     setOperationAction(ISD::SELECT, CLenVT, Custom);
@@ -693,7 +693,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   // Some CHERI intrinsics return i1, which isn't legal, so we have to custom
   // lower them in the DAG combine phase before the first type legalization
   // pass.
-  if (Subtarget.hasStdExtZCheriPureCapOrCheri())
+  if (Subtarget.hasAnyCheriExt())
     setTargetDAGCombine(ISD::INTRINSIC_WO_CHAIN);
 
   if (Subtarget.hasStdExtZicbop()) {
@@ -709,7 +709,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       setMinCmpXchgSizeInBits(32);
 
-    if (Subtarget.hasStdExtZCheriPureCapOrCheri())
+    if (Subtarget.hasAnyCheriExt())
       SupportsAtomicCapabilityOperations = true;
   } else if (Subtarget.hasForcedAtomics()) {
     setMaxAtomicSizeInBitsSupported(Subtarget.getXLen());
@@ -8334,7 +8334,7 @@ SDValue RISCVTargetLowering::getStaticTLSAddr(GlobalAddressSDNode *N,
           {DAG.getEntryNode(), Addr}, Ty, MemOp);
 
       // Add the thread pointer.
-      SDValue TPReg = DAG.getRegister(RISCV::C4, Ty);
+      SDValue TPReg = DAG.getRegister(RISCV::X4_Y, Ty);
       return DAG.getPointerAdd(DL, TPReg, Load);
     }
 
@@ -8353,7 +8353,7 @@ SDValue RISCVTargetLowering::getStaticTLSAddr(GlobalAddressSDNode *N,
 
     SDValue MNHi =
         SDValue(DAG.getMachineNode(RISCV::LUI, DL, XLenVT, AddrHi), 0);
-    SDValue TPReg = DAG.getRegister(RISCV::C4, Ty);
+    SDValue TPReg = DAG.getRegister(RISCV::X4_Y, Ty);
     SDValue MNAdd = SDValue(
         DAG.getMachineNode(RISCV::PseudoCIncOffsetTPRel, DL, Ty, TPReg, MNHi,
                            AddrCIncOffset),
@@ -10151,7 +10151,8 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
                                     XLenVT);
   case Intrinsic::thread_pointer: {
     MCPhysReg PhysReg = RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI())
-        ? RISCV::C4 : RISCV::X4;
+                            ? RISCV::X4_Y
+                            : RISCV::X4;
     EVT PtrVT =
         getPointerTy(DAG.getDataLayout(),
                      DAG.getDataLayout().getDefaultGlobalsAddressSpace());
@@ -20845,7 +20846,8 @@ SDValue RISCVTargetLowering::LowerFormalArguments(
                             (HasMemArgs && UseBoundedMemArgsCallee));
   SDValue ArgRegArgs;
   if (UseCheriArgRegister){
-    Register VReg = MF.addLiveIn(RISCVABI::getCheriBoundedArgReg(), &RISCV::GPCRRegClass);
+    Register VReg =
+        MF.addLiveIn(RISCVABI::getCheriBoundedArgReg(), &RISCV::YGPRRegClass);
     ArgRegArgs = DAG.getCopyFromReg(Chain, DL, VReg, PtrVT);
   }
 
@@ -21333,7 +21335,7 @@ SDValue RISCVTargetLowering::LowerCall(CallLoweringInfo &CLI,
       RegsToPass.push_back(
           std::make_pair(RISCVABI::getCheriBoundedArgReg(), VarArgs));
     } else {
-      // No varargs passed, set C6 to null
+      // No varargs passed, set the bounded arg register to null
       RegsToPass.push_back(std::make_pair(RISCVABI::getCheriBoundedArgReg(),
                                           DAG.getNullCapability(DL)));
     }
@@ -22005,7 +22007,7 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
     case 'r':
       // Don't try to split/combine capabilities in order to use a GPR; give a
       // friendlier error message instead.
-      if (Subtarget.hasStdExtZCheriPureCapOrCheri() && VT == Subtarget.typeForCapabilities())
+      if (Subtarget.hasAnyCheriExt() && VT == Subtarget.typeForCapabilities())
         break;
       // TODO: Support fixed vectors up to XLen for P extension?
       if (VT.isVector())
@@ -22018,8 +22020,8 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
         return std::make_pair(0U, &RISCV::GPRPairNoX0RegClass);
       return std::make_pair(0U, &RISCV::GPRNoX0RegClass);
     case 'C':
-      if (Subtarget.hasStdExtZCheriPureCapOrCheri() && VT == Subtarget.typeForCapabilities())
-        return std::make_pair(0U, &RISCV::GPCRRegClass);
+      if (Subtarget.hasAnyCheriExt() && VT == Subtarget.typeForCapabilities())
+        return std::make_pair(0U, &RISCV::YGPRRegClass);
       break;
     case 'f':
       if (VT == MVT::f16) {
@@ -22148,43 +22150,14 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
     return std::make_pair(XRegFromAlias, &RISCV::GPRRegClass);
 
   // Similarly, allow capability register ABI names to be used in constraint.
-  if (Subtarget.hasStdExtZCheriPureCapOrCheri()) {
-    Register CRegFromAlias = StringSwitch<Register>(Constraint.lower())
-                                 .Case("{cnull}", RISCV::C0)
-                                 .Case("{cra}", RISCV::C1)
-                                 .Case("{csp}", RISCV::C2)
-                                 .Case("{cgp}", RISCV::C3)
-                                 .Case("{ctp}", RISCV::C4)
-                                 .Case("{ct0}", RISCV::C5)
-                                 .Case("{ct1}", RISCV::C6)
-                                 .Case("{ct2}", RISCV::C7)
-                                 .Cases("{cs0}", "{cfp}", RISCV::C8)
-                                 .Case("{cs1}", RISCV::C9)
-                                 .Case("{ca0}", RISCV::C10)
-                                 .Case("{ca1}", RISCV::C11)
-                                 .Case("{ca2}", RISCV::C12)
-                                 .Case("{ca3}", RISCV::C13)
-                                 .Case("{ca4}", RISCV::C14)
-                                 .Case("{ca5}", RISCV::C15)
-                                 .Case("{ca6}", RISCV::C16)
-                                 .Case("{ca7}", RISCV::C17)
-                                 .Case("{cs2}", RISCV::C18)
-                                 .Case("{cs3}", RISCV::C19)
-                                 .Case("{cs4}", RISCV::C20)
-                                 .Case("{cs5}", RISCV::C21)
-                                 .Case("{cs6}", RISCV::C22)
-                                 .Case("{cs7}", RISCV::C23)
-                                 .Case("{cs8}", RISCV::C24)
-                                 .Case("{cs9}", RISCV::C25)
-                                 .Case("{cs10}", RISCV::C26)
-                                 .Case("{cs11}", RISCV::C27)
-                                 .Case("{ct3}", RISCV::C28)
-                                 .Case("{ct4}", RISCV::C29)
-                                 .Case("{ct5}", RISCV::C30)
-                                 .Case("{ct6}", RISCV::C31)
-                                 .Default(RISCV::NoRegister);
-    if (CRegFromAlias != RISCV::NoRegister)
-      return std::make_pair(CRegFromAlias, &RISCV::GPCRRegClass);
+  // Not hasAnyCheriExt(): RVY spells these registers "x1"/"ra", so it must not
+  // start accepting the "c" names.
+  if (Subtarget.hasCheri() || Subtarget.hasStdExtZCheriPureCap()) {
+    StringRef Name = Constraint;
+    if (Name.consume_front("{") && Name.consume_back("}")) {
+      if (MCRegister CReg = RISCVV9CRName::lookup(Name.lower()))
+        return std::make_pair(CReg, &RISCV::YGPRRegClass);
+    }
   }
 
   // Since TargetLowering::getRegForInlineAsmConstraint uses the name of the
@@ -22822,8 +22795,8 @@ ISD::NodeType RISCVTargetLowering::getExtendForAtomicCmpSwapArg() const {
 
 Register RISCVTargetLowering::getExceptionPointerRegister(
     const Constant *PersonalityFn) const {
-  return RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI())
-      ? RISCV::C10 : RISCV::X10;
+  return RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI()) ? RISCV::X10_Y
+                                                               : RISCV::X10;
 }
 
 Register RISCVTargetLowering::getExceptionSelectorRegister(
@@ -22950,7 +22923,7 @@ EVT RISCVTargetLowering::getOptimalMemOpType(const MemOp &Op,
   // capability loads/stores or by making a runtime library call.
   // We can't use capability stores as an optimisation for memset unless zeroing.
   bool IsNonZeroMemset = Op.isMemset() && !Op.isZeroMemset();
-  if (Subtarget.hasStdExtZCheriPureCapOrCheri() && !IsNonZeroMemset) {
+  if (Subtarget.hasAnyCheriExt() && !IsNonZeroMemset) {
     unsigned CapSize = Subtarget.typeForCapabilities().getSizeInBits() / 8;
     if (Op.size() >= CapSize) {
       Align CapAlign(CapSize);

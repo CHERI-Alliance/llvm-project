@@ -39,9 +39,9 @@ define signext i32 @sh1add_mult(i32 %0, i32 %1){
 ;
 ; ZCHERIPURECAPZBA-LABEL: sh1add_mult:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: sh1add_mult:
@@ -86,9 +86,9 @@ define signext i32 @sh2add_mult(i32 %0, i32 %1){
 ;
 ; ZCHERIPURECAPZBA-LABEL: sh2add_mult:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: sh2add_mult:
@@ -136,9 +136,9 @@ define signext i32 @sh3add_mult(i32 %0, i32 %1){
 ;
 ; ZCHERIPURECAPZBA-LABEL: sh3add_mult:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: sh3add_mult:
@@ -161,11 +161,11 @@ define i32 @addmul6(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul6:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul6:
@@ -190,7 +190,7 @@ define i32 @addmul6_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul6_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -218,11 +218,11 @@ define i32 @addmul10(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul10:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul10:
@@ -246,7 +246,7 @@ define i32 @addmul10_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul10_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -275,11 +275,11 @@ define i32 @addmul12(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul12:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul12:
@@ -304,7 +304,7 @@ define i32 @addmul12_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul12_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -332,11 +332,11 @@ define i32 @addmul18(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul18:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul18:
@@ -360,7 +360,7 @@ define i32 @addmul18_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul18_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -388,11 +388,11 @@ define i32 @addmul20(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul20:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul20:
@@ -416,7 +416,7 @@ define i32 @addmul20_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul20_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -445,11 +445,11 @@ define i32 @addmul24(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul24:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul24:
@@ -474,7 +474,7 @@ define i32 @addmul24_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul24_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh1add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -502,11 +502,11 @@ define i32 @addmul36(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul36:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul36:
@@ -530,7 +530,7 @@ define i32 @addmul36_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul36_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -558,11 +558,11 @@ define i32 @addmul40(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul40:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul40:
@@ -586,7 +586,7 @@ define i32 @addmul40_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul40_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh2add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)
@@ -614,11 +614,11 @@ define i32 @addmul72(i32 %a, i32 %b) {
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul72:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    ret
 ;
 ; RISCVZBA-LABEL: addmul72:
@@ -642,7 +642,7 @@ define i32 @addmul72_ptr(i32 %a, ptr addrspace(200) %b){
 ;
 ; ZCHERIPURECAPZBA-LABEL: addmul72_ptr:
 ; ZCHERIPURECAPZBA:       # %bb.0:
-; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZCHERIPURECAPZBA-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca0
 ; ZCHERIPURECAPZBA-NEXT:    sh3add ca0, a0, ca1
 ; ZCHERIPURECAPZBA-NEXT:    lw a0, 0(ca0)

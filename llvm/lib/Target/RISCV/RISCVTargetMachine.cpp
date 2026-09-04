@@ -172,7 +172,7 @@ static std::string computeDataLayout(const Triple &TT, StringRef FS,
     llvm::append_range(Features, llvm::split(FS, ','));
   auto ISAInfo = cantFail(llvm::RISCVISAInfo::parseFeatures(XLen, Features));
   if (ISAInfo->hasExtension("xcheri") ||
-      ISAInfo->hasExtension("zcheripurecap")) {
+      ISAInfo->hasExtension("zcheripurecap") || ISAInfo->hasExtension("y")) {
     if (TT.isArch64Bit())
       CapTypes = "-pf200:128:128:128:64";
     else

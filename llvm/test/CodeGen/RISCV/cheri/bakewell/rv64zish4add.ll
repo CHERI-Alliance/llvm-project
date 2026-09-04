@@ -31,9 +31,9 @@ define signext i64 @sh4add_mult(i64 %0, i64 %1){
 ;
 ; ZISH4A-LABEL: sh4add_mult:
 ; ZISH4A:       # %bb.0:
-; ZISH4A-NEXT:    # kill: def $x11 killed $x11 def $c11
+; ZISH4A-NEXT:    # kill: def $x11 killed $x11 def $x11_y
 ; ZISH4A-NEXT:    sh4add ca0, a0, ca1
-; ZISH4A-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZISH4A-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZISH4A-NEXT:    ret
   %a = shl i64 %0, 4
   %b = add i64 %a, %1
@@ -50,11 +50,11 @@ define i64 @addmul272(i64 %a, i64 %b) {
 ;
 ; ZISH4A-LABEL: addmul272:
 ; ZISH4A:       # %bb.0:
-; ZISH4A-NEXT:    # kill: def $x11 killed $x11 def $c11
-; ZISH4A-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZISH4A-NEXT:    # kill: def $x11 killed $x11 def $x11_y
+; ZISH4A-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZISH4A-NEXT:    sh4add ca0, a0, ca0
 ; ZISH4A-NEXT:    sh4add ca0, a0, ca1
-; ZISH4A-NEXT:    # kill: def $x10 killed $x10 killed $c10
+; ZISH4A-NEXT:    # kill: def $x10 killed $x10 killed $x10_y
 ; ZISH4A-NEXT:    ret
   %c = mul i64 %a, 272
   %d = add i64 %c, %b
@@ -72,7 +72,7 @@ define i64 @addmul272_ptr(i64 %a, ptr addrspace(200) %b){
 ;
 ; ZISH4A-LABEL: addmul272_ptr:
 ; ZISH4A:       # %bb.0:
-; ZISH4A-NEXT:    # kill: def $x10 killed $x10 def $c10
+; ZISH4A-NEXT:    # kill: def $x10 killed $x10 def $x10_y
 ; ZISH4A-NEXT:    sh4add ca0, a0, ca0
 ; ZISH4A-NEXT:    sh4add ca0, a0, ca1
 ; ZISH4A-NEXT:    ld a0, 0(ca0)
