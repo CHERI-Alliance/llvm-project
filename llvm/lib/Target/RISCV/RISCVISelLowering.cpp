@@ -93,6 +93,11 @@ static cl::opt<bool>
 		     cl::desc("Do not use the cap table for relocations"),
 		     cl::init(false));
 
+static cl::opt<bool>
+    TryPCRelGlobalCHERI("try-pcrel-global-cheri",
+    cl::desc("Try to avoid using indirect loads for all globals if possible"),
+    cl::init(false));
+
 RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
                                          const RISCVSubtarget &STI)
     : TargetLowering(TM), Subtarget(STI) {
@@ -8149,33 +8154,80 @@ SDValue RISCVTargetLowering::getAddr(NodeTy *N, EVT Ty, SelectionDAG &DAG,
     }
 
     // We may have the opportunity to optimize to PC-relative addressing.
-    if (IsLocal || (!isPositionIndependent() && HasExactDefinition)) {
+    if (TryPCRelGlobalCHERI &&
+        (IsLocal || !isPositionIndependent()) && HasExactDefinition) {
       // If we are loading an address for read-only uses, and this address never
-      // "escapes" (e.g. stored somewhere, passed to another function), we can use
-      // PC-relative addressing. We have a pass later on to turn these back into
-      // GOT addressing if that would allow them to be deduplicated.
-      bool AddressEscapes = false;
-      SmallVector<SDNode *, 8> Worklist;
+      // "escapes" (e.g. stored somewhere, passed to another function), and has
+      // only in-bounds usage, we can use PC-relative addressing. We have a pass
+      // later on to turn these back into GOT addressing if that would allow
+      // them to be deduplicated.
+
+      // If it comes to checking offsets into anything other than a global, it's
+      // not worth the effort.
+      const DataLayout &Dl = DAG.getDataLayout();
+      APInt Max = APInt(
+          Dl.getIndexSizeInBits(Dl.getDefaultGlobalsAddressSpace()), 0);
+      if (auto *G = dyn_cast<GlobalAddressSDNode>(N))
+        Max = APInt(Max.getBitWidth(), DAG.getDataLayout()
+                .getTypeSizeInBits(G->getGlobal()->getValueType()) / 8);
+
+      bool RequiresCLGC = false;
+      bool ExpectsGEP = false;
+      SmallVector<std::pair<SDNode *, bool>, 8> Worklist;
       SDNode *CurrNode = N;
       do {
         for (auto UI = CurrNode->use_begin(), E = CurrNode->use_end();
              UI != E; UI = std::next(UI)) {
           // A load ends the chain; it's a purely local use of the address.
-          if (UI->getUser()->getOpcode() == ISD::LOAD)
+          // Otherwise, keep looking.
+          if (UI->getUser()->getOpcode() != ISD::LOAD) {
+            Worklist.push_back({UI->getUser(), ExpectsGEP});
             continue;
-          Worklist.push_back(UI->getUser());
+          }
+
+          if (!ExpectsGEP)
+            break;
+
+          // We need to check if our GEP is truly statically in bounds.
+          // TODO: Some overlap with CHERI bounds analysis pass.
+          auto *MMO = dyn_cast<LoadSDNode>(UI->getUser())->getMemOperand();
+          auto *GEP = dyn_cast<GEPOperator>(MMO->getValue());
+          APInt GEPOffset(Max.getBitWidth(), 0);
+          if (!GEP || !GEP->isInBounds() ||
+              !GEP->accumulateConstantOffset(DAG.getDataLayout(), GEPOffset)) {
+            // Couldn't compute constant offset.
+            RequiresCLGC = true;
+            break;
+          }
+
+          APInt Size = APInt(
+              Max.getBitWidth(),
+              alignToPowerOf2(MMO->getType().getSizeInBits(), 8) / 8);
+
+          // Check if the last address touched by this load is outside the
+          // addresses covered by the original object.
+          bool Overflow;
+          APInt LastAddr = GEPOffset.sadd_ov(Size, Overflow);
+          if (GEPOffset.isNegative() || Overflow || LastAddr.sgt(Max)) {
+            RequiresCLGC = true;
+            break;
+          }
         }
 
         if (Worklist.empty())
           break;
-        CurrNode = Worklist.pop_back_val();
-        if (CurrNode->getOpcode() == ISD::PTRADD)
+        auto Pair = Worklist.pop_back_val();
+        CurrNode = Pair.first;
+        ExpectsGEP = Pair.second;
+        if (CurrNode->getOpcode() == ISD::PTRADD) {
+          ExpectsGEP = true;
           continue;
-        // Escapes?
-        AddressEscapes = true;
-      } while (!AddressEscapes);
+        }
+        // Escapes via some other instruction (used in a call, etc.)
+        RequiresCLGC = true;
+      } while (!RequiresCLGC);
 
-      if (!AddressEscapes)
+      if (!RequiresCLGC)
         return DAG.getNode(RISCVISD::CLLC, DL, Ty, Addr);
     }
 
