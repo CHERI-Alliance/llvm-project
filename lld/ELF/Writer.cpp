@@ -1870,17 +1870,6 @@ static bool isCheriBoundsSection(Ctx &ctx, const OutputSection *sec) {
   if (sec == ctx.in.pccPadding->getParent())
     return true;
 
-  // XXX: CheriBSD's runtime loader assumes all read-only capabilities can be
-  // derived from PCC, so include all read-only sections as a workaround for
-  // now.  Once CheriBSD 25.03 is no longer supported, this can be removed.
-  // Treat __(tgot_)cap_relocs like REL* even though it's PROGBITS.
-  if (sec->type == SHT_PROGBITS && sec->name != "__cap_relocs" &&
-      sec->name != "__tgot_cap_relocs" && sec != ctx.in.tgot->getParent() &&
-      (flags & SHF_TLS) == 0 &&
-      ((flags & SHF_WRITE) == 0 ||
-       isRelroSection(ctx, sec, /*ignoreZRelro=*/true)))
-    return true;
-
   return false;
 }
 
