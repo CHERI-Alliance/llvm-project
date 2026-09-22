@@ -2657,6 +2657,9 @@ Writer<ELFT>::createPhdrs(Partition &part) {
         continue;
       cheriBounds->add(sec);
     }
+    // Ignore alignment of PCC sections and reset back to 0. alignPCCBounds
+    // will ensure it's set to the actual required PCC alignment.
+    cheriBounds->p_align = 0;
   }
 
   for (OutputSection *sec : ctx.outputSections) {
