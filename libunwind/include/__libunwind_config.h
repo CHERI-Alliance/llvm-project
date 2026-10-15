@@ -194,17 +194,17 @@
 #   define RISCV_FLEN 0
 #  endif
 #  ifdef __CHERI_PURE_CAPABILITY__
-#   define _LIBUNWIND_CONTEXT_SIZE (32 * ((__SIZEOF_CHERI_CAPABILITY__ * 8) + RISCV_FLEN) / 64)
+#   define _LIBUNWIND_CONTEXT_SIZE ((33 * (__SIZEOF_CHERI_CAPABILITY__ * 8) + 32 * RISCV_FLEN) / 64)
 #   if __riscv_xlen == 32
 #    if RISCV_FLEN == 32
-#     define _LIBUNWIND_CURSOR_SIZE 60
+#     define _LIBUNWIND_CURSOR_SIZE 61
 #    elif RISCV_FLEN == 64
-#     define _LIBUNWIND_CURSOR_SIZE 76
+#     define _LIBUNWIND_CURSOR_SIZE 77
 #    else
 #     error "Unsupported RISC-V ABI"
 #    endif
 #   elif __riscv_xlen == 64
-#    define _LIBUNWIND_CURSOR_SIZE 120
+#    define _LIBUNWIND_CURSOR_SIZE 122
 #   else
 #    error "Unsupported RISC-V ABI"
 #   endif
