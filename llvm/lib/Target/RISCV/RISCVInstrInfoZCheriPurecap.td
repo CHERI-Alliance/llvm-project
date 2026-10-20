@@ -753,11 +753,12 @@ def : CompressPat<(CSH GPRC:$rs2, GPCRCMem:$rs1, uimm2_lsb0:$imm),
 
 let Predicates = [HasStdExtCOrZca, HasCheriRVC, HasZCheriPurecap,
                   IsCapMode] in {
+let isCompressOnly = true in
 def : CompressPat<(CADDI GPCRNoC0:$rs1, GPCRNoC0:$rs2, 0),
                   (C_CMV GPCRNoC0:$rs1, GPCRNoC0:$rs2)>;
 def : CompressPat<(CMV GPCRNoC0:$rs1, GPCRNoC0:$rs2),
                   (C_CMV GPCRNoC0:$rs1, GPCRNoC0:$rs2)>;
-} // Predicates = [HasStdExtZcb, HasZCheriPurecap, IsCapMode]
+} // Predicates = [HasStdExtCOrZca, HasZCheriPurecap, IsCapMode]
 
 // Pseudo Instructions
 
