@@ -33,7 +33,7 @@ define i32 @loadstore(ptr addrspace(200) %intptrarg, ptr addrspace(200) %ptrptra
 ; CHECK-NEXT:    c.lcsp ca0, 16(csp)
 ; CHECK-NEXT:    c.swsp a2, 0(csp)
 ; CHECK-NEXT:    c.lwsp a0, 0(csp)
-; CHECK-NEXT:    addi a0, a2, 0
+; CHECK-NEXT:    c.mv ca0, ca2
 ; CHECK-NEXT:    c.cincoffset16csp csp, 32
 ; CHECK-NEXT:    c.jr cra
 ; CHECK-NORVC-LABEL: <loadstore>:
