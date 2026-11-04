@@ -407,6 +407,7 @@ bool RISCVAsmPrinter::PrintAsmOperand(const MachineInstr *MI, unsigned OpNo,
         OS << 'i';
       return false;
     case 'x': // Print GPCRs as GPR sub-register
+    case 'y': // Print GPCRs as YGPRs
       GPCRAsGPR = true;
       break;
     case 'N': // Print the register encoding as an integer (0-31)
@@ -449,8 +450,13 @@ bool RISCVAsmPrinter::PrintAsmMemoryOperand(const MachineInstr *MI,
                                             unsigned OpNo,
                                             const char *ExtraCode,
                                             raw_ostream &OS) {
-  if (ExtraCode)
-    return AsmPrinter::PrintAsmMemoryOperand(MI, OpNo, ExtraCode, OS);
+  bool GPCRAsGPR = false;
+  if (ExtraCode) {
+    if (ExtraCode[0] == 'y' && ExtraCode[1] == 0)
+      GPCRAsGPR = true;
+    else
+      return AsmPrinter::PrintAsmMemoryOperand(MI, OpNo, ExtraCode, OS);
+  }
 
   const MachineOperand &AddrReg = MI->getOperand(OpNo);
   assert(MI->getNumOperands() > OpNo + 1 && "Expected additional operand");
@@ -480,7 +486,10 @@ bool RISCVAsmPrinter::PrintAsmMemoryOperand(const MachineInstr *MI,
     MMI->getContext().registerInlineAsmLabel(Sym);
   }
 
-  OS << "(" << RISCVInstPrinter::getRegisterName(AddrReg.getReg()) << ")";
+  MCRegister Reg = AddrReg.getReg();
+  if (GPCRAsGPR && Reg >= RISCV::C0 && Reg <= RISCV::C31)
+    Reg = Reg - RISCV::C0 + RISCV::X0;
+  OS << "(" << RISCVInstPrinter::getRegisterName(Reg) << ")";
   return false;
 }
 
