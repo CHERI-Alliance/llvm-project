@@ -1275,22 +1275,6 @@ DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
 
 #elif defined(__riscv)
 
-.macro save_fpr num, ctxreg
-#ifdef __CHERI_PURE_CAPABILITY__
-  FSTORE f\num, (RISCV_FOFFSET + RISCV_FSIZE * \num)(c\ctxreg)
-#else
-  FSTORE f\num, (RISCV_FOFFSET + RISCV_FSIZE * \num)(\ctxreg)
-#endif
-.endm
-
-.macro save_gpr num, ctxreg
-#ifdef __CHERI_PURE_CAPABILITY__
-  sc     c\num, (__SIZEOF_CHERI_CAPABILITY__ * \num)(c\ctxreg)
-#else
-  ISTORE x\num, (RISCV_ISIZE * \num)(\ctxreg)
-#endif
-.endm
-
 #
 # extern int __unw_getcontext(unw_context_t* thread_state)
 #
@@ -1298,27 +1282,36 @@ DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
 #  thread_state pointer is in a0
 #
 DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
-#ifdef __CHERI_PURE_CAPABILITY__
-  sc        c1, (__SIZEOF_CHERI_CAPABILITY__ * 0)(ca0) // store ra as pc
-#else
-  ISTORE    x1, (RISCV_ISIZE * 0)(a0) // store ra as pc
-#endif
+  GSTORE    x1, (RISCV_GSIZE * 0)(a0) // store ra as pc
 #if defined(__riscv_32e)
   .irp i,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 #else
   .irp i,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
 #endif
-    save_gpr \i, a0
+    GSTORE x\i, (RISCV_GSIZE * \i)(a0)
   .endr
 
 # if defined(__riscv_flen)
   .irp i,FROM_0_TO_31
-    save_fpr \i, a0
+    FSTORE f\i, (RISCV_FOFFSET + RISCV_FSIZE * \i)(a0)
   .endr
 # endif
 
+#ifdef _LIBUNWIND_HAS_CHERI_LIB_C18N
+  // Store the trusted stack pointer
+  yaddi     sp, sp, -(__SIZEOF_CHERI_CAPABILITY__ * 2)
+  sy        a0, 0(sp)
+  sy        ra, __SIZEOF_CHERI_CAPABILITY__(sp)
+  ymv       a0, ra
+  call      dl_c18n_get_trusted_stack
+  ly        a1, 0(sp)
+  ly        ra, __SIZEOF_CHERI_CAPABILITY__(sp)
+  yaddi     sp, sp, (__SIZEOF_CHERI_CAPABILITY__ * 2)
+  sy        a0, (__SIZEOF_CHERI_CAPABILITY__ * 32)(a1)
+#endif
+
   li     a0, 0  // return UNW_ESUCCESS
-  ret          // jump to ra
+  ret           // jump to ra
 END_LIBUNWIND_FUNCTION(__unw_getcontext)
 
 #elif defined(__s390x__)

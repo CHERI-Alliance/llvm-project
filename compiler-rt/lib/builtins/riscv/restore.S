@@ -28,8 +28,8 @@
   .globl     __riscv_restore_12
   .type      __riscv_restore_12,@function
 __riscv_restore_12:
-  lc         cs11, 8(csp)
-  caddi      csp, csp, 16
+  ly         s11, 8(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_11/10
 
   .globl     __riscv_restore_11
@@ -38,9 +38,9 @@ __riscv_restore_12:
   .type      __riscv_restore_10,@function
 __riscv_restore_11:
 __riscv_restore_10:
-  lc         cs10, 0(csp)
-  lc         cs9,  8(csp)
-  caddi      csp, csp, 16
+  ly         s10, 0(sp)
+  ly         s9,  8(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_9/8
 
   .globl     __riscv_restore_9
@@ -49,9 +49,9 @@ __riscv_restore_10:
   .type      __riscv_restore_8,@function
 __riscv_restore_9:
 __riscv_restore_8:
-  lc         cs8,  0(csp)
-  lc         cs7,  8(csp)
-  caddi      csp, csp, 16
+  ly         s8,  0(sp)
+  ly         s7,  8(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_7/6
 
   .globl     __riscv_restore_7
@@ -60,9 +60,9 @@ __riscv_restore_8:
   .type      __riscv_restore_6,@function
 __riscv_restore_7:
 __riscv_restore_6:
-  lc         cs6,  0(csp)
-  lc         cs5,  8(csp)
-  caddi      csp, csp, 16
+  ly         s6,  0(sp)
+  ly         s5,  8(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_5/4
 
   .globl     __riscv_restore_5
@@ -71,9 +71,9 @@ __riscv_restore_6:
   .type      __riscv_restore_4,@function
 __riscv_restore_5:
 __riscv_restore_4:
-  lc         cs4,  0(csp)
-  lc         cs3,  8(csp)
-  caddi      csp, csp, 16
+  ly         s4,  0(sp)
+  ly         s3,  8(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_3/2
 
   .globl     __riscv_restore_3
@@ -82,9 +82,9 @@ __riscv_restore_4:
   .type      __riscv_restore_2,@function
 __riscv_restore_3:
 __riscv_restore_2:
-  lc         cs2,  0(csp)
-  lc         cs1,  8(csp)
-  caddi      csp, csp, 16
+  ly         s2,  0(sp)
+  ly         s1,  8(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_1/0
 
   .globl     __riscv_restore_1
@@ -93,9 +93,9 @@ __riscv_restore_2:
   .type      __riscv_restore_0,@function
 __riscv_restore_1:
 __riscv_restore_0:
-  lc         cs0,  0(csp)
-  lc         cra,  8(csp)
-  caddi      csp, csp, 16
+  ly         s0,  0(sp)
+  ly         ra,  8(sp)
+  yaddi      sp, sp, 16
   ret
 
 # else // __CHERI_PURE_CAPABILITY__
@@ -193,92 +193,92 @@ __riscv_restore_0:
   .globl     __riscv_restore_12
   .type      __riscv_restore_12,@function
 __riscv_restore_12:
-  lc         cs11, 0(csp)
-  caddi      csp, csp, 16
+  ly         s11, 0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_11
 
   .globl     __riscv_restore_11
   .type      __riscv_restore_11,@function
 __riscv_restore_11:
-  lc         cs10, 0(csp)
-  caddi      csp, csp, 16
+  ly         s10, 0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_10
 
   .globl     __riscv_restore_10
   .type      __riscv_restore_10,@function
 __riscv_restore_10:
-  lc         cs9,  0(csp)
-  caddi      csp, csp, 16
+  ly         s9,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_9
 
   .globl     __riscv_restore_9
   .type      __riscv_restore_9,@function
 __riscv_restore_9:
-  lc         cs8,  0(csp)
-  caddi      csp, csp, 16
+  ly         s8,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_8
 
   .globl     __riscv_restore_8
   .type      __riscv_restore_8,@function
 __riscv_restore_8:
-  lc         cs7,  0(csp)
-  caddi      csp, csp, 16
+  ly         s7,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_7
 
   .globl     __riscv_restore_7
   .type      __riscv_restore_7,@function
 __riscv_restore_7:
-  lc         cs6,  0(csp)
-  caddi      csp, csp, 16
+  ly        s6,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_6
 
   .globl     __riscv_restore_6
   .type      __riscv_restore_6,@function
 __riscv_restore_6:
-  lc         cs5,  0(csp)
-  caddi      csp, csp, 16
+  ly         s5,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_5
 
   .globl     __riscv_restore_5
   .type      __riscv_restore_5,@function
 __riscv_restore_5:
-  lc         cs4,  0(csp)
-  caddi      csp, csp, 16
+  ly         s4,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_4
 
   .globl     __riscv_restore_4
   .type      __riscv_restore_4,@function
 __riscv_restore_4:
-  lc         cs3,  0(csp)
-  caddi      csp, csp, 16
+  ly         s3,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_3
 
   .globl     __riscv_restore_3
   .type      __riscv_restore_3,@function
 __riscv_restore_3:
-  lc         cs2,  0(csp)
-  caddi      csp, csp, 16
+  ly         s2,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_2
 
   .globl     __riscv_restore_2
   .type      __riscv_restore_2,@function
 __riscv_restore_2:
-  lc         cs1,  0(csp)
-  caddi      csp, csp, 16
+  ly         s1,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_1
 
   .globl     __riscv_restore_1
   .type      __riscv_restore_1,@function
 __riscv_restore_1:
-  lc         cs0,  0(csp)
-  caddi      csp, csp, 16
+  ly         s0,  0(sp)
+  yaddi      sp, sp, 16
   // fallthrough into __riscv_restore_0
 
   .globl     __riscv_restore_0
   .type      __riscv_restore_0,@function
 __riscv_restore_0:
-  lc         cra,  0(csp)
-  caddi      csp, csp, 16
+  ly         ra,  0(sp)
+  yaddi      sp, sp, 16
   ret
 
 # else // __CHERI_PURE_CAPABILITY__

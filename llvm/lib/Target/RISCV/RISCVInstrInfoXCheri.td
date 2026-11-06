@@ -522,6 +522,7 @@ let defsCanBeSealed = 1 in
 def CSealEntry      : Cheri_r<0x11, "csealentry", GPCR>;
 def : InstAlias<"sentry $rd, $rs1", (CSealEntry GPCR:$rd, GPCR:$rs1), 0>;
 def : InstAlias<"ysentry $rd, $rs1", (CSealEntry YGPR:$rd, YGPR:$rs1), 0>;
+def : InstAlias<"yseale $rd, $rs1", (CSealEntry YGPR:$rd, YGPR:$rs1), 0>;
 
 def : InstAlias<"cincoffsetimm $cd, $cs1, $imm",
                 (CIncOffsetImm GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
@@ -1485,6 +1486,8 @@ let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 0,
     isAsmParserOnly = 1, Size = 8 in
 def PseudoCLA_TLS_IE : Pseudo<(outs GPR:$dst), (ins bare_symbol:$src), [],
                               "cla.tls.ie", "$dst, $src">;
+def : InstAlias<"la.tls.ie $dst, $src",
+                (PseudoCLA_TLS_IE GPR:$dst, bare_symbol:$src), 0>;
 
 def : Pat<(riscv_cla_tls_ie tglobaltlsaddr:$in),
           (PseudoCLA_TLS_IE  tglobaltlsaddr:$in)>;
@@ -1493,6 +1496,10 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 0,
     isAsmParserOnly = 1, Size = 8 in
 def PseudoCLC_TLS_GD : Pseudo<(outs GPCR:$dst), (ins bare_symbol:$src), [],
                               "clc.tls.gd", "$dst, $src">;
+def : InstAlias<"lc.tls.gd $dst, $src",
+                (PseudoCLC_TLS_GD GPCR:$dst, bare_symbol:$src), 0>;
+def : InstAlias<"ly.tls.gd $dst, $src",
+                (PseudoCLC_TLS_GD YGPR:$dst, bare_symbol:$src), 0>;
 
 def : Pat<(riscv_clc_tls_gd tglobaltlsaddr:$in),
           (PseudoCLC_TLS_GD  tglobaltlsaddr:$in)>;
@@ -1502,8 +1509,15 @@ def PseudoCIncOffsetTPRel : Pseudo<(outs GPCR:$rd),
                                    (ins GPCR:$rs1, GPRNoX0:$rs2,
                                         tprel_add_symbol:$src), [],
                                    "cincoffset", "$rd, $rs1, $rs2, $src">;
+def : InstAlias<"add $rd, $rs1, $rs2, $src",
+                (PseudoCIncOffsetTPRel GPCR:$rd, GPCR:$rs1, GPRNoX0:$rs2,
+                                       tprel_add_symbol:$src), 0>;
+def : InstAlias<"yadd $rd, $rs1, $rs2, $src",
+                (PseudoCIncOffsetTPRel YGPR:$rd, YGPR:$rs1, GPRNoX0:$rs2,
+                                       tprel_add_symbol:$src), 0>;
 def : InstAlias<"cadd $rd, $rs1, $rs2, $src",
-                (PseudoCIncOffsetTPRel GPCR:$rd, GPCR:$rs1, GPRNoX0:$rs2, tprel_add_symbol:$src), 0>;
+                (PseudoCIncOffsetTPRel GPCR:$rd, GPCR:$rs1, GPRNoX0:$rs2,
+                                       tprel_add_symbol:$src), 0>;
 }
 
 let Predicates = [HasCheri, IsCapMode, IsRV32] in {
