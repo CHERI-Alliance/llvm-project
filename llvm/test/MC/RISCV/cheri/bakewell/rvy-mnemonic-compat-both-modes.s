@@ -31,6 +31,8 @@ yaddi x1, x2, -173
 yadd x1, x2, -173
 # CHECK-NEXT: sentry cra, csp # encoding: [0xb3,0x00,0x81,0x10]
 ysentry x1, x2
+# CHECK-NEXT: sentry cra, csp # encoding: [0xb3,0x00,0x81,0x10]
+yseale x1, x2
 # CHECK-NEXT: cbld cra, csp, cgp # encoding: [0xb3,0x50,0x31,0x0c]
 ybld x1, x2, x3
 # CHECK-NEXT: scbndsr cra, csp, gp # encoding: [0xb3,0x10,0x31,0x0e]
@@ -60,6 +62,6 @@ ypermr ra, sp
 # CHECK-NEXT: caddi cra, csp, -173 # encoding: [0x9b,0x20,0x31,0xf5]
 yaddi ra, sp, -173
 # CHECK-NEXT: sentry cra, csp # encoding: [0xb3,0x00,0x81,0x10]
-ysentry ra, sp
+yseale ra, sp
 # CHECK-NEXT: cbld cra, csp, cgp # encoding: [0xb3,0x50,0x31,0x0c]
 ybld ra, sp, gp

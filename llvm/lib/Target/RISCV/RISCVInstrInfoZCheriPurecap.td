@@ -107,6 +107,7 @@ def CBLD          : ZCheri_rr<0x6, 0x5, "cbld", GPCR, GPCRNoC0, GPCR>,
                         Sched<[WriteCHERIMod, ReadCHERIMod]>;
 } // defsCanBeSealed = 1
 def : InstAlias<"ysentry $rd, $rs1", (SENTRY YGPR:$rd, YGPR:$rs1), 0>;
+def : InstAlias<"yseale $rd, $rs1", (SENTRY YGPR:$rd, YGPR:$rs1), 0>;
 def : InstAlias<"ybld $cd, $cs1, $cs2", (CBLD YGPR:$cd, YGPRNoX0:$cs1, YGPR:$cs2), 0>;
 
 def SCBNDS        : ZCheri_rr<0x7, 0x0, "scbnds">,
