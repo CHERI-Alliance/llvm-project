@@ -2062,7 +2062,7 @@ def PseudoCCALLReg : Pseudo<(outs GPCR:$rd),
 }
 let Predicates = [HasCheri, IsCapMode] in
 def : InstAlias<"call $rd, $func",
-                (PseudoCCALLReg GPCR:$rd, cap_call_symbol:$func), 0>;
+                (PseudoCCALLReg RVYCompatGPCR:$rd, cap_call_symbol:$func), 0>;
 
 let Predicates = [HasCheri, IsCapMode],
     isCall = 1, Defs = [C1], isCodeGenOnly = 0, Size = 8 in
