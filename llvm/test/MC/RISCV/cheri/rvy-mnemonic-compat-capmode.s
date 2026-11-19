@@ -53,6 +53,11 @@ auipc x1, 10
 ## We also allow zcheri 0.9.3 syntax using a c register
 # CHECK-NEXT: auipc cra, 10 # encoding: [0x97,0xa0,0x00,0x00]
 auipc c1, 10
+## Similarly for the call pseudoinstruction
+# CHECK: call cra, func # encoding: [0x97'A',A,A,A,0xe7'A',0x80'A',A,A]
+call x1, func
+# CHECK: call cra, func # encoding: [0x97'A',A,A,A,0xe7'A',0x80'A',A,A]
+call c1, func
 
 ## Check that ABI register names work as expected
 # CHECK-32:      lc cra, 0(csp) # encoding: [0x83,0x30,0x01,0x00]

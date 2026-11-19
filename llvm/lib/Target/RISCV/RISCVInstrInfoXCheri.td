@@ -2168,7 +2168,7 @@ def : Pat<(brind (cptradd GPCR:$rs1, simm12:$imm12)),
 let Predicates = [HasZCheriPurecapOrCheri, IsCapMode],
     isCall = 1, isBarrier = 1, isCodeGenOnly = 0, hasSideEffects = 0,
     mayStore = 0, mayLoad = 0, Size = 8 in
-def PseudoCCALLReg : Pseudo<(outs GPCR:$rd),
+def PseudoCCALLReg : Pseudo<(outs RVYCompatGPCR:$rd),
                             (ins cap_call_symbol:$func), []> {
   let AsmString = "call\t$rd, $func";
 }
