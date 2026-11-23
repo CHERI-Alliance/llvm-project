@@ -35,6 +35,11 @@ public:
   typedef typename A::pint_t pint_t;
   typedef typename A::pc_t pc_t;
   typedef typename A::addr_t addr_t;
+#ifdef __CHERI_PURE_CAPABILITY__
+  typedef intptr_t int64ptr_t;
+#else
+  typedef int64_t int64ptr_t;
+#endif
 
   /// Information encoded in a CIE (Common Information Entry)
   struct CIE_Info {
@@ -83,19 +88,15 @@ public:
   struct RegisterLocation {
     RegisterSavedWhere location;
     bool initialStateSaved;
-#ifdef __CHERI_PURE_CAPABILITY__
-    intptr_t value;
-#else
-    int64_t value;
-#endif
+    int64ptr_t value;
   };
   /// Information about a frame layout and registers saved determined
   /// by "running" the DWARF FDE "instructions"
   struct PrologInfo {
     uint32_t          cfaRegister;
     int32_t           cfaRegisterOffset;  // CFA = (cfaRegister)+cfaRegisterOffset
-    intptr_t          cfaExpression;      // CFA = expression
-    uint32_t          spExtraArgSize;
+    int64ptr_t        cfaExpression;      // CFA = expression
+    int64_t           spExtraArgSize;
     RegisterLocation  savedRegisters[kMaxRegisterNumber + 1];
 #if defined(_LIBUNWIND_TARGET_AARCH64)
     pint_t ptrAuthDiversifier;
@@ -114,7 +115,7 @@ public:
       }
     }
     void setRegister(uint64_t reg, RegisterSavedWhere newLocation,
-                     intptr_t newValue, PrologInfo &initialState) {
+                     int64ptr_t newValue, PrologInfo &initialState) {
       checkSaveRegister(reg, initialState);
       savedRegisters[reg].location = newLocation;
       savedRegisters[reg].value = newValue;
@@ -124,7 +125,7 @@ public:
       checkSaveRegister(reg, initialState);
       savedRegisters[reg].location = newLocation;
     }
-    void setRegisterValue(uint64_t reg, intptr_t newValue,
+    void setRegisterValue(uint64_t reg, int64ptr_t newValue,
                           PrologInfo &initialState) {
       checkSaveRegister(reg, initialState);
       savedRegisters[reg].value = newValue;
@@ -531,7 +532,7 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
 
   for (const auto &info : parseInfoArray) {
     pint_t p = info.instructions;
-    intptr_t tmp;
+    int64ptr_t tmp;
     pint_t instructionsEnd = info.instructionsEnd;
     size_t pcoffset = info.pcoffset;
     size_t codeOffset = 0;
@@ -643,7 +644,7 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
               "malformed DW_CFA_register DWARF unwind, reg2 too big");
           return false;
         }
-        results->setRegister(reg, kRegisterInRegister, (intptr_t)reg2,
+        results->setRegister(reg, kRegisterInRegister, (int64ptr_t)reg2,
                              initialState);
         _LIBUNWIND_TRACE_DWARF(
             "DW_CFA_register(reg=%" PRIu64 ", reg2=%" PRIu64 ")\n", reg, reg2);
@@ -706,12 +707,12 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
         break;
       case DW_CFA_def_cfa_expression:
         results->cfaRegister = 0;
-        tmp = (intptr_t)p;
+        tmp = (int64ptr_t)p;
         length = addressSpace.getULEB128(p, instructionsEnd);
         assert(length < static_cast<pint_t>(~0) && "pointer overflow");
         p += static_cast<pint_t>(length);
 #ifdef __CHERI_PURE_CAPABILITY__
-        tmp = __builtin_cheri_bounds_set(tmp, (intptr_t)p - tmp);
+        tmp = __builtin_cheri_bounds_set(tmp, (int64ptr_t)p - tmp);
 #endif
         results->cfaExpression = tmp;
         _LIBUNWIND_TRACE_DWARF("DW_CFA_def_cfa_expression(expression=0x%" PRIxPTR
@@ -725,12 +726,12 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
               "malformed DW_CFA_expression DWARF unwind, reg too big");
           return false;
         }
-        tmp = (intptr_t)p;
+        tmp = (int64ptr_t)p;
         length = addressSpace.getULEB128(p, instructionsEnd);
         assert(length < static_cast<uint64_t>(~0) && "pointer overflow");
         p += static_cast<uint64_t>(length);
 #ifdef __CHERI_PURE_CAPABILITY__
-        tmp = __builtin_cheri_bounds_set(tmp, (intptr_t)p - tmp);
+        tmp = __builtin_cheri_bounds_set(tmp, (int64ptr_t)p - tmp);
 #endif
         results->setRegister(reg, kRegisterAtExpression, tmp, initialState);
         _LIBUNWIND_TRACE_DWARF("DW_CFA_expression(reg=%" PRIu64 ", "
@@ -811,12 +812,12 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
               "malformed DW_CFA_val_expression DWARF unwind, reg too big");
           return false;
         }
-        tmp = (intptr_t)p;
+        tmp = (int64ptr_t)p;
         length = addressSpace.getULEB128(p, instructionsEnd);
         assert(length < static_cast<pint_t>(~0) && "pointer overflow");
         p += static_cast<pint_t>(length);
 #ifdef __CHERI_PURE_CAPABILITY__
-        tmp = __builtin_cheri_bounds_set(tmp, (intptr_t)p - tmp);
+        tmp = __builtin_cheri_bounds_set(tmp, (int64ptr_t)p - tmp);
 #endif
         results->setRegister(reg, kRegisterIsExpression, tmp, initialState);
         _LIBUNWIND_TRACE_DWARF(
@@ -853,7 +854,7 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
         switch (arch) {
 #if defined(_LIBUNWIND_TARGET_AARCH64)
         case REGISTERS_ARM64: {
-          intptr_t value =
+          int64ptr_t value =
               results->savedRegisters[UNW_AARCH64_RA_SIGN_STATE].value ^ 0x1;
           results->setRegisterValue(UNW_AARCH64_RA_SIGN_STATE, value,
                                     initialState);
@@ -905,7 +906,7 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
 
 #if defined(_LIBUNWIND_TARGET_AARCH64)
       case DW_CFA_AARCH64_negate_ra_state_with_pc: {
-        intptr_t value =
+        int64ptr_t value =
             results->savedRegisters[UNW_AARCH64_RA_SIGN_STATE].value ^ 0x3;
         results->setRegisterValue(UNW_AARCH64_RA_SIGN_STATE, value,
                                   initialState);
