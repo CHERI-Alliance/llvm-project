@@ -3412,17 +3412,19 @@ void RISCVInstrInfo::buildOutlinedFrame(
 MachineBasicBlock::iterator RISCVInstrInfo::insertOutlinedCall(
     Module &M, MachineBasicBlock &MBB, MachineBasicBlock::iterator &It,
     MachineFunction &MF, outliner::Candidate &C) const {
+  bool IsPurecap = RISCVABI::isCheriPureCapABI(
+      MF.getSubtarget<RISCVSubtarget>().getTargetABI());
 
   if (C.CallConstructionID == MachineOutlinerTailCall) {
-    It = MBB.insert(It, BuildMI(MF, DebugLoc(), get(RISCV::PseudoTAIL))
+    It = MBB.insert(It, BuildMI(MF, DebugLoc(),
+                                get(IsPurecap ? RISCV::PseudoCTAIL :
+                                                RISCV::PseudoTAIL))
                             .addGlobalAddress(M.getNamedValue(MF.getName()),
                                               /*Offset=*/0, RISCVII::MO_CALL));
     return It;
   }
 
   // Add in a call instruction to the outlined function at the given location.
-  bool IsPurecap = RISCVABI::isCheriPureCapABI(
-      MF.getSubtarget<RISCVSubtarget>().getTargetABI());
   It = MBB.insert(
       It, BuildMI(MF, DebugLoc(),
                   get(IsPurecap ? RISCV::PseudoCCALLReg : RISCV::PseudoCALLReg),

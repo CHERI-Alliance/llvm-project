@@ -13,6 +13,7 @@
 #ifndef LLVM_TARGET_TARGETMACHINE_H
 #define LLVM_TARGET_TARGETMACHINE_H
 
+#include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/PassManager.h"
@@ -107,6 +108,9 @@ protected: // Can only create subclasses.
   std::unique_ptr<const MCRegisterInfo> MRI;
   std::unique_ptr<const MCInstrInfo> MII;
   std::unique_ptr<const MCSubtargetInfo> STI;
+
+  /// MC subtarget keyed by target features and target CPU.
+  StringMap<std::unique_ptr<const MCSubtargetInfo>> MCSubtargetMap;
 
   unsigned RequireStructuredCFG : 1;
   unsigned O0WantsFastISel : 1;
@@ -216,6 +220,12 @@ public:
   const MCRegisterInfo *getMCRegisterInfo() const { return MRI.get(); }
   const MCInstrInfo *getMCInstrInfo() const { return MII.get(); }
   const MCSubtargetInfo *getMCSubtargetInfo() const { return STI.get(); }
+
+  /// Get the MCSubtargetInfo for the given target CPU and target features.
+  /// For use in contexts where a feature-specific MC subtarget is needed,
+  /// but no MachineFunctionis available, such as for module-level inline
+  /// assembly.
+  const MCSubtargetInfo &getMCSubtargetInfo(StringRef CPU, StringRef FS);
 
   /// If intrinsic information is available, return it.  If not, return null.
   virtual const TargetIntrinsicInfo *getIntrinsicInfo() const {

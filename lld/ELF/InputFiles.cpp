@@ -277,7 +277,7 @@ static bool isCompatible(Ctx &ctx, InputFile *file) {
   if (file->ekind == ctx.arg.ekind && file->emachine == ctx.arg.emachine) {
     if (ctx.arg.emachine != EM_MIPS ||
         isMipsN32Abi(ctx, *file) == ctx.arg.mipsN32Abi) {
-      if (isCheriAbi(ctx, *file) == ctx.arg.isCheriAbi)
+      if (isCheriAbi(ctx, *file) == ctx.arg.isCheriAbi || isa<BitcodeFile>(file))
         return true;
       onlyCheriAbi = true;
     }

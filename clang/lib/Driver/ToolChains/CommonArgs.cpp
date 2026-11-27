@@ -937,6 +937,25 @@ void tools::addLTOOptions(const ToolChain &ToolChain, const ArgList &Args,
     CmdArgs.push_back(
         Args.MakeArgString(Twine(PluginOptPrefix) + ExtraDash + "mcpu=" + CPU));
 
+  // NOTE: If there is a good place for this in RISCVToolchain.cpp then this
+  // should be there.
+  if (Triple.isRISCV()) {
+    std::vector<StringRef> Features;
+    riscv::getRISCVTargetFeatures(D, Triple, Args, Features);
+
+    // Always add mattr features - for LTO purposes this helps reconstruct an
+    // accurate datalayout.
+    if (!Features.empty())
+      CmdArgs.push_back(Args.MakeArgString(Twine(PluginOptPrefix) + "-mattr=" +
+                                           llvm::join(Features, ",")));
+
+    // Always add target-abi - as above, for LTO purposes this helps reconstruct
+    // an accurate datalayout.
+    StringRef ABIName = riscv::getRISCVABI(Args, Triple);
+    CmdArgs.push_back(
+        Args.MakeArgString(Twine(PluginOptPrefix) + "-target-abi=" + ABIName));
+  }
+
   if (Arg *A = Args.getLastArg(options::OPT_O_Group)) {
     // The optimization level matches
     // CompilerInvocation.cpp:getOptimizationLevel().

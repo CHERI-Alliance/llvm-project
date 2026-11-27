@@ -173,6 +173,11 @@ Changes to the ARM Backend
   addend falls outside of this range, the LLVM backend will emit an error like so
   `Relocation Not In Range`.
 
+* Module-level inline assembly now accepts optional `target_features` and
+  `target_cpu` properties. This resolves errors during LTO on some
+  architectures.
+
+
 Changes to the AVR Backend
 --------------------------
 
